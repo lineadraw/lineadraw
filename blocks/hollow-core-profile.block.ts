@@ -1,0 +1,1310 @@
+// Profile Block — cross-section outlines for the European steel
+// catalogues plus Parma precast hollow core slabs (data from the calculus
+// profile catalogs). Sections are drawn bbox-centered with root fillets;
+// flange tapers and toe radii are omitted (schematic CAD convention).
+//
+// Layout: the block contract reads top-down here; the catalogue data
+// tables live at the END of the file. That works because `params` is the
+// FUNCTION form — its body runs after the whole module evaluated, so it
+// may reference tables declared below it.
+import { defineBlock } from "lineadraw";
+import type { Polyline, Circle } from "lineadraw";
+
+export default defineBlock({
+  id: "20784907-4ec4-44b2-934c-54f3456f5d6c",
+  name: "Hollow Core Profile",
+  description: "Draws a profile of a hollow core slab",
+  version: "1.0.0",
+  authors: ["Linea Team"],
+  tags: ["structural", "steel", "catalog", "concrete", "precast", "building"],
+  params: () => [
+    {
+      name: "catalog",
+      label: "Catalog",
+      type: "enum",
+      default: "IPE",
+      options: [
+        "IPE",
+        "HEA",
+        "HEB",
+        "UPE",
+        "UPN",
+        "L Equal",
+        "L Unequal",
+        "CFCHS",
+        "CFSHS",
+        "CFRHS",
+        "Hollow Core",
+      ],
+    },
+    {
+      name: "ipe",
+      label: "Profile",
+      type: "enum",
+      default: "IPE300",
+      options: ipes.map((p) => p[0]),
+    },
+    {
+      name: "hea",
+      label: "Profile",
+      type: "enum",
+      default: "HEA300",
+      options: heas.map((p) => p[0]),
+    },
+    {
+      name: "heb",
+      label: "Profile",
+      type: "enum",
+      default: "HEB300",
+      options: hebs.map((p) => p[0]),
+    },
+    {
+      name: "upe",
+      label: "Profile",
+      type: "enum",
+      default: "UPE200",
+      options: upes.map((p) => p[0]),
+    },
+    {
+      name: "upn",
+      label: "Profile",
+      type: "enum",
+      default: "UPN200",
+      options: upns.map((p) => p[0]),
+    },
+    {
+      name: "lequal",
+      label: "Profile",
+      type: "enum",
+      default: "L100x10",
+      options: lequals.map((p) => p[0]),
+    },
+    {
+      name: "lunequal",
+      label: "Profile",
+      type: "enum",
+      default: "L150x100x10",
+      options: lunequals.map((p) => p[0]),
+    },
+    {
+      name: "cfchs",
+      label: "Profile",
+      type: "enum",
+      default: "CFCHS168.3x5",
+      options: cfchss.map((p) => p[0]),
+    },
+    {
+      name: "cfshs",
+      label: "Profile",
+      type: "enum",
+      default: "CFSHS150x5",
+      options: cfshss.map((p) => p[0]),
+    },
+    {
+      name: "cfrhs",
+      label: "Profile",
+      type: "enum",
+      default: "CFRHS200x100x5",
+      options: cfrhss.map((p) => p[0]),
+    },
+    {
+      name: "hollowcore",
+      label: "Profile",
+      type: "enum",
+      default: "P27",
+      options: hollowCores.map((p) => p.name),
+    },
+  ],
+  paramVisibility: ({ params }) => ({
+    ipe: params.catalog === "IPE",
+    hea: params.catalog === "HEA",
+    heb: params.catalog === "HEB",
+    upe: params.catalog === "UPE",
+    upn: params.catalog === "UPN",
+    lequal: params.catalog === "L Equal",
+    lunequal: params.catalog === "L Unequal",
+    cfchs: params.catalog === "CFCHS",
+    cfshs: params.catalog === "CFSHS",
+    cfrhs: params.catalog === "CFRHS",
+    hollowcore: params.catalog === "Hollow Core",
+  }),
+  draw: ({ params }) => {
+    const {
+      catalog,
+      ipe,
+      hea,
+      heb,
+      upe,
+      upn,
+      lequal,
+      lunequal,
+      cfchs,
+      cfshs,
+      cfrhs,
+      hollowcore,
+    } = params;
+    switch (catalog) {
+      case "IPE":
+      case "HEA":
+      case "HEB": {
+        const table =
+          catalog === "IPE" ? ipes : catalog === "HEA" ? heas : hebs;
+        const name = catalog === "IPE" ? ipe : catalog === "HEA" ? hea : heb;
+        const p = table.find((p) => p[0] === name);
+        return p ? [iSection(p[1], p[2], p[3], p[4], p[5])] : [];
+      }
+      case "UPE":
+      case "UPN": {
+        const table = catalog === "UPE" ? upes : upns;
+        const name = catalog === "UPE" ? upe : upn;
+        const p = table.find((p) => p[0] === name);
+        return p ? [uSection(p[1], p[2], p[3], p[4], p[5])] : [];
+      }
+      case "L Equal":
+      case "L Unequal": {
+        const table = catalog === "L Equal" ? lequals : lunequals;
+        const name = catalog === "L Equal" ? lequal : lunequal;
+        const p = table.find((p) => p[0] === name);
+        return p ? [lSection(p[1], p[2], p[3], p[4])] : [];
+      }
+      case "CFCHS": {
+        const p = cfchss.find((p) => p[0] === cfchs);
+        return p ? chs(p[1], p[2]) : [];
+      }
+      case "CFSHS": {
+        const p = cfshss.find((p) => p[0] === cfshs);
+        return p ? rhs(p[1], p[1], p[2]) : [];
+      }
+      case "CFRHS": {
+        const p = cfrhss.find((p) => p[0] === cfrhs);
+        return p ? rhs(p[1], p[2], p[3]) : [];
+      }
+      case "Hollow Core": {
+        const p = hollowCores.find((p) => p.name === hollowcore);
+        return p ? [hcPolyline(p.outline), ...p.holes.map(hcPolyline)] : [];
+      }
+      default:
+        return [];
+    }
+  },
+});
+
+// ———————————————————————— Geometry builders ————————————————————————
+
+// 90° fillet arc: |bulge| = tan(90°/4). Negative = concave (CW) on a CCW
+// outline, positive = convex.
+const FILLET = 0.41421;
+
+/** I-section (IPE/HEA/HEB) outline, CCW from the bottom-left corner. */
+const iSection = (
+  h: number,
+  w: number,
+  tw: number,
+  tf: number,
+  r: number,
+): Polyline => ({
+  type: "polyline",
+  points: [
+    [-w / 2, -h / 2],
+    [w / 2, -h / 2],
+    [w / 2, -h / 2 + tf],
+    [tw / 2 + r, -h / 2 + tf, -FILLET],
+    [tw / 2, -h / 2 + tf + r],
+    [tw / 2, h / 2 - tf - r, -FILLET],
+    [tw / 2 + r, h / 2 - tf],
+    [w / 2, h / 2 - tf],
+    [w / 2, h / 2],
+    [-w / 2, h / 2],
+    [-w / 2, h / 2 - tf],
+    [-tw / 2 - r, h / 2 - tf, -FILLET],
+    [-tw / 2, h / 2 - tf - r],
+    [-tw / 2, -h / 2 + tf + r, -FILLET],
+    [-tw / 2 - r, -h / 2 + tf],
+    [-w / 2, -h / 2 + tf],
+  ],
+  closed: true,
+});
+
+/** Channel (UPE/UPN, parallel-flange simplification), web on the left. */
+const uSection = (
+  h: number,
+  w: number,
+  tw: number,
+  tf: number,
+  r: number,
+): Polyline => {
+  const xw = -w / 2 + tw; // web inner face
+  return {
+    type: "polyline",
+    points: [
+      [-w / 2, -h / 2],
+      [w / 2, -h / 2],
+      [w / 2, -h / 2 + tf],
+      [xw + r, -h / 2 + tf, -FILLET],
+      [xw, -h / 2 + tf + r],
+      [xw, h / 2 - tf - r, -FILLET],
+      [xw + r, h / 2 - tf],
+      [w / 2, h / 2 - tf],
+      [w / 2, h / 2],
+      [-w / 2, h / 2],
+    ],
+    closed: true,
+  };
+};
+
+/** Angle (L), vertical leg left + horizontal leg bottom, bbox-centered. */
+const lSection = (h: number, w: number, t: number, r: number): Polyline => ({
+  type: "polyline",
+  points: [
+    [-w / 2, -h / 2],
+    [w / 2, -h / 2],
+    [w / 2, -h / 2 + t],
+    [-w / 2 + t + r, -h / 2 + t, -FILLET],
+    [-w / 2 + t, -h / 2 + t + r],
+    [-w / 2 + t, h / 2],
+    [-w / 2, h / 2],
+  ],
+  closed: true,
+});
+
+/** Centered w×h rectangle with corner radius r (sharp when r ≈ 0). */
+const roundedRect = (h: number, w: number, r: number): Polyline => ({
+  type: "polyline",
+  points:
+    r > 0.01
+      ? [
+          [-w / 2 + r, -h / 2],
+          [w / 2 - r, -h / 2, FILLET],
+          [w / 2, -h / 2 + r],
+          [w / 2, h / 2 - r, FILLET],
+          [w / 2 - r, h / 2],
+          [-w / 2 + r, h / 2, FILLET],
+          [-w / 2, h / 2 - r],
+          [-w / 2, -h / 2 + r, FILLET],
+        ]
+      : [
+          [-w / 2, -h / 2],
+          [w / 2, -h / 2],
+          [w / 2, h / 2],
+          [-w / 2, h / 2],
+        ],
+  closed: true,
+});
+
+/** Hollow box (CFSHS/CFRHS): outer + inner rounded rectangles. */
+const rhs = (h: number, w: number, t: number): Polyline[] => {
+  /** EN 10219 cold-formed outer corner radius by wall thickness. */
+  const ro = t <= 6 ? 2 * t : t <= 10 ? 2.5 * t : 3 * t;
+  return [roundedRect(h, w, ro), roundedRect(h - 2 * t, w - 2 * t, ro - t)];
+};
+
+/** Tube (CFCHS): outer + inner circles. */
+const chs = (d: number, t: number): Circle[] => [
+  { type: "circle", center: [0, 0], radius: d / 2 },
+  { type: "circle", center: [0, 0], radius: d / 2 - t },
+];
+
+/** Closed polyline from vertices with optional corner fillets/chamfers.
+ * Round chamfers become bulge arcs tangent to both edges. */
+const hcPolyline = (verts: readonly HcVertex[]): Polyline => {
+  const raw: [number, number, number][] = [];
+  const n = verts.length;
+  for (let i = 0; i < n; i++) {
+    const [x, y, ch] = verts[i];
+    if (ch === undefined) {
+      raw.push([x, y, 0]);
+      continue;
+    }
+    const [px, py] = verts[(i + n - 1) % n];
+    const [qx, qy] = verts[(i + 1) % n];
+    const l1 = Math.hypot(px - x, py - y);
+    const u1 = [(px - x) / l1, (py - y) / l1]; // unit toward prev vertex
+    const l2 = Math.hypot(qx - x, qy - y);
+    const u2 = [(qx - x) / l2, (qy - y) / l2]; // unit toward next vertex
+    if (typeof ch === "number") {
+      const theta = Math.acos(
+        Math.min(1, Math.max(-1, u1[0] * u2[0] + u1[1] * u2[1])),
+      );
+      const d = ch / Math.tan(theta / 2); // tangent offset from the corner
+      // Arc sweeps pi - theta; CCW (positive bulge) on a left turn, i.e.
+      // cross(-u1, u2) > 0.
+      const bulge =
+        Math.tan((Math.PI - theta) / 4) *
+        (u1[0] * u2[1] - u1[1] * u2[0] > 0 ? -1 : 1);
+      raw.push([x + u1[0] * d, y + u1[1] * d, bulge]);
+      raw.push([x + u2[0] * d, y + u2[1] * d, 0]);
+    } else {
+      raw.push([x + u1[0] * ch[0], y + u1[1] * ch[0], 0]);
+      raw.push([x + u2[0] * ch[1], y + u2[1] * ch[1], 0]);
+    }
+  }
+  // Fillets that consume a whole edge (e.g. a void that is a full circle)
+  // leave coincident neighbours — merge them, keeping the arc vertex.
+  const pts: [number, number, number][] = [];
+  for (const p of raw) {
+    const prev = pts[pts.length - 1];
+    if (prev && Math.hypot(p[0] - prev[0], p[1] - prev[1]) < 1e-6) {
+      if (prev[2] === 0) pts[pts.length - 1] = p;
+    } else pts.push(p);
+  }
+  const first = pts[0];
+  const last = pts[pts.length - 1];
+  if (
+    pts.length > 2 &&
+    last[2] === 0 &&
+    Math.hypot(first[0] - last[0], first[1] - last[1]) < 1e-6
+  )
+    pts.pop();
+  return {
+    type: "polyline",
+    points: pts.map(([x, y, b]): [number, number, number?] =>
+      b ? [x, y, b] : [x, y],
+    ),
+    closed: true,
+  };
+};
+
+// ———————————————————————— Catalogue data ————————————————————————
+// Referenced from the `params` function and `draw` — both run after the
+// module body, so the tables may sit down here.
+
+// name, h, w, tw, tf, r
+const ipes = [
+  ["IPE80", 80, 46, 3.8, 5.2, 5],
+  ["IPE100", 100, 55, 4.1, 5.7, 7],
+  ["IPE120", 120, 64, 4.4, 6.3, 7],
+  ["IPE140", 140, 73, 4.7, 6.9, 7],
+  ["IPE160", 160, 82, 5, 7.4, 9],
+  ["IPE180", 180, 91, 5.3, 8, 9],
+  ["IPE200", 200, 100, 5.6, 8.5, 12],
+  ["IPE220", 220, 110, 5.9, 9.2, 12],
+  ["IPE240", 240, 120, 6.2, 9.8, 15],
+  ["IPE270", 270, 135, 6.6, 10.2, 15],
+  ["IPE300", 300, 150, 7.1, 10.7, 15],
+  ["IPE330", 330, 160, 7.5, 11.5, 18],
+  ["IPE360", 360, 170, 8, 12.7, 18],
+  ["IPE400", 400, 180, 8.6, 13.5, 21],
+  ["IPE450", 450, 190, 9.4, 14.6, 21],
+  ["IPE500", 500, 200, 10.2, 16, 21],
+  ["IPE550", 550, 210, 11.1, 17.2, 24],
+  ["IPE600", 600, 220, 12, 19, 24],
+] as const;
+
+// name, h, w, tw, tf, r
+const heas = [
+  ["HEA100", 96, 100, 5, 8, 12],
+  ["HEA120", 114, 120, 5, 8, 12],
+  ["HEA140", 133, 140, 5.5, 8.5, 12],
+  ["HEA160", 152, 160, 6, 9, 15],
+  ["HEA180", 171, 180, 6, 9.5, 15],
+  ["HEA200", 190, 200, 6.5, 10, 18],
+  ["HEA220", 210, 220, 7, 11, 18],
+  ["HEA240", 230, 240, 7.5, 12, 21],
+  ["HEA260", 250, 260, 7.5, 12.5, 24],
+  ["HEA280", 270, 280, 8, 13, 24],
+  ["HEA300", 290, 300, 8.5, 14, 27],
+  ["HEA320", 310, 300, 9, 15.5, 27],
+  ["HEA340", 330, 300, 9.5, 16.5, 27],
+  ["HEA360", 350, 300, 10, 17.5, 27],
+  ["HEA400", 390, 300, 11, 19, 27],
+  ["HEA450", 440, 300, 11.5, 21, 27],
+  ["HEA500", 490, 300, 12, 23, 27],
+  ["HEA550", 540, 300, 12.5, 24, 27],
+  ["HEA600", 590, 300, 13, 25, 27],
+  ["HEA650", 640, 300, 13.5, 26, 27],
+  ["HEA700", 690, 300, 14.5, 27, 27],
+  ["HEA800", 790, 300, 15, 28, 30],
+  ["HEA900", 890, 300, 16, 30, 30],
+  ["HEA1000", 990, 300, 16.5, 31, 30],
+] as const;
+
+// name, h, w, tw, tf, r
+const hebs = [
+  ["HEB100", 100, 100, 6, 10, 12],
+  ["HEB120", 120, 120, 6.5, 11, 12],
+  ["HEB140", 140, 140, 7, 12, 12],
+  ["HEB160", 160, 160, 8, 13, 15],
+  ["HEB180", 180, 180, 8.5, 14, 15],
+  ["HEB200", 200, 200, 9, 15, 18],
+  ["HEB220", 220, 220, 9.5, 16, 18],
+  ["HEB240", 240, 240, 10, 17, 21],
+  ["HEB260", 260, 260, 10, 17.5, 24],
+  ["HEB280", 280, 280, 10.5, 18, 24],
+  ["HEB300", 300, 300, 11, 19, 27],
+  ["HEB320", 320, 300, 11.5, 20.5, 27],
+  ["HEB340", 340, 300, 12, 21.5, 27],
+  ["HEB360", 360, 300, 12.5, 22.5, 27],
+  ["HEB400", 400, 300, 13.5, 24, 27],
+  ["HEB450", 450, 300, 14, 26, 27],
+  ["HEB500", 500, 300, 14.5, 28, 27],
+  ["HEB550", 550, 300, 15, 29, 27],
+  ["HEB600", 600, 300, 15.5, 30, 27],
+  ["HEB650", 650, 300, 16, 31, 27],
+  ["HEB700", 700, 300, 17, 32, 27],
+  ["HEB800", 800, 300, 17.5, 33, 30],
+  ["HEB900", 900, 300, 18.5, 35, 30],
+  ["HEB1000", 1000, 300, 19, 36, 30],
+] as const;
+
+// name, h, w, tw, tf, r
+const upes = [
+  ["UPE80", 80, 50, 4, 7, 10],
+  ["UPE100", 100, 55, 4.5, 7.5, 10],
+  ["UPE120", 120, 60, 5, 8, 12],
+  ["UPE140", 140, 65, 5, 9, 12],
+  ["UPE160", 160, 70, 5.5, 9.5, 12],
+  ["UPE180", 180, 75, 5.5, 10.5, 12],
+  ["UPE200", 200, 80, 6, 11, 13],
+  ["UPE220", 220, 85, 6.5, 12, 13],
+  ["UPE240", 240, 90, 7, 12.5, 15],
+  ["UPE270", 270, 95, 7.5, 13.5, 15],
+  ["UPE300", 300, 100, 9.5, 15, 15],
+  ["UPE330", 330, 105, 11, 16, 18],
+  ["UPE360", 360, 110, 12, 17, 18],
+  ["UPE400", 400, 115, 13.5, 18, 18],
+] as const;
+
+// name, h, w, tw, tf, r
+const upns = [
+  ["UPN50", 50, 38, 5, 7, 7],
+  ["UPN65", 65, 42, 5.5, 7.5, 7.5],
+  ["UPN80", 80, 45, 6, 8, 8],
+  ["UPN100", 100, 50, 6, 8.5, 8.5],
+  ["UPN120", 120, 55, 7, 9, 9],
+  ["UPN140", 140, 60, 7, 10, 10],
+  ["UPN160", 160, 65, 7.5, 10.5, 10.5],
+  ["UPN180", 180, 70, 8, 11, 11],
+  ["UPN200", 200, 75, 8.5, 11.5, 11.5],
+  ["UPN220", 220, 80, 9, 12.5, 12.5],
+  ["UPN240", 240, 85, 9.5, 13, 13],
+  ["UPN260", 260, 90, 10, 14, 14],
+  ["UPN280", 280, 95, 10, 15, 15],
+  ["UPN300", 300, 100, 10, 16, 16],
+  ["UPN320", 320, 100, 14, 17.5, 17.5],
+  ["UPN350", 350, 100, 14, 16, 16],
+  ["UPN380", 380, 102, 13.5, 16, 16],
+  ["UPN400", 400, 110, 14, 18, 18],
+] as const;
+
+// name, h, w, t, r
+const lequals = [
+  ["L25x3", 25, 25, 3, 3.5],
+  ["L25x4", 25, 25, 4, 3.5],
+  ["L30x3", 30, 30, 3, 5],
+  ["L30x4", 30, 30, 4, 5],
+  ["L35x4", 35, 35, 4, 5],
+  ["L35x5", 35, 35, 5, 5],
+  ["L40x4", 40, 40, 4, 6],
+  ["L40x5", 40, 40, 5, 6],
+  ["L40x6", 40, 40, 6, 6],
+  ["L45x3", 45, 45, 3, 7],
+  ["L45x4", 45, 45, 4, 7],
+  ["L45x4.5", 45, 45, 4.5, 7],
+  ["L45x5", 45, 45, 5, 7],
+  ["L45x6", 45, 45, 6, 7],
+  ["L45x7", 45, 45, 7, 7],
+  ["L50x4", 50, 50, 4, 7],
+  ["L50x5", 50, 50, 5, 7],
+  ["L50x6", 50, 50, 6, 7],
+  ["L50x7", 50, 50, 7, 7],
+  ["L50x8", 50, 50, 8, 7],
+  ["L50x9", 50, 50, 9, 7],
+  ["L55x4", 55, 55, 4, 8],
+  ["L55x5", 55, 55, 5, 8],
+  ["L55x6", 55, 55, 6, 8],
+  ["L60x4", 60, 60, 4, 8],
+  ["L60x5", 60, 60, 5, 8],
+  ["L60x6", 60, 60, 6, 8],
+  ["L60x7", 60, 60, 7, 8],
+  ["L60x8", 60, 60, 8, 8],
+  ["L60x10", 60, 60, 10, 8],
+  ["L63x5", 63, 63, 5, 9],
+  ["L63x6", 63, 63, 6, 9],
+  ["L63x6.5", 63, 63, 6.5, 9],
+  ["L65x4", 65, 65, 4, 9],
+  ["L65x5", 65, 65, 5, 9],
+  ["L65x6", 65, 65, 6, 9],
+  ["L65x7", 65, 65, 7, 9],
+  ["L65x8", 65, 65, 8, 9],
+  ["L65x9", 65, 65, 9, 9],
+  ["L65x10", 65, 65, 10, 9],
+  ["L65x11", 65, 65, 11, 9],
+  ["L70x5", 70, 70, 5, 9],
+  ["L70x6", 70, 70, 6, 9],
+  ["L70x7", 70, 70, 7, 9],
+  ["L70x8", 70, 70, 8, 10],
+  ["L70x9", 70, 70, 9, 9],
+  ["L70x10", 70, 70, 10, 9],
+  ["L75x4", 75, 75, 4, 9],
+  ["L75x5", 75, 75, 5, 9],
+  ["L75x6", 75, 75, 6, 9],
+  ["L75x7", 75, 75, 7, 9],
+  ["L75x8", 75, 75, 8, 9],
+  ["L75x9", 75, 75, 9, 9],
+  ["L75x10", 75, 75, 10, 9],
+  ["L80x5", 80, 80, 5, 10],
+  ["L80x6", 80, 80, 6, 10],
+  ["L80x7", 80, 80, 7, 10],
+  ["L80x8", 80, 80, 8, 10],
+  ["L80x9", 80, 80, 9, 10],
+  ["L80x10", 80, 80, 10, 10],
+  ["L90x5", 90, 90, 5, 11],
+  ["L90x6", 90, 90, 6, 11],
+  ["L90x7", 90, 90, 7, 11],
+  ["L90x8", 90, 90, 8, 11],
+  ["L90x9", 90, 90, 9, 11],
+  ["L90x10", 90, 90, 10, 11],
+  ["L90x11", 90, 90, 11, 11],
+  ["L90x16", 90, 90, 16, 11],
+  ["L100x6", 100, 100, 6, 12],
+  ["L100x7", 100, 100, 7, 12],
+  ["L100x8", 100, 100, 8, 12],
+  ["L100x9", 100, 100, 9, 12],
+  ["L100x10", 100, 100, 10, 12],
+  ["L100x11", 100, 100, 11, 12],
+  ["L100x12", 100, 100, 12, 12],
+  ["L100x13", 100, 100, 13, 12],
+  ["L100x14", 100, 100, 14, 12],
+  ["L100x15", 100, 100, 15, 12],
+  ["L100x16", 100, 100, 16, 12],
+  ["L100x18", 100, 100, 18, 12],
+  ["L110x6", 110, 110, 6, 12],
+  ["L110x7", 110, 110, 7, 12],
+  ["L110x8", 110, 110, 8, 12],
+  ["L110x9", 110, 110, 9, 12],
+  ["L110x10", 110, 110, 10, 13],
+  ["L110x11", 110, 110, 11, 13],
+  ["L110x12", 110, 110, 12, 13],
+  ["L110x14", 110, 110, 14, 13],
+  ["L120x7", 120, 120, 7, 13],
+  ["L120x8", 120, 120, 8, 13],
+  ["L120x9", 120, 120, 9, 13],
+  ["L120x10", 120, 120, 10, 13],
+  ["L120x11", 120, 120, 11, 13],
+  ["L120x12", 120, 120, 12, 13],
+  ["L120x13", 120, 120, 13, 13],
+  ["L120x14", 120, 120, 14, 13],
+  ["L120x15", 120, 120, 15, 13],
+  ["L120x16", 120, 120, 16, 13],
+  ["L130x8", 130, 130, 8, 14],
+  ["L130x9", 130, 130, 9, 14],
+  ["L130x10", 130, 130, 10, 14],
+  ["L130x11", 130, 130, 11, 14],
+  ["L130x12", 130, 130, 12, 14],
+  ["L130x13", 130, 130, 13, 14],
+  ["L130x14", 130, 130, 14, 14],
+  ["L130x15", 130, 130, 15, 14],
+  ["L130x16", 130, 130, 16, 14],
+  ["L140x9", 140, 140, 9, 15],
+  ["L140x10", 140, 140, 10, 15],
+  ["L140x11", 140, 140, 11, 15],
+  ["L140x12", 140, 140, 12, 15],
+  ["L140x13", 140, 140, 13, 15],
+  ["L140x14", 140, 140, 14, 15],
+  ["L140x15", 140, 140, 15, 15],
+  ["L140x16", 140, 140, 16, 15],
+  ["L140x18", 140, 140, 18, 15],
+  ["L150x10", 150, 150, 10, 16],
+  ["L150x11", 150, 150, 11, 16],
+  ["L150x12", 150, 150, 12, 16],
+  ["L150x13", 150, 150, 13, 16],
+  ["L150x14", 150, 150, 14, 16],
+  ["L150x15", 150, 150, 15, 16],
+  ["L150x16", 150, 150, 16, 16],
+  ["L150x17", 150, 150, 17, 16],
+  ["L150x18", 150, 150, 18, 16],
+  ["L150x19", 150, 150, 19, 16],
+  ["L150x20", 150, 150, 20, 16],
+  ["L160x12", 160, 160, 12, 17],
+  ["L160x13", 160, 160, 13, 17],
+  ["L160x14", 160, 160, 14, 17],
+  ["L160x15", 160, 160, 15, 17],
+  ["L160x16", 160, 160, 16, 17],
+  ["L160x17", 160, 160, 17, 17],
+  ["L160x18", 160, 160, 18, 17],
+  ["L160x19", 160, 160, 19, 17],
+  ["L160x20", 160, 160, 20, 17],
+  ["L180x13", 180, 180, 13, 18],
+  ["L180x14", 180, 180, 14, 18],
+  ["L180x15", 180, 180, 15, 18],
+  ["L180x16", 180, 180, 16, 18],
+  ["L180x17", 180, 180, 17, 18],
+  ["L180x18", 180, 180, 18, 18],
+  ["L180x19", 180, 180, 19, 18],
+  ["L180x20", 180, 180, 20, 18],
+  ["L180x22", 180, 180, 22, 18],
+  ["L200x12", 200, 200, 12, 18],
+  ["L200x13", 200, 200, 13, 18],
+  ["L200x14", 200, 200, 14, 18],
+  ["L200x15", 200, 200, 15, 18],
+  ["L200x16", 200, 200, 16, 18],
+  ["L200x17", 200, 200, 17, 18],
+  ["L200x18", 200, 200, 18, 18],
+  ["L200x19", 200, 200, 19, 18],
+  ["L200x20", 200, 200, 20, 18],
+  ["L200x21", 200, 200, 21, 18],
+  ["L200x22", 200, 200, 22, 18],
+  ["L200x23", 200, 200, 23, 18],
+  ["L200x24", 200, 200, 24, 18],
+  ["L200x25", 200, 200, 25, 18],
+  ["L200x26", 200, 200, 26, 18],
+  ["L200x27", 200, 200, 27, 18],
+  ["L200x28", 200, 200, 28, 18],
+  ["L250x17", 250, 250, 17, 18],
+  ["L250x18", 250, 250, 18, 18],
+  ["L250x19", 250, 250, 19, 18],
+  ["L250x20", 250, 250, 20, 18],
+  ["L250x21", 250, 250, 21, 18],
+  ["L250x22", 250, 250, 22, 18],
+  ["L250x23", 250, 250, 23, 18],
+  ["L250x24", 250, 250, 24, 18],
+  ["L250x25", 250, 250, 25, 18],
+  ["L250x26", 250, 250, 26, 18],
+  ["L250x27", 250, 250, 27, 18],
+  ["L250x28", 250, 250, 28, 18],
+  ["L250x29", 250, 250, 29, 18],
+  ["L250x30", 250, 250, 30, 18],
+  ["L250x31", 250, 250, 31, 18],
+  ["L250x32", 250, 250, 32, 18],
+  ["L250x33", 250, 250, 33, 18],
+  ["L250x34", 250, 250, 34, 18],
+  ["L250x35", 250, 250, 35, 18],
+  ["L300x25", 300, 300, 25, 18],
+  ["L300x26", 300, 300, 26, 18],
+  ["L300x27", 300, 300, 27, 18],
+  ["L300x28", 300, 300, 28, 18],
+  ["L300x29", 300, 300, 29, 18],
+  ["L300x30", 300, 300, 30, 18],
+  ["L300x31", 300, 300, 31, 18],
+  ["L300x32", 300, 300, 32, 18],
+  ["L300x33", 300, 300, 33, 18],
+  ["L300x34", 300, 300, 34, 18],
+  ["L300x35", 300, 300, 35, 18],
+] as const;
+
+// name, h, w, t, r
+const lunequals = [
+  ["L100x65x7", 100, 65, 7, 10],
+  ["L100x65x8", 100, 65, 8, 10],
+  ["L100x65x9", 100, 65, 9, 10],
+  ["L100x65x10", 100, 65, 10, 10],
+  ["L100x65x11", 100, 65, 11, 10],
+  ["L100x65x12", 100, 65, 12, 10],
+  ["L110x70x10", 110, 70, 10, 10],
+  ["L110x70x12", 110, 70, 12, 10],
+  ["L120x80x8", 120, 80, 8, 11],
+  ["L120x80x10", 120, 80, 10, 11],
+  ["L120x80x12", 120, 80, 12, 11],
+  ["L130x90x10", 130, 90, 10, 11],
+  ["L130x90x12", 130, 90, 12, 11],
+  ["L130x90x14", 130, 90, 14, 11],
+  ["L140x90x8", 140, 90, 8, 11],
+  ["L140x90x10", 140, 90, 10, 11],
+  ["L140x90x12", 140, 90, 12, 11],
+  ["L140x90x14", 140, 90, 14, 11],
+  ["L150x90x10", 150, 90, 10, 12],
+  ["L150x90x11", 150, 90, 11, 12],
+  ["L150x90x12", 150, 90, 12, 12],
+  ["L150x100x10", 150, 100, 10, 12],
+  ["L150x100x12", 150, 100, 12, 12],
+  ["L150x100x14", 150, 100, 14, 12],
+  ["L200x100x10", 200, 100, 10, 15],
+  ["L200x100x12", 200, 100, 12, 15],
+  ["L200x100x14", 200, 100, 14, 15],
+  ["L200x100x15", 200, 100, 15, 15],
+  ["L200x100x16", 200, 100, 16, 15],
+  ["L250x90x12", 250, 90, 12, 18],
+  ["L250x90x14", 250, 90, 14, 18],
+  ["L250x90x16", 250, 90, 16, 18],
+] as const;
+
+// name, d, t
+const cfchss = [
+  ["CFCHS33.7x3", 33.7, 3],
+  ["CFCHS42.4x3", 42.4, 3],
+  ["CFCHS48.3x3", 48.3, 3],
+  ["CFCHS48.3x4", 48.3, 4],
+  ["CFCHS60.3x3", 60.3, 3],
+  ["CFCHS60.3x4", 60.3, 4],
+  ["CFCHS76.1x3", 76.1, 3],
+  ["CFCHS76.1x4", 76.1, 4],
+  ["CFCHS88.9x3", 88.9, 3],
+  ["CFCHS88.9x3.5", 88.9, 3.5],
+  ["CFCHS88.9x4", 88.9, 4],
+  ["CFCHS88.9x5", 88.9, 5],
+  ["CFCHS88.9x6.3", 88.9, 6.3],
+  ["CFCHS114.3x3", 114.3, 3],
+  ["CFCHS114.3x3.5", 114.3, 3.5],
+  ["CFCHS114.3x4", 114.3, 4],
+  ["CFCHS114.3x5", 114.3, 5],
+  ["CFCHS114.3x6", 114.3, 6],
+  ["CFCHS114.3x6.3", 114.3, 6.3],
+  ["CFCHS139.7x3", 139.7, 3],
+  ["CFCHS139.7x4", 139.7, 4],
+  ["CFCHS139.7x5", 139.7, 5],
+  ["CFCHS139.7x6", 139.7, 6],
+  ["CFCHS139.7x6.3", 139.7, 6.3],
+  ["CFCHS139.7x8", 139.7, 8],
+  ["CFCHS139.7x10", 139.7, 10],
+  ["CFCHS168.3x4", 168.3, 4],
+  ["CFCHS168.3x4.5", 168.3, 4.5],
+  ["CFCHS168.3x5", 168.3, 5],
+  ["CFCHS168.3x6", 168.3, 6],
+  ["CFCHS168.3x6.3", 168.3, 6.3],
+  ["CFCHS168.3x8", 168.3, 8],
+  ["CFCHS168.3x10", 168.3, 10],
+  ["CFCHS168.3x12.5", 168.3, 12.5],
+  ["CFCHS193.7x4", 193.7, 4],
+  ["CFCHS193.7x4.5", 193.7, 4.5],
+  ["CFCHS193.7x5", 193.7, 5],
+  ["CFCHS193.7x6", 193.7, 6],
+  ["CFCHS193.7x6.3", 193.7, 6.3],
+  ["CFCHS193.7x8", 193.7, 8],
+  ["CFCHS193.7x10", 193.7, 10],
+  ["CFCHS193.7x12.5", 193.7, 12.5],
+  ["CFCHS219.1x4.5", 219.1, 4.5],
+  ["CFCHS219.1x5", 219.1, 5],
+  ["CFCHS219.1x6", 219.1, 6],
+  ["CFCHS219.1x6.3", 219.1, 6.3],
+  ["CFCHS219.1x8", 219.1, 8],
+  ["CFCHS219.1x10", 219.1, 10],
+  ["CFCHS219.1x12", 219.1, 12],
+  ["CFCHS219.1x12.5", 219.1, 12.5],
+  ["CFCHS219.1x16", 219.1, 16],
+  ["CFCHS244.5x5", 244.5, 5],
+  ["CFCHS244.5x6", 244.5, 6],
+  ["CFCHS244.5x6.3", 244.5, 6.3],
+  ["CFCHS244.5x8", 244.5, 8],
+  ["CFCHS244.5x10", 244.5, 10],
+  ["CFCHS244.5x12", 244.5, 12],
+  ["CFCHS244.5x12.5", 244.5, 12.5],
+  ["CFCHS244.5x16", 244.5, 16],
+  ["CFCHS273x4", 273, 4],
+  ["CFCHS273x4.5", 273, 4.5],
+  ["CFCHS273x5", 273, 5],
+  ["CFCHS273x6", 273, 6],
+  ["CFCHS273x6.3", 273, 6.3],
+  ["CFCHS273x8", 273, 8],
+  ["CFCHS273x10", 273, 10],
+  ["CFCHS273x12", 273, 12],
+  ["CFCHS273x12.5", 273, 12.5],
+  ["CFCHS273x16", 273, 16],
+  ["CFCHS323.9x5", 323.9, 5],
+  ["CFCHS323.9x6", 323.9, 6],
+  ["CFCHS323.9x6.3", 323.9, 6.3],
+  ["CFCHS323.9x8", 323.9, 8],
+  ["CFCHS323.9x10", 323.9, 10],
+  ["CFCHS323.9x12", 323.9, 12],
+  ["CFCHS323.9x12.5", 323.9, 12.5],
+  ["CFCHS323.9x16", 323.9, 16],
+  ["CFCHS355.6x5", 355.6, 5],
+  ["CFCHS355.6x6", 355.6, 6],
+  ["CFCHS355.6x6.3", 355.6, 6.3],
+  ["CFCHS355.6x8", 355.6, 8],
+  ["CFCHS355.6x10", 355.6, 10],
+  ["CFCHS355.6x12", 355.6, 12],
+  ["CFCHS355.6x12.5", 355.6, 12.5],
+  ["CFCHS355.6x16", 355.6, 16],
+  ["CFCHS406.4x6", 406.4, 6],
+  ["CFCHS406.4x6.3", 406.4, 6.3],
+  ["CFCHS406.4x8", 406.4, 8],
+  ["CFCHS406.4x10", 406.4, 10],
+  ["CFCHS406.4x12", 406.4, 12],
+  ["CFCHS406.4x12.5", 406.4, 12.5],
+  ["CFCHS406.4x16", 406.4, 16],
+  ["CFCHS457x6", 457, 6],
+  ["CFCHS457x6.3", 457, 6.3],
+  ["CFCHS457x8", 457, 8],
+  ["CFCHS457x10", 457, 10],
+  ["CFCHS457x12", 457, 12],
+  ["CFCHS457x12.5", 457, 12.5],
+  ["CFCHS457x16", 457, 16],
+  ["CFCHS508x6", 508, 6],
+  ["CFCHS508x6.3", 508, 6.3],
+  ["CFCHS508x8", 508, 8],
+  ["CFCHS508x10", 508, 10],
+  ["CFCHS508x12", 508, 12],
+  ["CFCHS508x12.5", 508, 12.5],
+  ["CFCHS508x16", 508, 16],
+] as const;
+
+// name, h, t
+const cfshss = [
+  ["CFSHS25x2", 25, 2],
+  ["CFSHS25x2.5", 25, 2.5],
+  ["CFSHS30x2", 30, 2],
+  ["CFSHS30x2.5", 30, 2.5],
+  ["CFSHS30x3", 30, 3],
+  ["CFSHS40x2", 40, 2],
+  ["CFSHS40x2.5", 40, 2.5],
+  ["CFSHS40x3", 40, 3],
+  ["CFSHS40x4", 40, 4],
+  ["CFSHS50x2.5", 50, 2.5],
+  ["CFSHS50x3", 50, 3],
+  ["CFSHS50x4", 50, 4],
+  ["CFSHS50x5", 50, 5],
+  ["CFSHS60x3", 60, 3],
+  ["CFSHS60x4", 60, 4],
+  ["CFSHS60x5", 60, 5],
+  ["CFSHS60x6", 60, 6],
+  ["CFSHS70x3", 70, 3],
+  ["CFSHS70x3.5", 70, 3.5],
+  ["CFSHS70x4", 70, 4],
+  ["CFSHS70x5", 70, 5],
+  ["CFSHS70x6", 70, 6],
+  ["CFSHS80x3", 80, 3],
+  ["CFSHS80x3.5", 80, 3.5],
+  ["CFSHS80x4", 80, 4],
+  ["CFSHS80x5", 80, 5],
+  ["CFSHS80x6", 80, 6],
+  ["CFSHS90x3", 90, 3],
+  ["CFSHS90x3.5", 90, 3.5],
+  ["CFSHS90x4", 90, 4],
+  ["CFSHS90x5", 90, 5],
+  ["CFSHS90x6", 90, 6],
+  ["CFSHS100x3", 100, 3],
+  ["CFSHS100x4", 100, 4],
+  ["CFSHS100x5", 100, 5],
+  ["CFSHS100x6", 100, 6],
+  ["CFSHS100x8", 100, 8],
+  ["CFSHS120x3", 120, 3],
+  ["CFSHS120x4", 120, 4],
+  ["CFSHS120x5", 120, 5],
+  ["CFSHS120x6", 120, 6],
+  ["CFSHS120x8", 120, 8],
+  ["CFSHS120x10", 120, 10],
+  ["CFSHS140x4", 140, 4],
+  ["CFSHS140x5", 140, 5],
+  ["CFSHS140x6", 140, 6],
+  ["CFSHS140x8", 140, 8],
+  ["CFSHS140x10", 140, 10],
+  ["CFSHS150x4", 150, 4],
+  ["CFSHS150x5", 150, 5],
+  ["CFSHS150x6", 150, 6],
+  ["CFSHS150x8", 150, 8],
+  ["CFSHS150x10", 150, 10],
+  ["CFSHS160x4", 160, 4],
+  ["CFSHS160x5", 160, 5],
+  ["CFSHS160x6", 160, 6],
+  ["CFSHS160x8", 160, 8],
+  ["CFSHS160x10", 160, 10],
+  ["CFSHS180x5", 180, 5],
+  ["CFSHS180x6", 180, 6],
+  ["CFSHS180x6.3", 180, 6.3],
+  ["CFSHS180x8", 180, 8],
+  ["CFSHS180x10", 180, 10],
+  ["CFSHS180x12", 180, 12],
+  ["CFSHS180x12.5", 180, 12.5],
+  ["CFSHS200x5", 200, 5],
+  ["CFSHS200x6", 200, 6],
+  ["CFSHS200x6.3", 200, 6.3],
+  ["CFSHS200x8", 200, 8],
+  ["CFSHS200x10", 200, 10],
+  ["CFSHS200x12", 200, 12],
+  ["CFSHS200x12.5", 200, 12.5],
+  ["CFSHS250x6", 250, 6],
+  ["CFSHS250x6.3", 250, 6.3],
+  ["CFSHS250x8", 250, 8],
+  ["CFSHS250x10", 250, 10],
+  ["CFSHS250x12", 250, 12],
+  ["CFSHS250x12.5", 250, 12.5],
+  ["CFSHS300x6", 300, 6],
+  ["CFSHS300x6.3", 300, 6.3],
+  ["CFSHS300x8", 300, 8],
+  ["CFSHS300x10", 300, 10],
+  ["CFSHS300x12", 300, 12],
+  ["CFSHS300x12.5", 300, 12.5],
+  ["CFSHS350x6", 350, 6],
+  ["CFSHS350x6.3", 350, 6.3],
+  ["CFSHS350x8", 350, 8],
+  ["CFSHS350x10", 350, 10],
+  ["CFSHS350x12", 350, 12],
+  ["CFSHS350x12.5", 350, 12.5],
+  ["CFSHS400x6", 400, 6],
+  ["CFSHS400x6.3", 400, 6.3],
+  ["CFSHS400x8", 400, 8],
+  ["CFSHS400x10", 400, 10],
+  ["CFSHS400x12", 400, 12],
+  ["CFSHS400x12.5", 400, 12.5],
+] as const;
+
+// name, h, w, t
+const cfrhss = [
+  ["CFRHS50x25x2", 50, 25, 2],
+  ["CFRHS50x25x2.5", 50, 25, 2.5],
+  ["CFRHS50x25x3", 50, 25, 3],
+  ["CFRHS50x30x2", 50, 30, 2],
+  ["CFRHS50x30x2.5", 50, 30, 2.5],
+  ["CFRHS50x30x3", 50, 30, 3],
+  ["CFRHS50x30x4", 50, 30, 4],
+  ["CFRHS60x40x2.5", 60, 40, 2.5],
+  ["CFRHS60x40x3", 60, 40, 3],
+  ["CFRHS60x40x4", 60, 40, 4],
+  ["CFRHS60x40x5", 60, 40, 5],
+  ["CFRHS70x40x3", 70, 40, 3],
+  ["CFRHS70x40x4", 70, 40, 4],
+  ["CFRHS70x40x5", 70, 40, 5],
+  ["CFRHS70x50x3", 70, 50, 3],
+  ["CFRHS70x50x4", 70, 50, 4],
+  ["CFRHS70x50x5", 70, 50, 5],
+  ["CFRHS80x40x3", 80, 40, 3],
+  ["CFRHS80x40x4", 80, 40, 4],
+  ["CFRHS80x40x5", 80, 40, 5],
+  ["CFRHS80x50x3", 80, 50, 3],
+  ["CFRHS80x50x4", 80, 50, 4],
+  ["CFRHS80x50x5", 80, 50, 5],
+  ["CFRHS80x60x3", 80, 60, 3],
+  ["CFRHS80x60x3.5", 80, 60, 3.5],
+  ["CFRHS80x60x4", 80, 60, 4],
+  ["CFRHS80x60x5", 80, 60, 5],
+  ["CFRHS90x50x3", 90, 50, 3],
+  ["CFRHS90x50x4", 90, 50, 4],
+  ["CFRHS90x50x5", 90, 50, 5],
+  ["CFRHS100x40x3", 100, 40, 3],
+  ["CFRHS100x40x4", 100, 40, 4],
+  ["CFRHS100x40x5", 100, 40, 5],
+  ["CFRHS100x50x3", 100, 50, 3],
+  ["CFRHS100x50x4", 100, 50, 4],
+  ["CFRHS100x50x5", 100, 50, 5],
+  ["CFRHS100x50x6", 100, 50, 6],
+  ["CFRHS100x60x3", 100, 60, 3],
+  ["CFRHS100x60x3.5", 100, 60, 3.5],
+  ["CFRHS100x60x4", 100, 60, 4],
+  ["CFRHS100x60x5", 100, 60, 5],
+  ["CFRHS100x60x6", 100, 60, 6],
+  ["CFRHS100x80x3", 100, 80, 3],
+  ["CFRHS100x80x4", 100, 80, 4],
+  ["CFRHS100x80x5", 100, 80, 5],
+  ["CFRHS100x80x6", 100, 80, 6],
+  ["CFRHS120x40x3", 120, 40, 3],
+  ["CFRHS120x40x4", 120, 40, 4],
+  ["CFRHS120x40x5", 120, 40, 5],
+  ["CFRHS120x60x3", 120, 60, 3],
+  ["CFRHS120x60x3.5", 120, 60, 3.5],
+  ["CFRHS120x60x4", 120, 60, 4],
+  ["CFRHS120x60x5", 120, 60, 5],
+  ["CFRHS120x60x6", 120, 60, 6],
+  ["CFRHS120x80x3", 120, 80, 3],
+  ["CFRHS120x80x4", 120, 80, 4],
+  ["CFRHS120x80x5", 120, 80, 5],
+  ["CFRHS120x80x6", 120, 80, 6],
+  ["CFRHS120x80x8", 120, 80, 8],
+  ["CFRHS140x80x3", 140, 80, 3],
+  ["CFRHS140x80x4", 140, 80, 4],
+  ["CFRHS140x80x5", 140, 80, 5],
+  ["CFRHS140x80x6", 140, 80, 6],
+  ["CFRHS140x80x8", 140, 80, 8],
+  ["CFRHS140x80x10", 140, 80, 10],
+  ["CFRHS150x100x3", 150, 100, 3],
+  ["CFRHS150x100x4", 150, 100, 4],
+  ["CFRHS150x100x5", 150, 100, 5],
+  ["CFRHS150x100x6", 150, 100, 6],
+  ["CFRHS150x100x8", 150, 100, 8],
+  ["CFRHS150x100x10", 150, 100, 10],
+  ["CFRHS160x80x3", 160, 80, 3],
+  ["CFRHS160x80x4", 160, 80, 4],
+  ["CFRHS160x80x5", 160, 80, 5],
+  ["CFRHS160x80x6", 160, 80, 6],
+  ["CFRHS160x80x8", 160, 80, 8],
+  ["CFRHS160x80x10", 160, 80, 10],
+  ["CFRHS180x80x3", 180, 80, 3],
+  ["CFRHS180x80x4", 180, 80, 4],
+  ["CFRHS180x80x5", 180, 80, 5],
+  ["CFRHS180x80x6", 180, 80, 6],
+  ["CFRHS180x80x8", 180, 80, 8],
+  ["CFRHS180x80x10", 180, 80, 10],
+  ["CFRHS180x100x4", 180, 100, 4],
+  ["CFRHS180x100x5", 180, 100, 5],
+  ["CFRHS180x100x6", 180, 100, 6],
+  ["CFRHS180x100x8", 180, 100, 8],
+  ["CFRHS180x100x10", 180, 100, 10],
+  ["CFRHS200x100x4", 200, 100, 4],
+  ["CFRHS200x100x5", 200, 100, 5],
+  ["CFRHS200x100x6", 200, 100, 6],
+  ["CFRHS200x100x8", 200, 100, 8],
+  ["CFRHS200x100x10", 200, 100, 10],
+  ["CFRHS200x120x4", 200, 120, 4],
+  ["CFRHS200x120x5", 200, 120, 5],
+  ["CFRHS200x120x6", 200, 120, 6],
+  ["CFRHS200x120x8", 200, 120, 8],
+  ["CFRHS200x120x10", 200, 120, 10],
+  ["CFRHS200x150x4", 200, 150, 4],
+  ["CFRHS200x150x5", 200, 150, 5],
+  ["CFRHS200x150x6", 200, 150, 6],
+  ["CFRHS200x150x8", 200, 150, 8],
+  ["CFRHS200x150x10", 200, 150, 10],
+  ["CFRHS250x150x5", 250, 150, 5],
+  ["CFRHS250x150x6", 250, 150, 6],
+  ["CFRHS250x150x6.3", 250, 150, 6.3],
+  ["CFRHS250x150x8", 250, 150, 8],
+  ["CFRHS250x150x10", 250, 150, 10],
+  ["CFRHS250x150x12", 250, 150, 12],
+  ["CFRHS250x150x12.5", 250, 150, 12.5],
+  ["CFRHS300x100x6", 300, 100, 6],
+  ["CFRHS300x100x8", 300, 100, 8],
+  ["CFRHS300x100x10", 300, 100, 10],
+  ["CFRHS300x200x6", 300, 200, 6],
+  ["CFRHS300x200x6.3", 300, 200, 6.3],
+  ["CFRHS300x200x8", 300, 200, 8],
+  ["CFRHS300x200x10", 300, 200, 10],
+  ["CFRHS300x200x12", 300, 200, 12],
+  ["CFRHS300x200x12.5", 300, 200, 12.5],
+  ["CFRHS400x200x6", 400, 200, 6],
+  ["CFRHS400x200x6.3", 400, 200, 6.3],
+  ["CFRHS400x200x8", 400, 200, 8],
+  ["CFRHS400x200x10", 400, 200, 10],
+  ["CFRHS400x200x12", 400, 200, 12],
+  ["CFRHS400x200x12.5", 400, 200, 12.5],
+  ["CFRHS450x250x6", 450, 250, 6],
+  ["CFRHS450x250x6.3", 450, 250, 6.3],
+  ["CFRHS450x250x8", 450, 250, 8],
+  ["CFRHS450x250x10", 450, 250, 10],
+  ["CFRHS450x250x12", 450, 250, 12],
+  ["CFRHS450x250x12.5", 450, 250, 12.5],
+  ["CFRHS500x300x6", 500, 300, 6],
+  ["CFRHS500x300x6.3", 500, 300, 6.3],
+  ["CFRHS500x300x8", 500, 300, 8],
+  ["CFRHS500x300x10", 500, 300, 10],
+  ["CFRHS500x300x12", 500, 300, 12],
+  ["CFRHS500x300x12.5", 500, 300, 12.5],
+] as const;
+
+/** Hole corner treatment: radius (round fillet) or [cut1, cut2] (straight
+ * chamfer measured back along the incoming/outgoing edge). */
+type HcChamfer = number | readonly [number, number];
+/** [x, y, chamfer?] */
+type HcVertex = readonly [number, number, HcChamfer?];
+
+type HcSection = {
+  name: string;
+  outline: readonly HcVertex[];
+  holes: readonly (readonly HcVertex[])[];
+};
+
+/** 4-corner core void, CCW from bottom-left, radius-r corners. */
+const hcRound = (
+  x: number,
+  w: number,
+  y1: number,
+  y2: number,
+  r: number,
+): HcVertex[] => [
+  [x, y1, r],
+  [x + w, y1, r],
+  [x + w, y2, r],
+  [x, y2, r],
+];
+
+/** P32/P40 core void: straight chamfers below, radius-r corners above. */
+const hcChamfered = (
+  x: number,
+  w: number,
+  y1: number,
+  y2: number,
+  c: number,
+  r: number,
+): HcVertex[] => [
+  [x, y1, [c, c]],
+  [x + w, y1, [c, c]],
+  [x + w, y2, r],
+  [x, y2, r],
+];
+
+// Parma hollow core slabs (1200 mm wide), bbox-centered like the steel
+// sections. Outlines carry the grout key/bevel profile verbatim from the
+// catalog; voids are generated from their corner coordinates.
+const hollowCores: readonly HcSection[] = [
+  {
+    name: "P18",
+    outline: [
+      [-600, -77.5],
+      [-585, -87.5],
+      [585, -87.5],
+      [600, -77.5],
+      [600, -67.5],
+      [585, -57.5],
+      [577.5, 7.5],
+      [570, 22.5],
+      [577.5, 37.5],
+      [577.5, 87.5],
+      [-577.5, 87.5],
+      [-577.5, 37.5],
+      [-570, 22.5],
+      [-577.5, 7.5],
+      [-585, -57.5],
+      [-600, -67.5],
+    ],
+    holes: [-545, -405, -265, -125, 15, 155, 295, 435].map((x) =>
+      hcRound(x, 110, -42.5, 67.5, 55),
+    ),
+  },
+  {
+    name: "P20",
+    outline: [
+      [-600, -90],
+      [-583.38, -100],
+      [583.38, -100],
+      [600, -90],
+      [600, -80],
+      [585, -70],
+      [577.5, 45],
+      [570, 60],
+      [577.5, 75],
+      [577.5, 100],
+      [-577.5, 100],
+      [-577.5, 75],
+      [-570, 60],
+      [-577.5, 45],
+      [-585, -70],
+      [-600, -80],
+    ],
+    holes: [-547.5, -359.5, -171.5, 16.5, 204.5, 392.5].map((x) =>
+      hcRound(x, 155, -77.5, 77.5, 77.5),
+    ),
+  },
+  {
+    name: "P27",
+    outline: [
+      [-600, -122.5],
+      [-583.38, -132.5],
+      [583.38, -132.5],
+      [600, -122.5],
+      [600, -112.5],
+      [585, -102.5],
+      [577.5, 77.5],
+      [570, 92.5],
+      [577.5, 107.5],
+      [577.5, 132.5],
+      [-577.5, 132.5],
+      [-577.5, 107.5],
+      [-570, 92.5],
+      [-577.5, 77.5],
+      [-585, -102.5],
+      [-600, -112.5],
+    ],
+    holes: [-540.5, -316.5, -92.5, 131.5, 355.5].map((x) =>
+      hcRound(x, 185, -92.5, 92.5, 92.5),
+    ),
+  },
+  {
+    name: "P32",
+    outline: [
+      [-600, -150],
+      [-583.38, -160],
+      [583.38, -160],
+      [600, -150],
+      [600, -140],
+      [585, -130],
+      [577.5, 105],
+      [570, 120],
+      [577.5, 135],
+      [577.5, 160],
+      [-577.5, 160],
+      [-577.5, 135],
+      [-570, 120],
+      [-577.5, 105],
+      [-585, -130],
+      [-600, -140],
+    ],
+    holes: [-532.5, -252.5, 27.5, 307.5].map((x) =>
+      hcChamfered(x, 225, -120, 120, 55, 112.5),
+    ),
+  },
+  {
+    name: "P37",
+    outline: [
+      [-596.89, -170.96],
+      [-586.86, -185],
+      [587.07, -185],
+      [597.1, -170.96],
+      [600.1, -155],
+      [581.92, -137.15],
+      [580.07, -65.44],
+      [570.74, -46.54],
+      [579.84, -27.54],
+      [577.33, 103.71],
+      [567.64, 122.65],
+      [576.74, 141.88],
+      [575.23, 174.97],
+      [565.04, 185],
+      [-565.25, 185],
+      [-575.44, 174.97],
+      [-576.95, 141.88],
+      [-567.85, 122.65],
+      [-577.54, 103.71],
+      [-580.05, -27.54],
+      [-570.95, -46.77],
+      [-580.63, -65.71],
+      [-581.72, -137.15],
+      [-599.9, -155],
+    ],
+    holes: [
+      // Edge voids follow the slanted slab sides, so they are irregular.
+      [
+        [-532.9, -130, 75],
+        [-362.9, -130, 75],
+        [-362.9, 130, 75],
+        [-447.89, 130, 75],
+        [-494, 115.62, 75],
+        [-532.68, 31.46],
+      ],
+      hcRound(-308.9, 170, -130, 130, 75),
+      hcRound(-84.9, 170, -130, 130, 75),
+      hcRound(139.1, 170, -130, 130, 75),
+      [
+        [363.1, -130, 75],
+        [533.1, -130, 75],
+        [532.89, 31.46, 75],
+        [494.21, 115.62, 75],
+        [448.11, 130, 75],
+        [363.1, 130, 75],
+      ],
+    ],
+  },
+  {
+    name: "P40",
+    outline: [
+      [-600, -190],
+      [-583.38, -200],
+      [583.38, -200],
+      [600, -190],
+      [600, -180],
+      [585, -170],
+      [577.5, 145],
+      [570, 160],
+      [577.5, 175],
+      [577.5, 200],
+      [-577.5, 200],
+      [-577.5, 175],
+      [-570, 160],
+      [-577.5, 145],
+      [-585, -170],
+      [-600, -180],
+    ],
+    holes: [-532.5, -252.5, 27.5, 307.5].map((x) =>
+      hcChamfered(x, 225, -160, 160, 55, 112.5),
+    ),
+  },
+  {
+    name: "P50",
+    outline: [
+      [-600, -240],
+      [-583.38, -250],
+      [583.38, -250],
+      [600, -240],
+      [600, -230],
+      [585, -220],
+      [577.5, 195],
+      [570, 210],
+      [577.5, 225],
+      [577.5, 250],
+      [-577.5, 250],
+      [-577.5, 225],
+      [-570, 210],
+      [-577.5, 195],
+      [-585, -220],
+      [-600, -230],
+    ],
+    holes: [-515, -240, 35, 310].map((x) => hcRound(x, 205, -210, 210, 102.5)),
+  },
+];
