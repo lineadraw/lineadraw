@@ -107,7 +107,9 @@ const parsePositions = (spec: string): number[] => {
 const expandLabels = (spec: string, n: number): string[] => {
   const out = spec.trim().split(/\s+/).filter(Boolean).slice(0, n);
   while (out.length < n)
-    out.push(out.length ? nextLabel(out[out.length - 1]) : String(out.length + 1));
+    out.push(
+      out.length ? nextLabel(out[out.length - 1]) : String(out.length + 1),
+    );
   return out;
 };
 
