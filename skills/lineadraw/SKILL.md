@@ -95,7 +95,7 @@ doc.transaction(() => {
 doc.add([
   { type: "dimension", layerId: dims, kind: "linear",
     points: [[0, 0], [6000, 0]], offset: [0, -500],
-    styleOverride: { scale: 50 } },
+    scale: 50 },                              // TOP-LEVEL scale, not styleOverride
   { type: "text", layer: "dimensions", position: [3000, 3400],
     content: "PLAN 1:50", textHeight: 5, scale: 50, hAlign: "center" },
 ]);
@@ -118,14 +118,14 @@ await doc.exportPdf("plan.pdf");                   // prints the layouts
 
 `textHeight`/`arrowSize`/hatch spacings are world mm. Text that should read
 2.5 mm tall *on paper* must be 2.5 × N world-mm tall in a 1:N drawing. That
-multiplier is a **per-object** `scale` field — there is NO document-level
-knob (`setDimStyle` has no `scale`; zod silently drops unknown keys, so
-passing one no-ops). Set it to the drawing-scale denominator (50 for 1:50)
-on every annotation:
+multiplier is a **per-object, top-level** `scale` field — there is NO
+document-level knob (`setDimStyle` has no `scale`), and `scale` is NOT a
+`styleOverride` key either (unknown style keys are rejected loudly). Set it
+to the drawing-scale denominator (50 for 1:50) on every annotation:
 
 - text → `scale: 50` (keep `textHeight` at paper size: 2.5 body, 3.5
   subtitles, 5 titles)
-- dimension → `styleOverride: { scale: 50 }`
+- dimension → top-level `scale: 50`
 - hatch → top-level `scale: 50` (multiplies the pattern spacing)
 
 If annotations come out microscopic (or hatches render as a dense smear) in

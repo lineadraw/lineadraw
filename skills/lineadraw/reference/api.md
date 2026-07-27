@@ -32,7 +32,7 @@ layer. `id` is assigned by `add`; never invent ids.
 | `ellipse` | `center`, `majorAxis`, `ratio` | majorAxis = endpoint vector from center; ratio = minor/major (0..1]; optional `startAngle`/`endAngle` for elliptical arcs |
 | `hatch` | `loops: [{points}]`, `fill` | loops[0] outer, rest holes (even-odd). fill: `{kind:"solid"}` \| `{kind:"pattern", name, angle, scale}` (ANSI31/ANSI32/ANSI37/AR-CONC…) \| `{kind:"lines", angle, spacing}`; top-level `scale` = drawing-scale multiplier for the spacing (50 in a 1:50 drawing) |
 | `text` | `position`, `content` | `textHeight` (mm, default 2.5), `scale` multiplier (set to drawing-scale denominator), `hAlign`/`vAlign` (**default center/center**), `width` (word-wrap box), `rotation`, `frame` ("rectangle"/"bottom"), `font`, `widthFactor`, `leaderLines: [[pt,...]]` (arrowhead at index 0). `\t` in content aligns columns at tab stops every 4×textHeight (author tables as ONE multi-line text; tabbed lines don't word-wrap) |
-| `dimension` | `points`, `offset` | `kind`: linear (default) / angular / radial / diameter. Linear with >2 points = chain. `offset` is a VECTOR from points[0] to the dimension line. `textOverride`; `styleOverride` (per-object DimStyle patch **plus `scale`** — set `styleOverride: { scale: N }` for a 1:N drawing) |
+| `dimension` | `points`, `offset` | `kind`: linear (default) / angular / radial / diameter. Points per kind: linear = measured points (>2 = chain); radial = `[center, pointOnCurve]`; **diameter = the two OPPOSITE points on the curve** (`[center, edge]` silently measures a radius — half the value); angular = vertex + legs. `offset` is a VECTOR from the kind's base point to the dimension line and is **required for every kind** (radial/diameter/angular use it to place the text). `textOverride`; `styleOverride` = per-object DimStyle patch (textHeight, arrowSize, …). **Drawing scale is the TOP-LEVEL `scale` field** (`scale: 50` for 1:50) — `scale` inside `styleOverride` is NOT a style key and is rejected |
 | `viewport` | `rect: {x,y,w,h}` | layouts only; `modelCenter`, `scale` (denominator, 1:50 → 50), `locked`, `hiddenLayerIds` |
 | `image` | `assetId`, `origin`, `width`, `height` | `assetId` comes from `doc.addAsset(dataUrl)`; skipped by DXF/DWG export |
 | `block` | `definitionId`, `inputs` | instances of script-defined blocks; advanced — prefer plain geometry unless the document already has definitions |
@@ -45,7 +45,9 @@ doc.objects;            // model-space objects (compact DTOs)
 doc.getObject(id);      // any space
 doc.query({ type: "polyline", layer: "walls", color: "#ff0000",
             lineType: "dashed", content: "substring",       // text only
-            bbox, inside, near: { point: [0,0], tol: 5 } }); // all optional, ANDed
+            bbox, inside, near: { point: [0,0], tol: 5 },   // all optional, ANDed
+            layout: "Sheet 1" });  // search that layout's SHEET objects
+                                   // (viewports, annotations) instead of model
 doc.bboxOf(ids);        // AABB | null
 doc.length(id);         // lines/polylines/arcs/circles/ellipses; null otherwise
 doc.area(id);           // circles/ellipses/closed polylines/hatches (outer − holes)
@@ -70,8 +72,9 @@ doc.addAsset(dataUrl);                         // → assetId for image objects 
 doc.removeAsset(id);                           // refused while an image references it
 doc.setDimStyle({ textHeight, arrowSize, arrowType, precision, extensionOffset,
                   extensionOvershoot, textOffset, font, widthFactor });
-// NOTE: no `scale` here — drawing-scale lives per dimension in
-// styleOverride: { scale: N } (zod strips unknown keys silently).
+// NOTE: no `scale` here, and none in styleOverride either — drawing-scale
+// is the TOP-LEVEL `scale` field on each dimension object (scale: 50 for
+// 1:50). Unknown style keys are REJECTED loudly (strict schema).
 doc.setTextStyle({ font, widthFactor, textHeight });
 await doc.setBlockDefinitions([...sources]);   // async: block geometry definitive on resolve
 await doc.ready();                             // for docs opened WITH blocks via drawingFromJson
@@ -116,8 +119,12 @@ await doc.importDwgData(bytes); await doc.importDwg(path);   // DWG R13–R2018
 await doc.importPdfData(arrayBuffer);                        // vector + text
 
 // export
-doc.toSvg({ layout?, bbox?, padding? });    await doc.exportSvg(path, opts);
-await doc.toPng({ width?, background? });   await doc.exportPng(path, opts);
+doc.toSvg({ layout?, bbox?, padding?, palette? });  await doc.exportSvg(path, opts);
+await doc.toPng({ width?, background?, palette? }); await doc.exportPng(path, opts);
+// palette: "color" | "grayscale" | "monochrome" — print-style remap. Use
+// monochrome + background "#ffffff" for a paper-like preview: as-authored
+// layer colors target the DARK canvas and near-vanish on white otherwise.
+// Layout renders default to the layout's own printPalette.
 doc.toDxf();                                await doc.exportDxf(path);
 await doc.toDwg({ version? });              await doc.exportDwg(path, { version? }); // default "AC1027"
 await doc.toPdf({ layouts?, palette? });    await doc.exportPdf(path, opts);
@@ -135,6 +142,12 @@ defaults to the dark canvas background at 1024 px; pass
   unknown ids. Wrap risky batches in `transaction`.
 - Text defaults to **center/center** alignment — pass `hAlign`/`vAlign`
   explicitly when placing by a corner.
+- **Alignment names which side of the point the text OCCUPIES, not the
+  anchor edge**: `hAlign: "left"` puts the text to the LEFT of `position`
+  (anchor on its right edge — the opposite of CSS `text-align`);
+  `vAlign: "top"` puts it ABOVE the point. If a label runs off the sheet
+  the wrong way, flip the alignment — this is deliberate CAD semantics,
+  identical in model and paper space, not a rendering bug.
 - Dimension `offset` is a vector (direction is preserved by later edits) —
   e.g. `[0, -500]` puts a horizontal measurement 500 mm below points[0].
 - `hatch` boundaries are copied geometry (non-associative): if you move the

@@ -13,12 +13,22 @@ Shared tools (both backends): `linea_add_objects` (model space or
 `layout`) · `linea_update_objects` (per-id patches) ·
 `linea_remove_objects` · `linea_transform` (move/rotate/scale/mirror/
 copy/array — **angles in DEGREES here**; the SDK uses radians) ·
-`linea_create_layout` ("1:50" scale strings) · `linea_query` (filters +
-measures) · `linea_list_layers` / `linea_layer` · `linea_render`
-(SVG; PNG as image content on Node) · `linea_undo` / `linea_redo` ·
-`linea_summary` · `linea_get_document` · `linea_replace_document`
-(full-state save used by the in-chat editor — not for normal agent edits; use
-the granular tools so changes are validated ops).
+`linea_create_layout` ("1:50" scale strings; custom mm via `sheetSize`) ·
+`linea_update_layout` (rename / sheet size / **printPalette — set
+"monochrome" for print-style output**) · `linea_remove_layout` ·
+`linea_set_dim_style` / `linea_set_text_style` (document styles; annotation
+scale is NOT a style key — top-level `scale` per object) · `linea_query`
+(filters + measures; `layout` searches a layout's SHEET objects — the way
+to find a viewport's id) · `linea_list_layers` / `linea_layer` ·
+`linea_render` (SVG; PNG as image content on Node; `palette: "monochrome"`
++ `background: "#ffffff"` for a paper-like preview — as-authored colors
+target the dark canvas) · `linea_undo` / `linea_redo` · `linea_summary` ·
+`linea_get_document` · `linea_replace_document` (full-state save used by
+the in-chat editor — not for normal agent edits; use the granular tools so
+changes are validated ops).
+
+**Tool-arg points are `[x, y]` tuples** (`delta`, `center`, `axisA`,
+`axisB`, `near.point`) — `{x, y}` is accepted only INSIDE object bodies.
 
 All SKILL.md rules apply unchanged: mm, Y-up, draw 1:1, byLayer styling,
 annotation `scale` = drawing-scale denominator, verify by rendering and
