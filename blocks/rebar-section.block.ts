@@ -12,14 +12,14 @@ export default defineBlock({
       default: 10,
     },
     {
-      name: "place",
-      label: "Place",
+      name: "placing",
+      label: "Placing",
       type: "enum",
       default: "bySpacing",
       options: [
         { value: "byNumber", label: "By number" },
         { value: "bySpacing", label: "By spacing" },
-      ]
+      ],
     },
     {
       name: "num",
@@ -32,35 +32,38 @@ export default defineBlock({
       label: "Spacing",
       type: "number",
       default: 150,
-    }
+    },
   ],
+  paramVisibility: ({ params }) => ({
+    num: params.placing === "byNumber",
+    spacing: params.placing === "bySpacing",
+  }),
   place: ["Start point", "End point"],
   draw: ({ params, inputs }) => {
-    const { size, place, num, spacing } = params;
+    const { size, placing, num, spacing } = params;
     const [start, end] = inputs;
 
-    const dir = norm(sub(end, start))
-    const length = dist(start, end)
+    const dir = norm(sub(end, start));
+    const length = dist(start, end);
 
-    const n = place === "byNumber" ? num : length / Math.max(spacing, 1) + 1;
-    const s = place === "byNumber" ? length / Math.max(num - 1, 1) : spacing;
+    const n = placing === "byNumber" ? num : length / Math.max(spacing, 1) + 1;
+    const s = placing === "byNumber" ? length / Math.max(num - 1, 1) : spacing;
 
     return [
       {
         type: "hatch",
         loops: range(n).map((i) => getLoop(scale(dir, i * s), size)),
         fill: { kind: "solid" },
-        scale: 1
-      }
+        scale: 1,
+      },
     ];
   },
 });
-
 
 const getLoop = (position: Vec2, size: number) => ({
   points: [
     { x: position.x - size / 2, y: position.y, bulge: 1 },
     { x: position.x + size / 2, y: position.y, bulge: 1 },
-    { x: position.x - size / 2, y: position.y, bulge: 0 }
-  ]
-})
+    { x: position.x - size / 2, y: position.y, bulge: 0 },
+  ],
+});
