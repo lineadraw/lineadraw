@@ -74,7 +74,7 @@ doc.setDimStyle({ textHeight, arrowSize, arrowType, precision, extensionOffset,
                   extensionOvershoot, textOffset, font, widthFactor });
 // NOTE: no `scale` here, and none in styleOverride either — drawing-scale
 // is the TOP-LEVEL `scale` field on each dimension object (scale: 50 for
-// 1:50). Unknown style keys are REJECTED loudly (strict schema).
+// 1:50). add/update reject unknown styleOverride keys loudly.
 doc.setTextStyle({ font, widthFactor, textHeight });
 await doc.setBlockDefinitions([...sources]);   // async: block geometry definitive on resolve
 await doc.ready();                             // for docs opened WITH blocks via drawingFromJson
