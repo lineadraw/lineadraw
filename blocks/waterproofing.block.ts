@@ -6,7 +6,7 @@ import type { Polyline, Vec2 } from "lineadraw";
 import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
 
 export default defineBlock({
-  id: "eaba13a5-f132-4072-99cc-0f0b2b31b799",
+  id: "@lineadraw/waterproofing",
   name: "Waterproofing",
   description: "Draws a waterproofing membrane band along a point chain.",
   version: "1.0.0",

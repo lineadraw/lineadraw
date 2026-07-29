@@ -9,7 +9,7 @@ import type { Line, Polyline, PolylineVertexLike, Vec2 } from "lineadraw";
 import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
 
 export default defineBlock({
-  id: "fd1d9331-9610-45bc-8abc-68fda9e2848a",
+  id: "@lineadraw/rebar",
   name: "Rebar",
   description:
     "Draws rebar with bending-radius fillets at the corners and 30° one-sided end ticks.",

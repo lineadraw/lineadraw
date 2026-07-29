@@ -9,7 +9,7 @@ import type { Polyline, PolylineVertexLike } from "lineadraw";
 import { sub, add, scale, len } from "lineadraw/helpers";
 
 export default defineBlock({
-  id: "8ee60425-2030-4972-9e8c-458c500d3ab4",
+  id: "@lineadraw/insulation",
   name: "Insulation",
   description:
     "Draws insulation with a triangle zigzag for hard insulation or a rectangular zigzag for soft insulation.",

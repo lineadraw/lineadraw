@@ -10,7 +10,7 @@ import { defineBlock } from "lineadraw";
 const AXIS_ID = "2ee7ebef-052e-44ca-a576-0acd0d45d6ac";
 
 export default defineBlock({
-  id: "84088ce6-e8a5-4ea7-8f11-3d6fce0ef167",
+  id: "@lineadraw/grid",
   name: "Grid",
   description: "Draws a grid of axes",
   version: "1.0.0",

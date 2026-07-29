@@ -2,7 +2,7 @@ import { defineBlock } from "lineadraw";
 import { add, dist, norm, range, sub, scale as sc } from "lineadraw/helpers";
 
 export default defineBlock({
-  id: "9f6f9dd3-361a-4046-aeb7-4cbe97fb7aa2",
+  id: "@lineadraw/surface",
   name: "Surface",
   description: "Draws a surface between two points.",
   version: "1.0.0",

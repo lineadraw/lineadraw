@@ -5,7 +5,7 @@
 import { defineCommand } from "lineadraw";
 
 export default defineCommand({
-  id: "d5f51c49-901a-474e-81d6-47234fabb95a",
+  id: "@lineadraw/narrow-selection",
   name: "Narrow Selection",
   description:
     "Keeps only objects of one type (or block definition) in the current selection.",
@@ -26,9 +26,7 @@ export default defineCommand({
       const key = o.type === "block" ? `block:${o.definitionId}` : o.type;
       const g = groups.get(key) ?? {
         label:
-          o.type === "block"
-            ? `block ${o.definitionId.slice(0, 8)}`
-            : o.type,
+          o.type === "block" ? `block ${o.definitionId.slice(0, 8)}` : o.type,
         ids: [],
       };
       g.ids.push(o.id);

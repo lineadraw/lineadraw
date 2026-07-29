@@ -11,7 +11,7 @@ import { defineBlock } from "lineadraw";
 import type { Polyline } from "lineadraw";
 
 export default defineBlock({
-  id: "b91370ca-2b2d-4b87-be6f-f811d9d81523",
+  id: "@lineadraw/hollow-core-profile",
   name: "Hollow Core Profile",
   description: "Draws a profile of a hollow core slab",
   version: "1.0.0",

@@ -4,7 +4,7 @@ import { defineBlock } from "lineadraw";
 import { sub, norm, add, scale as sc } from "lineadraw/helpers";
 
 export default defineBlock({
-  id: "2ee7ebef-052e-44ca-a576-0acd0d45d6ac",
+  id: "@lineadraw/axis",
   name: "Axis",
   description: "Draws an axis line",
   version: "1.0.0",
@@ -32,37 +32,41 @@ export default defineBlock({
         { value: "start", label: "Start" },
         { value: "end", label: "End" },
         { value: "both", label: "Both" },
-      ]
+      ],
     },
   ],
   place: ["Start point", "End point"],
   draw: ({ params, inputs }) => {
     const { scale, label, labelPos } = params;
-    const [start, end] = inputs
+    const [start, end] = inputs;
 
     const dir = norm(sub(end, start));
     const atStart = labelPos === "start" || labelPos === "both";
-    const atEnd = labelPos === "end" || labelPos === "both"
+    const atEnd = labelPos === "end" || labelPos === "both";
 
     return [
       {
         type: "line",
         a: atStart ? add(start, sc(dir, 5 * scale)) : start,
         b: atEnd ? add(end, sc(dir, -5 * scale)) : end,
-        lineType: "center"
+        lineType: "center",
       },
       ...(atStart ? getLabel(start, label, scale) : []),
-      ...(atEnd ? getLabel(end, label, scale) : [])
+      ...(atEnd ? getLabel(end, label, scale) : []),
     ];
   },
 });
 
-const getLabel = (pos: Vec2Like, label: string, scale: number): ModelObject[] => {
+const getLabel = (
+  pos: Vec2Like,
+  label: string,
+  scale: number,
+): ModelObject[] => {
   return [
     {
       type: "circle",
       center: pos,
-      radius: 5 * scale
+      radius: 5 * scale,
     },
     {
       type: "text",
@@ -70,8 +74,8 @@ const getLabel = (pos: Vec2Like, label: string, scale: number): ModelObject[] =>
       content: label,
       scale: scale,
       styleOverride: {
-        textHeight: 5
-      }
-    }
-  ]
-}
+        textHeight: 5,
+      },
+    },
+  ];
+};
