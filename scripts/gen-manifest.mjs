@@ -94,6 +94,10 @@ const entryOf = (kind, folder, file) => {
       authors: Array.isArray(mod.authors)
         ? mod.authors.filter((a) => typeof a === "string")
         : [],
+      dependencies:
+        kind === "block" && Array.isArray(mod.dependencies)
+          ? mod.dependencies.filter((d) => typeof d === "string")
+          : [],
       contentHash: createHash("sha256").update(source, "utf8").digest("hex"),
       sourceUrl: `https://raw.githubusercontent.com/lineadraw/lineadraw/${sha}/${folder}/${file}`,
     },
@@ -117,6 +121,17 @@ const dupes = entries
   .map((e) => e.id)
   .filter((id, i, all) => all.indexOf(id) !== i);
 if (dupes.length > 0) throw new Error(`duplicate ids: ${dupes.join(", ")}`);
+
+// The public catalog must be dependency-CLOSED: every declared dependency
+// resolves to a block entry in this same manifest.
+const blockIds = new Set(
+  entries.filter((e) => e.kind === "block").map((e) => e.id),
+);
+const dangling = entries.flatMap((e) =>
+  e.dependencies.filter((d) => !blockIds.has(d)).map((d) => `${e.id} → ${d}`),
+);
+if (dangling.length > 0)
+  throw new Error(`dangling dependencies: ${dangling.join(", ")}`);
 
 const manifest = {
   // Informational; the editor validates row-by-row and ignores extras.

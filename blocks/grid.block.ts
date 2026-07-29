@@ -18,6 +18,8 @@ export default defineBlock({
   version: "1.0.0",
   authors: ["Linea Team"],
   tags: ["architecture", "structural", "axis", "grid"],
+  // Emits Axis instances — install/copy/export bundle the dependency.
+  dependencies: ["@lineadraw/axis"],
   params: [
     {
       type: "string",

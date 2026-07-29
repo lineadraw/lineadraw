@@ -495,6 +495,13 @@ declare module "lineadraw" {
     description?: string;
     tags?: readonly string[];
     authors?: readonly string[];
+    /**
+     * Ids of block definitions `draw` emits instances of (e.g.
+     * `["@lineadraw/axis"]`). Install, copy/paste, and export bundle the
+     * declared closure; the save-time dry run rejects emitted instances
+     * that are not declared here.
+     */
+    dependencies?: readonly string[];
     /** The parameter table, or a function returning it (data-at-end). */
     params?: P | (() => P);
     /**
