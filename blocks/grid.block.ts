@@ -11,7 +11,7 @@ export default defineBlock({
   id: "@lineadraw/grid",
   name: "Grid",
   description:
-    'Draws a rectangular grid of axes from Tekla-style spacing strings ("0 2*7200") with auto-incrementing labels. Requires the @lineadraw/axis block.',
+    'Draws a rectangular grid of axes from Tekla-style spacing strings "0 2*7200" with auto-incrementing labels. Requires the @lineadraw/axis block.',
   version: "1.0.0",
   authors: ["Linea Team"],
   tags: ["architecture", "structural", "axis", "grid"],
