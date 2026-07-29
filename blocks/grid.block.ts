@@ -7,9 +7,6 @@
 // positions horizontal axes bubbled at the left (per labelPos).
 import { defineBlock } from "lineadraw";
 
-// The nested Axis definition — referenced by its marketplace-qualified id.
-const AXIS_ID = "@lineadraw/axis";
-
 export default defineBlock({
   id: "@lineadraw/grid",
   name: "Grid",
@@ -25,25 +22,25 @@ export default defineBlock({
       type: "string",
       name: "xs",
       label: "X positions",
-      default: "0 2*7200",
+      default: "0 2*1000",
     },
     {
       type: "string",
       name: "ys",
       label: "Y positions",
-      default: "0 2*6000",
+      default: "0 2*1000",
     },
     {
       type: "string",
       name: "xLabels",
       label: "X labels",
-      default: "A B",
+      default: "A",
     },
     {
       type: "string",
       name: "yLabels",
       label: "Y labels",
-      default: "1 2",
+      default: "1",
     },
     {
       name: "scale",
@@ -79,7 +76,7 @@ export default defineBlock({
 
     const axis = (a: Vec2Like, b: Vec2Like, label: string): ModelObject => ({
       type: "block",
-      definitionId: AXIS_ID,
+      definitionId: "@lineadraw/axis",
       inputs: [a, b],
       params: { scale, label, labelPos },
     });
