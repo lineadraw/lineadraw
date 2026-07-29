@@ -1,0 +1,233 @@
+{
+  "generatedAt": "2026-07-29T12:12:50.132Z",
+  "commit": "340613723d7e32f510a1298fe1ec6060d44a55ad",
+  "entries": [
+    {
+      "kind": "block",
+      "id": "@lineadraw/axis",
+      "name": "Axis",
+      "version": "1.0.0",
+      "description": "Draws an axis line",
+      "tags": [
+        "architecture",
+        "structural",
+        "axis"
+      ],
+      "authors": [
+        "Lineadraw Team"
+      ],
+      "contentHash": "63f504f9627c47f262f98bc89c59cdfae4b38ba8cdedb3551e7d6a3acab09f46",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/axis.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/bolt",
+      "name": "Bolt",
+      "version": "1.0.0",
+      "description": "Draws a bolt with a hexagonal head and a cylindrical body.",
+      "tags": [
+        "structural",
+        "steel",
+        "fastener",
+        "building"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "375d212177584af860483d0fb7762e9c95431727e89111e8d9c73bc3f4d0cbd3",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/bolt.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/grid",
+      "name": "Grid",
+      "version": "1.0.0",
+      "description": "Draws a grid of axes",
+      "tags": [
+        "architecture",
+        "structural",
+        "axis"
+      ],
+      "authors": [
+        "Lineadraw Team"
+      ],
+      "contentHash": "75d246dfa61c91c9842202003c91a98d5042a7adcd2bf03fba180214f186b59a",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/grid.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/hollow-core-profile",
+      "name": "Hollow Core Profile",
+      "version": "1.0.0",
+      "description": "Draws a profile of a hollow core slab",
+      "tags": [
+        "structural",
+        "catalog",
+        "concrete",
+        "precast",
+        "building"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "0a35b31dd3d4ca42a31896f6fa57ff65ea5beeed8501e1728924ce7486b22dfd",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/hollow-core-profile.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/insulation",
+      "name": "Insulation",
+      "version": "1.0.0",
+      "description": "Draws insulation with a triangle zigzag for hard insulation or a rectangular zigzag for soft insulation.",
+      "tags": [
+        "structural",
+        "insulation",
+        "building"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "6e9f10992b5f930f695ba09fa37b7bc97f12ad22ea79ca55e848c47bdc2e2aff",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/insulation.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/profile",
+      "name": "Profile",
+      "version": "1.0.0",
+      "description": "Draws a profile section based on the selected catalogue and profile.",
+      "tags": [
+        "structural",
+        "steel",
+        "catalog",
+        "building"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "3b3ecc207ea87f942d7f2d52628938c9baabcee394638933caed70b585322dd5",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/profile.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/rebar-section",
+      "name": "Rebar section",
+      "version": "1.0.0",
+      "description": "Draws a rebar section with various parameters.",
+      "tags": [
+        "rebar",
+        "section",
+        "draw"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "4c0d9ae87a75f0f8a71fcd0fb30f84746b2a7778b0890db2c1ca3e45761c274f",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/rebar-section.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/rebar",
+      "name": "Rebar",
+      "version": "1.0.0",
+      "description": "Draws rebar with bending-radius fillets at the corners and 30° one-sided end ticks.",
+      "tags": [
+        "structural",
+        "concrete",
+        "reinforcement",
+        "building"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "0f98000eabd7c9dd0a4496cc3f4a3e02423e431056004cd0e4a7556fedb40a2b",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/rebar.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/steel-beam",
+      "name": "Steel Beam",
+      "version": "1.0.0",
+      "description": "Draws a beam from a catalogue profile between two picked points.",
+      "tags": [
+        "structural",
+        "steel",
+        "catalog",
+        "building"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "d994213ce615790b300b1d1ab1023f869d80e751ef2ae0b84682d5b7b5c6f546",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/steel-beam.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/surface",
+      "name": "Surface",
+      "version": "1.0.0",
+      "description": "Draws a surface between two points.",
+      "tags": [
+        "surface",
+        "line",
+        "draw"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "eccc7307d17cd88fa83291b76016d4b1c7a13453ba018a3184efd4d0ae5a9e70",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/Surface.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/title",
+      "name": "Title",
+      "version": "1.0.0",
+      "description": "Draws a title block with various text fields.",
+      "tags": [
+        "title",
+        "block",
+        "draw"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "705c8a41e4228ec39fa5f8bcf120baf53c5e41db8999923d636d5e3c0df270e1",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/title.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/waterproofing",
+      "name": "Waterproofing",
+      "version": "1.0.0",
+      "description": "Draws a waterproofing membrane band along a point chain.",
+      "tags": [
+        "structural",
+        "waterproofing",
+        "building"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "c8ee31f6b66eebf129370d66d2669072569db0ef32614d9d099d494a92368bcf",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/blocks/waterproofing.block.ts"
+    },
+    {
+      "kind": "command",
+      "id": "@lineadraw/narrow-selection",
+      "name": "Narrow Selection",
+      "version": "1.0.0",
+      "description": "Keeps only objects of one type (or block definition) in the current selection.",
+      "tags": [
+        "selection",
+        "filter",
+        "utility"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "contentHash": "f743f1f2eb6d4eeb6ddba08a22b85302b63eeb3a99b5ff026a422d805305d50e",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/340613723d7e32f510a1298fe1ec6060d44a55ad/commands/narrow-selection.cmd.ts"
+    }
+  ]
+}
