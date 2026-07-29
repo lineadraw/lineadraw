@@ -41,6 +41,11 @@ declare module "lineadraw" {
       a: Vec2Like;
       b: Vec2Like;
   }>;
+  /** A point: paints as a round dot whose diameter is the lineWidth. */
+  export type Point = Styled<{
+      type: "point";
+      p: Vec2Like;
+  }>;
   export type Polyline = Styled<{
       type: "polyline";
       /** At least 2 vertices. */
@@ -142,7 +147,164 @@ declare module "lineadraw" {
       /** Input points in the PARENT's local coords; the first is the pivot. */
       inputs?: readonly Vec2Like[];
   }>;
-  export type ModelObject = Line | Polyline | Circle | Arc | Ellipse | Hatch | Text | Dimension | Block;
+  export type ModelObject = Line | Point | Polyline | Circle | Arc | Ellipse | Hatch | Text | Dimension | Block;
+  /** Identity + shared style fields every stored object carries. */
+  export type StoredObjectBase = {
+      id: string;
+      layerId: string;
+      /** #rrggbb override; absent = by layer. */
+      color?: string;
+      lineType?: string;
+      lineTypeScale?: number;
+      lineWidth?: number;
+      /** Paint opacity 0..1; absent = opaque. */
+      opacity?: number;
+  };
+  /** Flattens base + per-type fields so hovers list every member inline
+   * (same trick as Styled<T> for the authoring DTOs). */
+  type StoredShape<T> = {
+      [K in keyof (T & StoredObjectBase)]: (T & StoredObjectBase)[K];
+  } & {};
+  /** Stored polyline vertex — bulge always present (default 0 applied). */
+  export type StoredPolylineVertex = {
+      x: number;
+      y: number;
+      bulge: number;
+  };
+  export type StoredLine = StoredShape<{
+      type: "line";
+      a: Vec2;
+      b: Vec2;
+  }>;
+  export type StoredPoint = StoredShape<{
+      type: "point";
+      p: Vec2;
+  }>;
+  export type StoredPolyline = StoredShape<{
+      type: "polyline";
+      points: readonly StoredPolylineVertex[];
+      closed: boolean;
+  }>;
+  export type StoredCircle = StoredShape<{
+      type: "circle";
+      center: Vec2;
+      radius: number;
+  }>;
+  export type StoredArc = StoredShape<{
+      type: "arc";
+      center: Vec2;
+      radius: number;
+      startAngle: number;
+      endAngle: number;
+  }>;
+  export type StoredEllipse = StoredShape<{
+      type: "ellipse";
+      center: Vec2;
+      majorAxis: Vec2;
+      ratio: number;
+      startAngle: number;
+      endAngle: number;
+  }>;
+  export type StoredHatchFill = {
+      kind: "solid";
+  } | {
+      kind: "pattern";
+      name: string;
+      angle: number;
+      scale: number;
+  } | {
+      kind: "lines";
+      angle: number;
+      spacing: number;
+  };
+  export type StoredHatch = StoredShape<{
+      type: "hatch";
+      /** loops[0] = outer boundary, the rest are holes (even-odd). */
+      loops: readonly {
+          points: readonly StoredPolylineVertex[];
+      }[];
+      fill: StoredHatchFill;
+      scale: number;
+  }>;
+  export type StoredText = StoredShape<{
+      type: "text";
+      position: Vec2;
+      content: string;
+      leaderLines: readonly (readonly Vec2[])[];
+      /** Word-wrap / frame width in mm; absent = no wrapping. */
+      width?: number;
+      hAlign: "left" | "center" | "right";
+      vAlign: "bottom" | "center" | "top";
+      frame?: "none" | "rectangle" | "bottom";
+      styleId?: string;
+      /** Only the keys the user actually overrode on this text. */
+      styleOverride?: {
+          font?: string;
+          widthFactor?: number;
+          textHeight?: number;
+          arrowType?: "filled" | "open" | "tick" | "dot" | "none";
+          arrowSize?: number;
+      };
+      rotation: number;
+      scale: number;
+  }>;
+  export type StoredDimension = StoredShape<{
+      type: "dimension";
+      kind: "linear" | "angular" | "radial" | "diameter";
+      points: readonly Vec2[];
+      offset: Vec2;
+      textOverride?: string;
+      styleId?: string;
+      /** Only the keys the user actually overrode on this dimension. */
+      styleOverride?: {
+          font?: string;
+          widthFactor?: number;
+          textHeight?: number;
+          textOffset?: number;
+          arrowType?: "filled" | "open" | "tick" | "dot" | "none";
+          arrowSize?: number;
+          extensionType?: "long" | "short";
+          extensionOffset?: number;
+          extensionOvershoot?: number;
+          precision?: number;
+      };
+      scale: number;
+  }>;
+  export type StoredBlock = StoredShape<{
+      type: "block";
+      definitionId: string;
+      rotation: number;
+      scale: number;
+      params: Readonly<Record<string, number | string | boolean>>;
+      /** World points and/or referenced object ids, in pick order. */
+      inputs: readonly (Vec2 | string)[];
+  }>;
+  /** Paper-space window into model space; exists only in layout spaces. */
+  export type StoredViewport = StoredShape<{
+      type: "viewport";
+      rect: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+      };
+      modelCenter: Vec2;
+      /** Drawing-scale denominator (model mm per paper mm); 1:50 => 50. */
+      scale: number;
+      locked: boolean;
+      hiddenLayerIds: readonly string[];
+  }>;
+  /** Raster reference; pixels live in the document's assets map. */
+  export type StoredImage = StoredShape<{
+      type: "image";
+      assetId: string;
+      origin: Vec2;
+      width: number;
+      height: number;
+      rotation: number;
+  }>;
+  /** Any object as stored in the document — what reads hand to scripts. */
+  export type StoredObject = StoredLine | StoredPoint | StoredPolyline | StoredCircle | StoredArc | StoredEllipse | StoredHatch | StoredText | StoredDimension | StoredBlock | StoredViewport | StoredImage;
   /**
    * One choice of a "Select" parameter: the value (what scripts receive) with
    * an optional properties-panel label. A plain string is shorthand for
@@ -227,10 +389,42 @@ declare module "lineadraw" {
   // #endregion BlockParams
 
   /**
-   * The inputs `place` acquired at insertion, in pick order: points
-   * (localized against the first point — the pivot) or object ids.
+   * The inputs `place` acquired at insertion, in pick order: points or
+   * object ids (what `pickObject` resolved). This is the STORED form —
+   * by the time they reach `draw`, ids have been resolved (see
+   * ResolvedInput).
    */
   export type BlockInputs = readonly (Vec2 | string)[];
+
+  /**
+   * A referenced document object as `draw` receives it: the STORED record
+   * (schema output — defaults applied, points always {x, y}, id/layerId
+   * present; see StoredObject), localized against the instance pivot like
+   * every point input. Null when the reference no longer resolves (the
+   * object was deleted) — handle it or throw (a throw shows as the
+   * instance's evaluation error).
+   */
+  export type ResolvedObject = StoredObject | null;
+
+  /**
+   * How one stored input arrives at `draw`: points pass through
+   * (pivot-localized), object ids resolve to the referenced object (or
+   * null). Distributes over Vec2 | string for untyped positions.
+   */
+  export type ResolvedInput<T> = T extends string
+    ? ResolvedObject
+    : T extends Vec2
+      ? T
+      : Vec2 | ResolvedObject;
+
+  /**
+   * ResolvedInput applied position-wise. Homomorphic over the bare type
+   * parameter ON PURPOSE — inlining `keyof Awaited<R>` into PlaceInputs
+   * would map over the array's methods too and destroy tuple-ness.
+   */
+  export type ResolveInputs<T extends BlockInputs> = {
+    readonly [K in keyof T]: ResolvedInput<T[K]>;
+  };
 
   /**
    * The argument of an interactive `place` — runs once at insertion;
@@ -259,11 +453,12 @@ declare module "lineadraw" {
   /**
    * The inputs `draw` receives for a given `place` member: a label tuple
    * maps to a Vec2 tuple of the same length, a function contributes its
-   * (awaited) return type, and an absent `place` is the single
-   * "Insertion point" pick. The undefined case is checked FIRST and
-   * non-distributively: without strictNullChecks (e.g. a lax host config),
-   * `undefined extends readonly string[]` is true and the homomorphic
-   * mapped type would collapse to `undefined`.
+   * (awaited) return type with every position RESOLVED (string → the
+   * referenced object or null, see ResolvedInput), and an absent `place`
+   * is the single "Insertion point" pick. The undefined case is checked
+   * FIRST and non-distributively: without strictNullChecks (e.g. a lax
+   * host config), `undefined extends readonly string[]` is true and the
+   * homomorphic mapped type would collapse to `undefined`.
    */
   export type PlaceInputs<Pl> = [Pl] extends [undefined]
     ? readonly [Vec2]
@@ -271,8 +466,8 @@ declare module "lineadraw" {
       ? { readonly [K in keyof Pl]: Vec2 }
       : Pl extends (...args: never) => infer R
         ? Awaited<R> extends BlockInputs
-          ? Readonly<Awaited<R>>
-          : BlockInputs
+          ? ResolveInputs<Awaited<R>>
+          : readonly (Vec2 | ResolvedObject)[]
         : readonly [Vec2];
 
   /**
@@ -307,6 +502,8 @@ declare module "lineadraw" {
      * Children in block-LOCAL coordinates (pure, runs per evaluation).
      * The first point input is the pivot; `inputs` arrive localized
      * against it, and the instance's rotation/scale apply last, about it.
+     * Object picks arrive as the referenced object itself (pivot-local,
+     * re-evaluated whenever it changes) or null once deleted.
      */
     draw: (props: {
       params: ParamValues<P>;
@@ -375,8 +572,9 @@ declare module "lineadraw" {
     near?: { point: Vec2Like; tol: number };
   }
 
-  /** A STORED object as query() returns it: the DTO shape plus identity. */
-  export type ExistingObject = ModelObject & { id: string; layerId: string };
+  /** A STORED object as query() returns it (see StoredObject — schema
+   * output: defaults applied, points always {x, y}, identity present). */
+  export type ExistingObject = StoredObject;
 
   /** Per-object measurements; null where the type has no natural value. */
   export type Measurement = {
@@ -595,6 +793,11 @@ type Line = Styled<{
     a: Vec2Like;
     b: Vec2Like;
 }>;
+/** A point: paints as a round dot whose diameter is the lineWidth. */
+type Point = Styled<{
+    type: "point";
+    p: Vec2Like;
+}>;
 type Polyline = Styled<{
     type: "polyline";
     /** At least 2 vertices. */
@@ -696,7 +899,164 @@ type Block = Styled<{
     /** Input points in the PARENT's local coords; the first is the pivot. */
     inputs?: readonly Vec2Like[];
 }>;
-type ModelObject = Line | Polyline | Circle | Arc | Ellipse | Hatch | Text | Dimension | Block;
+type ModelObject = Line | Point | Polyline | Circle | Arc | Ellipse | Hatch | Text | Dimension | Block;
+/** Identity + shared style fields every stored object carries. */
+type StoredObjectBase = {
+    id: string;
+    layerId: string;
+    /** #rrggbb override; absent = by layer. */
+    color?: string;
+    lineType?: string;
+    lineTypeScale?: number;
+    lineWidth?: number;
+    /** Paint opacity 0..1; absent = opaque. */
+    opacity?: number;
+};
+/** Flattens base + per-type fields so hovers list every member inline
+ * (same trick as Styled<T> for the authoring DTOs). */
+type StoredShape<T> = {
+    [K in keyof (T & StoredObjectBase)]: (T & StoredObjectBase)[K];
+} & {};
+/** Stored polyline vertex — bulge always present (default 0 applied). */
+type StoredPolylineVertex = {
+    x: number;
+    y: number;
+    bulge: number;
+};
+type StoredLine = StoredShape<{
+    type: "line";
+    a: Vec2;
+    b: Vec2;
+}>;
+type StoredPoint = StoredShape<{
+    type: "point";
+    p: Vec2;
+}>;
+type StoredPolyline = StoredShape<{
+    type: "polyline";
+    points: readonly StoredPolylineVertex[];
+    closed: boolean;
+}>;
+type StoredCircle = StoredShape<{
+    type: "circle";
+    center: Vec2;
+    radius: number;
+}>;
+type StoredArc = StoredShape<{
+    type: "arc";
+    center: Vec2;
+    radius: number;
+    startAngle: number;
+    endAngle: number;
+}>;
+type StoredEllipse = StoredShape<{
+    type: "ellipse";
+    center: Vec2;
+    majorAxis: Vec2;
+    ratio: number;
+    startAngle: number;
+    endAngle: number;
+}>;
+type StoredHatchFill = {
+    kind: "solid";
+} | {
+    kind: "pattern";
+    name: string;
+    angle: number;
+    scale: number;
+} | {
+    kind: "lines";
+    angle: number;
+    spacing: number;
+};
+type StoredHatch = StoredShape<{
+    type: "hatch";
+    /** loops[0] = outer boundary, the rest are holes (even-odd). */
+    loops: readonly {
+        points: readonly StoredPolylineVertex[];
+    }[];
+    fill: StoredHatchFill;
+    scale: number;
+}>;
+type StoredText = StoredShape<{
+    type: "text";
+    position: Vec2;
+    content: string;
+    leaderLines: readonly (readonly Vec2[])[];
+    /** Word-wrap / frame width in mm; absent = no wrapping. */
+    width?: number;
+    hAlign: "left" | "center" | "right";
+    vAlign: "bottom" | "center" | "top";
+    frame?: "none" | "rectangle" | "bottom";
+    styleId?: string;
+    /** Only the keys the user actually overrode on this text. */
+    styleOverride?: {
+        font?: string;
+        widthFactor?: number;
+        textHeight?: number;
+        arrowType?: "filled" | "open" | "tick" | "dot" | "none";
+        arrowSize?: number;
+    };
+    rotation: number;
+    scale: number;
+}>;
+type StoredDimension = StoredShape<{
+    type: "dimension";
+    kind: "linear" | "angular" | "radial" | "diameter";
+    points: readonly Vec2[];
+    offset: Vec2;
+    textOverride?: string;
+    styleId?: string;
+    /** Only the keys the user actually overrode on this dimension. */
+    styleOverride?: {
+        font?: string;
+        widthFactor?: number;
+        textHeight?: number;
+        textOffset?: number;
+        arrowType?: "filled" | "open" | "tick" | "dot" | "none";
+        arrowSize?: number;
+        extensionType?: "long" | "short";
+        extensionOffset?: number;
+        extensionOvershoot?: number;
+        precision?: number;
+    };
+    scale: number;
+}>;
+type StoredBlock = StoredShape<{
+    type: "block";
+    definitionId: string;
+    rotation: number;
+    scale: number;
+    params: Readonly<Record<string, number | string | boolean>>;
+    /** World points and/or referenced object ids, in pick order. */
+    inputs: readonly (Vec2 | string)[];
+}>;
+/** Paper-space window into model space; exists only in layout spaces. */
+type StoredViewport = StoredShape<{
+    type: "viewport";
+    rect: {
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+    };
+    modelCenter: Vec2;
+    /** Drawing-scale denominator (model mm per paper mm); 1:50 => 50. */
+    scale: number;
+    locked: boolean;
+    hiddenLayerIds: readonly string[];
+}>;
+/** Raster reference; pixels live in the document's assets map. */
+type StoredImage = StoredShape<{
+    type: "image";
+    assetId: string;
+    origin: Vec2;
+    width: number;
+    height: number;
+    rotation: number;
+}>;
+/** Any object as stored in the document — what reads hand to scripts. */
+type StoredObject = StoredLine | StoredPoint | StoredPolyline | StoredCircle | StoredArc | StoredEllipse | StoredHatch | StoredText | StoredDimension | StoredBlock | StoredViewport | StoredImage;
 /**
  * One choice of a "Select" parameter: the value (what scripts receive) with
  * an optional properties-panel label. A plain string is shorthand for
@@ -771,6 +1131,8 @@ type ParamValues<P> = P extends () => infer R ? ParamValues<R> : P extends reado
 // so the in-app editor's BlockParams substitution flows through them.
 declare type BlockParams = import("lineadraw").BlockParams;
 declare type BlockInputs = import("lineadraw").BlockInputs;
+declare type ResolvedObject = import("lineadraw").ResolvedObject;
+declare type ResolvedInput<T> = import("lineadraw").ResolvedInput<T>;
 declare type PlaceProps<P = BlockParams> = import("lineadraw").PlaceProps<P>;
 declare type PlaceSpec<P = BlockParams> = import("lineadraw").PlaceSpec<P>;
 declare type PlaceInputs<Pl> = import("lineadraw").PlaceInputs<Pl>;

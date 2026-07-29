@@ -1,10 +1,10 @@
 import { defineBlock } from "lineadraw";
-import { sub, norm, dist, add, scale, range } from "lineadraw/helpers";
+import { sub, norm, dist, scale, range } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/rebar-section",
   name: "Rebar section",
-  description: "Draws a rebar section with various parameters.",
+  description: "Draws a set of rebars in section view.",
   version: "1.0.0",
   authors: ["Linea Team"],
   tags: ["rebar", "section", "draw"],

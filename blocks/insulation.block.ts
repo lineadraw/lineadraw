@@ -22,7 +22,7 @@ export default defineBlock({
       name: "type",
       label: "Type",
       type: "enum",
-      default: "soft",
+      default: "hard",
       options: [
         { value: "soft", label: "Soft insulation" },
         { value: "hard", label: "Hard insulation" },

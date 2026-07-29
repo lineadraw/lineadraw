@@ -6,9 +6,9 @@ import { sub, norm, add, scale as sc } from "lineadraw/helpers";
 export default defineBlock({
   id: "@lineadraw/axis",
   name: "Axis",
-  description: "Draws an axis line",
+  description: "Draws a single axis line",
   version: "1.0.0",
-  authors: ["Lineadraw Team"],
+  authors: ["Linea Team"],
   tags: ["architecture", "structural", "axis"],
   params: [
     {

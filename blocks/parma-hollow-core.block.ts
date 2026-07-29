@@ -11,9 +11,10 @@ import { defineBlock } from "lineadraw";
 import type { Polyline } from "lineadraw";
 
 export default defineBlock({
-  id: "@lineadraw/hollow-core-profile",
-  name: "Hollow Core Profile",
-  description: "Draws a profile of a hollow core slab",
+  id: "@lineadraw/parma-hollow-core",
+  name: "Parma Hollow Core Profile",
+  description:
+    "Draws a profile of a hollow core slab according to the Parma catalog.",
   version: "1.0.0",
   authors: ["Linea Team"],
   tags: ["structural", "catalog", "concrete", "precast", "building"],

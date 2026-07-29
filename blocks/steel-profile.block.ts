@@ -11,8 +11,8 @@ import { defineBlock } from "lineadraw";
 import type { Polyline, Circle } from "lineadraw";
 
 export default defineBlock({
-  id: "@lineadraw/profile",
-  name: "Profile",
+  id: "@lineadraw/steel-profile",
+  name: "Steel Profile",
   description:
     "Draws a profile section based on the selected catalogue and profile.",
   version: "1.0.0",
