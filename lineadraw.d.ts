@@ -451,6 +451,15 @@ declare module "lineadraw" {
     | ((props: PlaceProps<P>) => BlockInputs | Promise<BlockInputs>);
 
   /**
+   * The shape `previewInputs` must have for a given `place` member: a
+   * label-array place pins the exact tuple length; otherwise any inputs
+   * array. Points accept [x, y] tuples for authoring ergonomics.
+   */
+  export type PreviewInputs<Pl> = Pl extends readonly string[]
+    ? { readonly [K in keyof Pl]: Vec2Like }
+    : readonly (Vec2Like | string)[];
+
+  /**
    * The inputs `draw` receives for a given `place` member: a label tuple
    * maps to a Vec2 tuple of the same length, a function contributes its
    * (awaited) return type with every position RESOLVED (string → the
@@ -498,6 +507,14 @@ declare module "lineadraw" {
     }) => Partial<Record<keyof ParamValues<P> & string, boolean>>;
     /** Point labels (fixed picks) or an interactive function (see PlaceSpec). */
     place?: Pl;
+    /**
+     * Optional inputs used for the block's PREVIEW (panel/Library
+     * thumbnails, marketplace cards, save-time dry run) instead of the
+     * generic stand-in picks — curate them so the preview shows the block
+     * at its best. Same shape `place` produces; points accept [x, y];
+     * object-id strings resolve to a stand-in line in previews.
+     */
+    previewInputs?: PreviewInputs<Pl>;
     /**
      * Children in block-LOCAL coordinates (pure, runs per evaluation).
      * The first point input is the pivot; `inputs` arrive localized
@@ -1136,6 +1153,7 @@ declare type ResolvedInput<T> = import("lineadraw").ResolvedInput<T>;
 declare type PlaceProps<P = BlockParams> = import("lineadraw").PlaceProps<P>;
 declare type PlaceSpec<P = BlockParams> = import("lineadraw").PlaceSpec<P>;
 declare type PlaceInputs<Pl> = import("lineadraw").PlaceInputs<Pl>;
+declare type PreviewInputs<Pl> = import("lineadraw").PreviewInputs<Pl>;
 declare type BlockSpec<
   P extends import("lineadraw").BlockParamDefs = readonly [],
   Pl extends PlaceSpec<P> | undefined = undefined,

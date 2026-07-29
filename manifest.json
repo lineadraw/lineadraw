@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-29T16:21:13.815Z",
-  "commit": "2fab489072d11ca26d7530a1cc61ceca616a1a64",
+  "generatedAt": "2026-07-29T16:29:07.276Z",
+  "commit": "a8832589addf06d57b9e3db6d819fa703c99cbb1",
   "entries": [
     {
       "kind": "block",
       "id": "@lineadraw/axis",
       "name": "Axis",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a single grid axis between two picked points: a center-line with a labeled bubble at the start, the end, or both.",
       "tags": [
         "architecture",
@@ -18,14 +18,14 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "fff8468bd79ec06f3846f2d63d2032d712c986b177cb23a9442498cfaadc2960",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/axis.block.ts"
+      "contentHash": "c438819c45cc90a9f2c0c613c9c18a403545632928a50d0f629d2b1121e7fd0c",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/axis.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/bolt",
       "name": "Bolt",
-      "version": "1.1.0",
+      "version": "1.0.0",
       "description": "Draws a schematic side view of a bolt between two picked points — hex head, shank and threaded end. The pick distance sets the length, the pick order the direction.",
       "tags": [
         "structural",
@@ -36,14 +36,14 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "46802c9394ae1709b0459093fd11833cab6e56b635514398cd444797d5f67d97",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/bolt.block.ts"
+      "contentHash": "1f0bf0ba8b55c22b5da808d896ff7536de5bbd7b91ac226d2d410ff31dc7a96f",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/bolt.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/grid",
       "name": "Grid",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a rectangular grid of axes from Tekla-style spacing strings (\"0 2*7200\") with auto-incrementing labels. Requires the @lineadraw/axis block.",
       "tags": [
         "architecture",
@@ -54,14 +54,14 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "a4a28ba586bf3a6e5a615732222121ab5216e18634c475438c17609b27914c6c",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/grid.block.ts"
+      "contentHash": "2a05bbe5f3c3f28dbf77874beda50185c0e1db997ecb5bcd50451826debb8451",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/grid.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/insulation",
       "name": "Insulation",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws the standard insulation symbol of the given width along a picked line: a triangle zigzag for hard (rigid) insulation, a rounded square wave for soft (batt) insulation.",
       "tags": [
         "architecture",
@@ -72,8 +72,8 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "2330794dff308cf5792f837577a46159d148fb0fef7e4a6c232da7555c251342",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/insulation.block.ts"
+      "contentHash": "42b003ecc8b96295fad4363f7ad6984e5da019efb975d32366ae5ecd0a52d17a",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/insulation.block.ts"
     },
     {
       "kind": "block",
@@ -93,13 +93,13 @@
         "Linea Team"
       ],
       "contentHash": "7a8c271d22a79f6e46c0efbfdc6beb1a1b3e546bd0cd2de965d31996ebac50d9",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/parma-hollow-core.block.ts"
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/parma-hollow-core.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/rebar-section",
       "name": "Rebar Section",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a row of rebars in section view (filled dots) between two picked points, distributed by count or by spacing.",
       "tags": [
         "structural",
@@ -111,14 +111,14 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "8d8fa79a720032072e479e987a7e293fa93c72ee1ee4c866e7e8739e435d4cb7",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/rebar-section.block.ts"
+      "contentHash": "f9d7fdde5fcdb9f9d49920fec66dd57c6c49919fc1ecd0a7ba49320e0b5674ec",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/rebar-section.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/rebar",
       "name": "Rebar",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a bent rebar through picked points: the centerline with bending-radius fillets and end ticks, or the true-thickness outline for the selected bar size.",
       "tags": [
         "structural",
@@ -129,14 +129,14 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "0b93b88560d3cb23e1f4507731aed62ca4296970f60432f51b70928a18fd89f0",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/rebar.block.ts"
+      "contentHash": "a225444b6eaed582e7f4d018a16e77459ff2e9076549b2c7bef0c9469519c279",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/rebar.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/steel-beam",
       "name": "Steel Beam",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a steel beam in elevation between two picked points, from the European catalogs (IPE, HEA/HEB, UPE/UPN, L…): solid outer edges, dashed hidden edges.",
       "tags": [
         "structural",
@@ -148,8 +148,8 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "22dee846cb96d09fdfddab993c9453486cf70c5568dbc01891435ca68e317e04",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/steel-beam.block.ts"
+      "contentHash": "cc90eaea5400fad5c5a19ccaced166ac72094c32c1bdf3f39ac165e8f656fd7d",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/steel-beam.block.ts"
     },
     {
       "kind": "block",
@@ -168,13 +168,13 @@
         "Linea Team"
       ],
       "contentHash": "c9f4cb13487f2fb18f909a3b6c04364fa3e7d5d7e5fc84430eac3843407657c4",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/steel-profile.block.ts"
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/steel-profile.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/surface",
       "name": "Surface",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a ground-surface symbol along the line between two picked points, with rock, earth, excavated-rock and removed-earth variants.",
       "tags": [
         "civil",
@@ -186,14 +186,14 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "2860b7a8ec550cc8ca97349d9f9f51cc7d4ebb70368fc2a6ef237da7d3be7b67",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/surface.block.ts"
+      "contentHash": "da5d45b3dae6308417b2b18152f6cb3daa4d1e1dffa6cc7a3314470cbbe3dd37",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/surface.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/title",
       "name": "Title",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a sheet title block filled from text-field parameters: project, site, designer and drawing information.",
       "tags": [
         "sheet",
@@ -204,14 +204,14 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "10c07e0ec2ddf25d71c2dc70b24ea29b2f14191588b63cb07278c837a2aab9d8",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/title.block.ts"
+      "contentHash": "364fa3037f4bbff8cf5b427907c28bd7de88c9bdf8369cd193304d1c2f9b088c",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/title.block.ts"
     },
     {
       "kind": "block",
       "id": "@lineadraw/waterproofing",
       "name": "Waterproofing",
-      "version": "1.0.1",
+      "version": "1.0.0",
       "description": "Draws a waterproofing membrane band along picked points: a closed outline of the given width with a dashed centerline.",
       "tags": [
         "structural",
@@ -222,8 +222,8 @@
       "authors": [
         "Linea Team"
       ],
-      "contentHash": "f6a64143d8b30ac61d51ab1346e34657d9fcf3a044af2b78c4bc4cee8f6d8303",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/blocks/waterproofing.block.ts"
+      "contentHash": "98eb4148d91f464fc7f4a74b81ef85cd7e6ae1901e3be9d3617be1458ae3416d",
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/blocks/waterproofing.block.ts"
     },
     {
       "kind": "command",
@@ -240,7 +240,7 @@
         "Linea Team"
       ],
       "contentHash": "1f19922558ecca9cfc83980512f69967bcf457e94c7a4ab0bd9dd2649b93ac79",
-      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/2fab489072d11ca26d7530a1cc61ceca616a1a64/commands/narrow-selection.cmd.ts"
+      "sourceUrl": "https://raw.githubusercontent.com/lineadraw/lineadraw/a8832589addf06d57b9e3db6d819fa703c99cbb1/commands/narrow-selection.cmd.ts"
     }
   ]
 }
