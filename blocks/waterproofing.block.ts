@@ -24,7 +24,7 @@ export default defineBlock({
     },
   ],
   previewInputs: [
-    [0, 40],
+    [0, 80],
     [0, 0],
     [80, 0],
   ],
