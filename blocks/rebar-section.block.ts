@@ -44,6 +44,10 @@ export default defineBlock({
     spacing: params.placing === "bySpacing",
   }),
   place: ["Start point", "End point"],
+  previewInputs: [
+    [0, 0],
+    [301, 0],
+  ],
   draw: ({ params, inputs }) => {
     const { size, placing, num, spacing } = params;
     const [start, end] = inputs;
