@@ -30,9 +30,10 @@ export default defineBlock({
     },
   ],
   place: ["Start point", "End point"],
-  // Three zigzag periods at the default width — denser than the 500 mm
-  // stand-in span.
-  previewInputs: [[0, 0], [280, 0]],
+  previewInputs: [
+    [0, 0],
+    [500, 0],
+  ],
   draw: ({ params, inputs: [p1, p2] }) => {
     const v = sub(p2, p1);
     const length = len(v);

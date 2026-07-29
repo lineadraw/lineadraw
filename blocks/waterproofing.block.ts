@@ -23,9 +23,11 @@ export default defineBlock({
       min: 0.1,
     },
   ],
-  // A short L-run reads as a membrane band; the stand-in picks would zigzag
-  // through 16 grid points.
-  previewInputs: [[0, 40], [0, 0], [80, 0]],
+  previewInputs: [
+    [0, 40],
+    [0, 0],
+    [80, 0],
+  ],
   place: async ({ pickPoint }) => {
     const points: Vec2[] = [];
     try {

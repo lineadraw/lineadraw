@@ -17,7 +17,14 @@ export default defineBlock({
     "Draws the cross-section of a Parma precast hollow-core slab: catalog outline with grout keys and the void pattern, centered on the pick.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["structural", "concrete", "precast", "hollow-core", "catalog", "section"],
+  tags: [
+    "structural",
+    "concrete",
+    "precast",
+    "hollow-core",
+    "catalog",
+    "section",
+  ],
   params: () => [
     {
       name: "profile",

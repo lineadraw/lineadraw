@@ -30,6 +30,10 @@ export default defineBlock({
     },
   ],
   place: ["Start point", "End point"],
+  previewInputs: [
+    [0, 0],
+    [100, 0],
+  ],
   draw: ({ params, inputs: [start, end] }) => {
     const { type, scale } = params;
     const dir = norm(sub(end, start));

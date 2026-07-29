@@ -23,9 +23,10 @@ export default defineBlock({
     },
   ],
   place: ["Head", "Tip"],
-  // Proportionate M16 at ~5.5d length — the stand-in picks would draw a
-  // 500 mm needle.
-  previewInputs: [[0, 0], [90, 0]],
+  previewInputs: [
+    [0, 0],
+    [50, 0],
+  ],
   draw: ({ params, inputs: [head, tip] }) => {
     const d = Number(params.size.slice(1));
     const L = len(sub(tip, head));

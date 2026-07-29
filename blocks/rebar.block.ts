@@ -32,7 +32,12 @@ export default defineBlock({
     },
   ],
   // A classic U-bar; the stand-in picks would zigzag through 16 grid points.
-  previewInputs: [[0, 60], [0, 0], [100, 0], [100, 60]],
+  previewInputs: [
+    [0, 60],
+    [0, 0],
+    [100, 0],
+    [100, 60],
+  ],
   place: async ({ pickPoint }) => {
     const points: Vec2[] = [];
     try {
