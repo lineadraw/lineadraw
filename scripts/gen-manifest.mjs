@@ -1,18 +1,34 @@
-// One-off manifest generator for lineadraw/lineadraw (manual v0 "try" —
-// the CI version will live in that repo). Mirrors the editor's
-// MarketplaceEntrySchema exactly. Usage: node gen-manifest.mjs <repoDir> <sha>
+// Manifest generator (the future CI's core). Mirrors the editor's
+// MarketplaceEntrySchema exactly.
+//   Usage: node scripts/gen-manifest.mjs [repoDir] [sha]
+// repoDir defaults to the repo root, sha to `git rev-parse HEAD` — run it
+// AFTER committing content changes (pinned URLs must reference a commit
+// that contains the sources being hashed), then commit the manifest.
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
+import { execSync } from "node:child_process";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
+// Machine-local: sucrase comes from the linea monorepo checkout. The CI
+// version gets its own dependency instead.
 const require_ = createRequire(
   "C:/Users/MikhailKoshelev/source/repos/linea/package.json",
 );
 const { transform } = require_("sucrase");
 
-const [repoDir, sha] = process.argv.slice(2);
-if (!repoDir || !sha) throw new Error("usage: gen-manifest.mjs <repoDir> <sha>");
+const argDir = process.argv[2];
+const repoDir =
+  argDir ?? join(dirname(fileURLToPath(import.meta.url)), "..");
+const git = (cmd) =>
+  execSync(`git ${cmd}`, { cwd: repoDir, encoding: "utf8" }).trim();
+const sha = process.argv[3] ?? git("rev-parse HEAD");
+if (git("status --porcelain -- blocks commands") !== "")
+  console.warn(
+    "WARNING: blocks/ or commands/ have uncommitted changes — the pinned " +
+      "URLs will NOT contain them. Commit first, then regenerate.",
+  );
 
 // Same execution model as @lineadraw/core's transpiler: ESM→CJS, run against
 // a require shim. Helpers resolve to no-op function proxies — top-level code

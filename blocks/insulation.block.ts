@@ -12,10 +12,10 @@ export default defineBlock({
   id: "@lineadraw/insulation",
   name: "Insulation",
   description:
-    "Draws insulation with a triangle zigzag for hard insulation or a rectangular zigzag for soft insulation.",
+    "Draws the standard insulation symbol of the given width along a picked line: a triangle zigzag for hard (rigid) insulation, a rounded square wave for soft (batt) insulation.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["structural", "insulation", "building"],
+  tags: ["architecture", "structural", "insulation", "detail"],
   params: [
     { name: "width", label: "Width", type: "number", default: 100, min: 1 },
     {

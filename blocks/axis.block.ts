@@ -6,10 +6,11 @@ import { sub, norm, add, scale as sc } from "lineadraw/helpers";
 export default defineBlock({
   id: "@lineadraw/axis",
   name: "Axis",
-  description: "Draws a single axis line",
+  description:
+    "Draws a single grid axis between two picked points: a center-line with a labeled bubble at the start, the end, or both.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["architecture", "structural", "axis"],
+  tags: ["architecture", "structural", "axis", "grid", "annotation"],
   params: [
     {
       name: "scale",

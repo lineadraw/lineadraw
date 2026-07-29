@@ -8,10 +8,11 @@ import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
 export default defineBlock({
   id: "@lineadraw/waterproofing",
   name: "Waterproofing",
-  description: "Draws a waterproofing membrane band along a point chain.",
+  description:
+    "Draws a waterproofing membrane band along picked points: a closed outline of the given width with a dashed centerline.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["structural", "waterproofing", "building"],
+  tags: ["structural", "waterproofing", "membrane", "detail"],
   params: [
     { name: "width", label: "Width", type: "number", default: 10, min: 0.1 },
     {

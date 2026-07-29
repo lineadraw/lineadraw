@@ -3,11 +3,12 @@ import { sub, norm, dist, scale, range } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/rebar-section",
-  name: "Rebar section",
-  description: "Draws a set of rebars in section view.",
+  name: "Rebar Section",
+  description:
+    "Draws a row of rebars in section view (filled dots) between two picked points, distributed by count or by spacing.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["rebar", "section", "draw"],
+  tags: ["structural", "concrete", "reinforcement", "rebar", "section"],
   params: [
     {
       name: "size",

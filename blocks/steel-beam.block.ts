@@ -10,10 +10,10 @@ export default defineBlock({
   id: "@lineadraw/steel-beam",
   name: "Steel Beam",
   description:
-    "Draws a beam from a catalogue profile between two picked points.",
+    "Draws a steel beam in elevation between two picked points, from the European catalogs (IPE, HEA/HEB, UPE/UPN, L…): solid outer edges, dashed hidden edges.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["structural", "steel", "catalog", "building"],
+  tags: ["structural", "steel", "beam", "catalog", "elevation"],
   params: () => [
     {
       name: "catalog",

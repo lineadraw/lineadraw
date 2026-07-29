@@ -12,10 +12,10 @@ export default defineBlock({
   id: "@lineadraw/rebar",
   name: "Rebar",
   description:
-    "Draws rebar with bending-radius fillets at the corners and 30° one-sided end ticks.",
+    "Draws a bent rebar through picked points: the centerline with bending-radius fillets and end ticks, or the true-thickness outline for the selected bar size.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["structural", "concrete", "reinforcement", "building"],
+  tags: ["structural", "concrete", "reinforcement", "rebar"],
   params: [
     {
       name: "size",

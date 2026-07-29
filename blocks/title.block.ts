@@ -3,10 +3,11 @@ import { defineBlock } from "lineadraw";
 export default defineBlock({
   id: "@lineadraw/title",
   name: "Title",
-  description: "Draws a title block with various text fields.",
+  description:
+    "Draws a sheet title block filled from text-field parameters: project, site, designer and drawing information.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["title", "block", "draw"],
+  tags: ["sheet", "title-block", "annotation", "layout"],
   params: [
     {
       name: "dist_vill",

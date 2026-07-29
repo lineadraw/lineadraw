@@ -14,10 +14,10 @@ export default defineBlock({
   id: "@lineadraw/parma-hollow-core",
   name: "Parma Hollow Core Profile",
   description:
-    "Draws a profile of a hollow core slab according to the Parma catalog.",
+    "Draws the cross-section of a Parma precast hollow-core slab: catalog outline with grout keys and the void pattern, centered on the pick.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["structural", "catalog", "concrete", "precast", "building"],
+  tags: ["structural", "concrete", "precast", "hollow-core", "catalog", "section"],
   params: () => [
     {
       name: "profile",

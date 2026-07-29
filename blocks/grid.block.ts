@@ -7,15 +7,17 @@
 // positions horizontal axes bubbled at the left (per labelPos).
 import { defineBlock } from "lineadraw";
 
-const AXIS_ID = "2ee7ebef-052e-44ca-a576-0acd0d45d6ac";
+// The nested Axis definition — referenced by its marketplace-qualified id.
+const AXIS_ID = "@lineadraw/axis";
 
 export default defineBlock({
   id: "@lineadraw/grid",
   name: "Grid",
-  description: "Draws a grid of axes. Depends on the @lineadraw/axis block.",
+  description:
+    'Draws a rectangular grid of axes from Tekla-style spacing strings ("0 2*7200") with auto-incrementing labels. Requires the @lineadraw/axis block.',
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["architecture", "structural", "axis"],
+  tags: ["architecture", "structural", "axis", "grid"],
   params: [
     {
       type: "string",

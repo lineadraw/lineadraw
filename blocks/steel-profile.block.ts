@@ -14,10 +14,10 @@ export default defineBlock({
   id: "@lineadraw/steel-profile",
   name: "Steel Profile",
   description:
-    "Draws a profile section based on the selected catalogue and profile.",
+    "Draws the cross-section of a European steel catalog profile (IPE, HEA/HEB, UPE/UPN, L…) with root fillets, centered on the pick.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["structural", "steel", "catalog", "building"],
+  tags: ["structural", "steel", "profile", "catalog", "section"],
   params: () => [
     {
       name: "catalog",

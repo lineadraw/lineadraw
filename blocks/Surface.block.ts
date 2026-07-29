@@ -4,10 +4,11 @@ import { add, dist, norm, range, sub, scale as sc } from "lineadraw/helpers";
 export default defineBlock({
   id: "@lineadraw/surface",
   name: "Surface",
-  description: "Draws a surface between two points.",
+  description:
+    "Draws a ground-surface symbol along the line between two picked points, with rock, earth, excavated-rock and removed-earth variants.",
   version: "1.0.0",
   authors: ["Linea Team"],
-  tags: ["surface", "line", "draw"],
+  tags: ["civil", "site", "ground", "surface", "annotation"],
   params: [
     {
       name: "type",
