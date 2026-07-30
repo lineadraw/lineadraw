@@ -74,8 +74,8 @@ This MCP server allows agents render Linea editor in the chant (works best in co
 {
   "mcpServers": {
     "lineadraw": {
-      "command": "node",
-      "args": ["... specify full path here ... \\mcp-app\\server.js", "--stdio"]
+      "command": "npx",
+      "args": ["-y", "@lineadraw/mcp", "--stdio"]
     }
   }
 }
