@@ -60,6 +60,12 @@ export default defineCommand({
 
 /skill contains lineadraw skill. Create a zip from lineadraw folder and drop it to your agent like Claude Desktop. The agent will be able to create, edit linea projects, produce pxf, pdf deliverables.
 
+if you have Node.js installed, you can install this skill into current forder with
+
+```bash
+npx skills add lineadraw/lineadraw --skill lineadraw
+```
+
 ## Agent MCP App
 
 MCP Apps are interactive UI applications that render inside MCP hosts like Claude Desktop
