@@ -1,0 +1,13 @@
+{
+    "name": "lineadraw-marketplace",
+    "owner": {
+        "name": "Mikhail Koshelev"
+    },
+    "plugins": [
+        {
+            "name": "lineadraw",
+            "source": "./claude_plugins/lineadraw",
+            "description": "A skill and mcp server for using Linea - web-based 2D CAD editor"
+        }
+    ]
+}
