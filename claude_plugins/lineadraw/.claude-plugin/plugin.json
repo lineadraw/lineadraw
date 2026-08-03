@@ -1,0 +1,8 @@
+{
+    "name": "lineadraw",
+    "description": "Web-based 2D CAD editor",
+    "version": "1.0.0",
+    "author": {
+        "name": "Mikhail Koshelev"
+    }
+}

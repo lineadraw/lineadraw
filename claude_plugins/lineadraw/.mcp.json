@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "lineadraw": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@lineadraw/mcp",
+                "--stdio"
+            ]
+        }
+    }
+}
