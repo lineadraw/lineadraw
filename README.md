@@ -56,7 +56,11 @@ export default defineCommand({
 });
 ```
 
-## Agent skill
+## Claude Desktop. Install agent skill and MCP App (MCP-B relay not included)
+
+Go to Customize -> Plugins -> Browse -> Plugins -> Click "+" (Add marketplace) -> type "lineadraw/lineadraw" in url field -> Click Sync -> Install plugin
+
+## Agent skill. Manual installation
 
 /skill contains lineadraw skill. Create a zip from lineadraw folder and drop it to your agent like Claude Desktop. The agent will be able to create, edit linea projects, produce pxf, pdf deliverables.
 
@@ -66,7 +70,7 @@ if you have Node.js installed, you can install this skill into current forder wi
 npx skills add lineadraw/lineadraw --skill lineadraw
 ```
 
-## Agent MCP App
+## Agent MCP App. Manual installation
 
 MCP Apps are interactive UI applications that render inside MCP hosts like Claude Desktop
 
@@ -87,7 +91,7 @@ This MCP server allows agents render Linea editor in the chant (works best in co
 }
 ```
 
-## Editor WebMCP connection
+## Editor WebMCP connection (MCP-B relay). Manual installation
 
 In editor App settings you can control whether Agent Access and Local Relay are active.
 
@@ -97,7 +101,9 @@ Relay access allows other agents (line Claude Desktop) interact with editor. It 
 
 1. Install Node.js
 
-2. Specify mcp server configuration in you agent
+2. Make sure "Agent access" and "Local relay" are switched on in Linea App settings
+
+3. Specify mcp server configuration in you agent
 
 ```json
 {
