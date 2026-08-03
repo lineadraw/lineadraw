@@ -1,10 +1,10 @@
 # Linea
 
-This is a public repository for Linea project. It contais user materials, public block library, agent setup etc.
+This is a public repository for Linea project. It contais user materials, public block and command library, agent setup etc.
 
 ## Blocks
 
-/blocks - public registry of blocks
+/blocks folder - public registry of blocks. Use it as examples for youself or your agents to create new blocks.
 
 A block is a JS/TS module with a single `defineBlock` export
 
@@ -36,7 +36,7 @@ so VS Code resolves the virtual modules and the global types. You can open this 
 
 ## Commands
 
-/commands - public registry of commands
+/commands folder - public registry of commands. Use it as examples for youself or your agents to create new commands.
 
 A command is a JS/TS module with a single `defineCommand` export
 
@@ -55,10 +55,6 @@ export default defineCommand({
   },
 });
 ```
-
-## Claude Desktop. Install agent skill and MCP App (MCP-B relay not included)
-
-Go to Customize -> Plugins -> Browse -> Plugins -> Click "+" (Add marketplace) -> type "lineadraw/lineadraw" in url field -> Click Sync -> Install plugin
 
 ## Agent skill. Manual installation
 
@@ -115,3 +111,11 @@ Relay access allows other agents (line Claude Desktop) interact with editor. It 
   }
 }
 ```
+
+## Claude Desktop. Install agent skill and MCP App (MCP-B relay not included)
+
+**Don't use. MCP App is not working from within the plugin**
+
+1. Install Node.js
+
+2. In Claude Desktop go to Customize -> Plugins -> Browse -> Plugins -> Click "+" (Add marketplace) -> type "lineadraw/lineadraw" in url field -> Click Sync -> Install plugin
