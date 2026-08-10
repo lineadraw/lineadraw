@@ -3,13 +3,13 @@
 import { defineBlock } from "lineadraw";
 import { dist, len, norm, sub } from "lineadraw/helpers";
 
-const SIZE = 20;
+const SIZE = 2;
 
 export default defineBlock({
   id: "@lineadraw/cloud",
   name: "Cloud",
   description: "Draws a cloud shape to represent a structure on hold.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["structure", "cloud", "hold"],
   params: [
@@ -17,7 +17,7 @@ export default defineBlock({
       name: "scale",
       label: "Scale",
       type: "number",
-      default: 20,
+      default: 50,
     },
   ],
   place: async ({ pickPoint }) => {
@@ -31,9 +31,9 @@ export default defineBlock({
   },
   previewInputs: [
     [0, 0],
-    [1000, 0],
-    [1000, 1000],
-    [0, 1000],
+    [500, 0],
+    [500, 500],
+    [0, 500],
   ],
   draw: ({ params, inputs }) => {
     const { scale } = params;
