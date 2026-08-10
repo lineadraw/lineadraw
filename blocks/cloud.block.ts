@@ -9,7 +9,7 @@ export default defineBlock({
   id: "@lineadraw/cloud",
   name: "Cloud",
   description: "Draws a cloud shape to represent a structure on hold.",
-  version: "1.0.1",
+  version: "1.0.2",
   authors: ["Linea Team"],
   tags: ["structure", "cloud", "hold"],
   params: [
@@ -17,7 +17,7 @@ export default defineBlock({
       name: "scale",
       label: "Scale",
       type: "number",
-      default: 50,
+      default: 1,
     },
   ],
   place: async ({ pickPoint }) => {
@@ -31,9 +31,9 @@ export default defineBlock({
   },
   previewInputs: [
     [0, 0],
-    [500, 0],
-    [500, 500],
-    [0, 500],
+    [7, 0],
+    [7, 7],
+    [0, 7],
   ],
   draw: ({ params, inputs }) => {
     const { scale } = params;
