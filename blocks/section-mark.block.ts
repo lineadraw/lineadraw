@@ -22,9 +22,15 @@ export default defineBlock({
       type: "boolean",
       default: false,
     },
+    {
+      name: "text_rotation",
+      label: "Text rotation",
+      type: "number",
+      default: 0,
+    },
   ],
   draw: ({ params }) => {
-    const { label, mirror } = params;
+    const { label, mirror, text_rotation } = params;
     const k = mirror ? -1 : 1;
     return [
       {
@@ -40,6 +46,7 @@ export default defineBlock({
         type: "text",
         position: [3.5 * k, 3.5],
         content: label,
+        rotation: (text_rotation / 180) * Math.PI,
       },
     ];
   },
