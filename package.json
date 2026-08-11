@@ -1,0 +1,10 @@
+{
+  "name": "lineadraw",
+  "version": "1.0.0",
+  "description": "Public content for Linea project",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "lineadraw": "^0.2.0"
+  }
+}
