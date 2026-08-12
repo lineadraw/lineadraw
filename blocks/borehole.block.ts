@@ -11,15 +11,11 @@ export default defineBlock({
   version: "1.0.0",
   authors: ["Linea Team"],
   tags: ["site", "geotechnical", "annotation"],
-  params: [
-    { name: "scale", label: "Scale", type: "number", default: 50 },
-    { name: "label", label: "Id", type: "string", default: "P1" },
-  ],
+  params: [{ name: "label", label: "Label", type: "string", default: "P1" }],
   place: ["Borehole point"],
-  previewInputs: [[0, 0]],
   draw: ({ params, inputs: [c] }) => {
-    const { scale, label } = params;
-    const r = 3 * scale;
+    const { label } = params;
+    const r = 3;
     const out: ModelObject[] = [
       { type: "circle", center: c, radius: r },
       {
@@ -29,9 +25,9 @@ export default defineBlock({
         loops: [
           {
             points: [
-              { x: c.x, y: c.y + r, bulge: 1 },
-              { x: c.x, y: c.y - r, bulge: 0 },
-              { x: c.x, y: c.y + r, bulge: 1 },
+              [c.x, c.y + r, 1],
+              [c.x, c.y - r],
+              [c.x, c.y + r],
             ],
           },
         ],
@@ -45,7 +41,6 @@ export default defineBlock({
         content: label,
         hAlign: "right",
         vAlign: "center",
-        scale,
       });
     return out;
   },

@@ -14,7 +14,7 @@ export default defineBlock({
   tags: ["architecture", "structural", "level", "annotation"],
   params: [
     { name: "scale", label: "Scale", type: "number", default: 1 },
-    { name: "value", label: "Level", type: "string", default: "+0.000" },
+    { name: "level", label: "Level", type: "string", default: "+0.000" },
     {
       name: "style",
       label: "Style",
@@ -32,7 +32,7 @@ export default defineBlock({
     [10, 3],
   ],
   draw: ({ params, inputs: [p, at] }) => {
-    const { scale, value, style } = params;
+    const { scale, level, style } = params;
     const h = 3 * scale; // triangle height (apex at the level point)
     const sx = at.x >= p.x ? 1 : -1;
     const top = p.y + h;
@@ -42,11 +42,15 @@ export default defineBlock({
     const out: ModelObject[] = [
       { type: "polyline", points: [left, p, right] },
       // Horizontal line at the triangle top, running out to the label end.
-      { type: "line", a: { x: sx > 0 ? left.x : right.x, y: top }, b: { x: at.x, y: top } },
+      {
+        type: "line",
+        a: { x: sx > 0 ? left.x : right.x, y: top },
+        b: { x: at.x, y: top },
+      },
       {
         type: "text",
-        position: { x: at.x, y: top },
-        content: value,
+        position: { x: at.x, y: top + 0.5 * scale },
+        content: level,
         hAlign: sx > 0 ? "left" : "right",
         vAlign: "top",
         scale,
