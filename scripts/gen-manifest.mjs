@@ -7,7 +7,7 @@
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import { execSync } from "node:child_process";
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -134,11 +134,21 @@ if (dangling.length > 0)
   throw new Error(`dangling dependencies: ${dangling.join(", ")}`);
 
 const manifest = {
-  // Informational; the editor validates row-by-row and ignores extras.
+  // Header shown by the editor's marketplace dropdown; generatedAt/commit
+  // are informational — the editor validates row-by-row and ignores extras.
+  name: "Linea public collection",
+  owner: { name: "Linea Team" },
   generatedAt: new Date().toISOString(),
   commit: sha,
   entries,
 };
-writeFileSync(join(repoDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
-console.log(`manifest.json: ${entries.length} entries (${bad.length} rejected)`);
+const json = JSON.stringify(manifest, null, 2) + "\n";
+// Canonical location; the root copy is the pre-`.lineadraw/` transition
+// fallback older editors still fetch — drop it a release later.
+mkdirSync(join(repoDir, ".lineadraw"), { recursive: true });
+writeFileSync(join(repoDir, ".lineadraw", "marketplace.json"), json);
+writeFileSync(join(repoDir, "manifest.json"), json);
+console.log(
+  `.lineadraw/marketplace.json: ${entries.length} entries (${bad.length} rejected)`,
+);
 for (const e of entries) console.log(`  ${e.kind}  ${e.id}  v${e.version}`);
