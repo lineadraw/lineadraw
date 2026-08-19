@@ -2,9 +2,17 @@
   "name": "lineadraw",
   "version": "1.0.0",
   "description": "Public content for Linea project",
-  "type": "module",
-  "main": "index.js",
-  "dependencies": {
-    "lineadraw": "^0.2.0"
+  "private": true,
+  "lineadraw": {
+    "marketplaceName": "Linea collection",
+    "marketplaceOwner": "Linea Team"
+  },
+  "scripts": {
+    "manifest": "lineadraw manifest",
+    "check": "lineadraw check"
+  },
+  "devDependencies": {
+    "lineadraw": "^0.3.0",
+    "@lineadraw/sdk": "^0.11.0"
   }
 }
