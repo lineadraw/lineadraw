@@ -1,80 +1,103 @@
 # Linea
 
-This is a public repository for Linea project. It contais user materials, public block and command library, agent setup etc.
+Public home of [Linea](https://lineadraw.com). This repository carries the public
+block/command collection, agent integrations, and the guide to publishing
+your own collection.
 
-## Blocks
+| Folder                        | What it is                                                                         |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| `blocks/`                     | The public block collection — the editor's built-in "Linea collection" marketplace |
+| `commands/`                   | The public command collection (same marketplace)                                   |
+| `workshop/`                   | Staging area: experimental modules not yet promoted into the collection            |
+| `.lineadraw/marketplace.json` | The generated marketplace manifest                                                 |
+| `skills/`                     | The `lineadraw` agent skill (Claude Desktop / Claude Code)                         |
+| `plugins/`                    | Claude Desktop plugin packaging                                                    |
 
-/blocks folder - public registry of blocks. Use it as examples for youself or your agents to create new blocks.
+The npm surface lives elsewhere:
+[`lineadraw`](https://www.npmjs.com/package/lineadraw) (authoring types +
+marketplace CLI), [`create-lineadraw`](https://www.npmjs.com/package/create-lineadraw)
+(scaffolder), [`@lineadraw/sdk`](https://www.npmjs.com/package/@lineadraw/sdk)
+(headless Node API), [`@lineadraw/mcp`](https://www.npmjs.com/package/@lineadraw/mcp)
+(MCP server + in-chat editor).
 
-A block is a JS/TS module with a single `defineBlock` export
+## Create your own block/command marketplace
 
-```js
-// surface.block.js
-import { defineBlock } from "lineadraw";
+Any GitHub repository can be a Linea **marketplace** — the editor browses
+it, previews blocks live, and installs modules into documents (installed
+modules are embedded in the `.linea` file, so drawings keep working
+offline). This repo itself is one; here is how to make yours.
 
-export default defineBlock({
-  id: "9f6f9dd3-…", // unique — a UUID is a good choice
-  name: "Surface", // Visible name
-  params: [
-    {
-      name: "type",
-      type: "enum",
-      default: "rock",
-      options: ["rock", "ground"],
-    },
-  ],
-  place: ["Start point", "End point"], // one point pick per label, in order
-  draw: ({ params, inputs: [start, end] }) => {
-    params.type; // "rock" | "ground" — inferred
-    return [{ type: "line", a: start, b: end }];
-  },
-});
+### 1. Scaffold
+
+In new empty folder
+
+```bash
+npm create lineadraw
 ```
 
-`tsconfig.json` + `lineadraw.d.ts` make this a standalone TypeScript project
-so VS Code resolves the virtual modules and the global types. You can open this repository and write new blocks with type safety. Agents can see the block examples and create new ones.
+Or add the structure to an existing project:
 
-## Commands
-
-/commands folder - public registry of commands. Use it as examples for youself or your agents to create new commands.
-
-A command is a JS/TS module with a single `defineCommand` export
-
-```js
-// circle.cmd.ts
-import { defineCommand } from "lineadraw";
-
-export default defineCommand({
-  id: "543f132f-7da1-4de6-8d14-2da3121a644d",
-  name: "Circle Example",
-  run: async ({ document, pickPoint, prompt, showToast }) => {
-    const center = await pickPoint("Center point");
-    const r = await prompt("Radius");
-    document.add([{ type: "circle", center, radius: parseFloat(r) }]);
-    showToast("Done", "success");
-  },
-});
+```bash
+npm i -D lineadraw && npx lineadraw init
 ```
 
-## Agent skill. Manual installation
+You get `blocks/` and `commands/` folders with a typed sample, a
+`tsconfig.json` wired to the typings, the generated catalog
+(`.lineadraw/marketplace.json`), a CI workflow, and `manifest`/`check`
+npm scripts.
 
-/skill contains lineadraw skill. Create a zip from lineadraw folder and drop it to your agent like Claude Desktop. The agent will be able to create, edit linea projects, produce pxf, pdf deliverables.
+### 2. Author modules
 
-if you have Node.js installed, you can install this skill into current forder with
+- One `defineBlock` or `defineCommand` default export per file
+  (`*.block.ts` / `*.cmd.ts`; plain `.js` works too).
+- Give every module a stable id: `@<collection>/<slug>`, lowercase kebab.
+  The id is the install identity — re-publishing the same id updates
+  installed copies in place.
+- Imports are limited to `"lineadraw"` and `"lineadraw/helpers"`.
+- A block whose `draw` emits instances of other blocks must declare them
+  in `dependencies: ["@collection/other", …]` — installs pull the closure
+  along automatically.
+- Collection display name/owner live in package.json:
+  `"lineadraw": { "marketplaceName": "…", "marketplaceOwner": "…" }`.
+
+### 3. Generate the catalog and push
+
+```bash
+npm run manifest   # creates .lineadraw/marketplace.json
+npm run check      # validate blocks/commands without creating .lineadraw/marketplace.json
+```
+
+The manifest is deterministic, so `check` is a byte diff and the included
+GitHub workflow fails PRs with a stale catalog. With `@lineadraw/sdk` as a
+devDependency (the scaffold adds it), `manifest`/`check` also **dry-run
+every block** and render thumbnails; without it they still fully work.
+
+### 4. Add it in the editor
+
+**Library → Marketplace tab → +** and enter `owner/repo` (or
+`owner/repo@branch`). For a **private** repository, create a fine-grained
+personal access token with read-only Contents access to just that
+repository and paste it in the add dialog — it is stored only on that
+device, and never enters any document. Note that adding a marketplace is
+a trust decision: previewing and installing runs the repo's module code.
+
+## Agent skill
+
+`skills/lineadraw` teaches an agent (Claude Desktop, Claude Code) to
+create and edit Linea projects and produce DXF/PDF deliverables via
+`@lineadraw/sdk`. Install into the current folder with Node.js:
 
 ```bash
 npx skills add lineadraw/lineadraw --skill lineadraw
 ```
 
-## Agent MCP App. Manual installation
+Or zip the `skills/lineadraw` folder and drop it into your agent.
 
-MCP Apps are interactive UI applications that render inside MCP hosts like Claude Desktop
+## Agent MCP app (in-chat editor)
 
-This MCP server allows agents render Linea editor in the chant (works best in combination with sdk package)
-
-1. Install Node.js
-
-2. Specify mcp server configuration in you agent
+[`@lineadraw/mcp`](https://www.npmjs.com/package/@lineadraw/mcp) gives
+agents document tools plus the **full Linea editor rendered in the chat**
+(MCP Apps). With Node.js installed, add to your agent's MCP configuration:
 
 ```json
 {
@@ -87,19 +110,16 @@ This MCP server allows agents render Linea editor in the chant (works best in co
 }
 ```
 
-## Editor WebMCP connection (MCP-B relay). Manual installation
+## Editor WebMCP connection (MCP-B relay)
 
-In editor App settings you can control whether Agent Access and Local Relay are active.
+The editor itself can expose its tools to agents. In the editor's App
+settings: **Agent access** lets in-browser agents (e.g. the Claude
+extension for Chrome) work with the open document; **Local relay**
+additionally bridges those tools to agents outside the browser (e.g.
+Claude Desktop) over the MCP-B relay:
 
-Agent access allows agents in the browser (like Claude extension for Chrome) interact with Linea editor
-
-Relay access allows other agents (line Claude Desktop) interact with editor. It uses MCP-B relay for connection.
-
-1. Install Node.js
-
-2. Make sure "Agent access" and "Local relay" are switched on in Linea App settings
-
-3. Specify mcp server configuration in you agent
+1. Switch on "Agent access" and "Local relay" in Linea App settings.
+2. Add the relay to your agent's MCP configuration:
 
 ```json
 {
@@ -112,10 +132,9 @@ Relay access allows other agents (line Claude Desktop) interact with editor. It 
 }
 ```
 
-## Claude Desktop. Install agent skill and MCP App (MCP-B relay not included)
+## Claude Desktop plugin
 
-**Don't use. MCP App is not working from within the plugin**
-
-1. Install Node.js
-
-2. In Claude Desktop go to Customize -> Plugins -> Browse -> Plugins -> Click "+" (Add marketplace) -> type "lineadraw/lineadraw" in url field -> Click Sync -> Install plugin
+**Don't use yet — the MCP app does not work from within the plugin.**
+(For reference: Claude Desktop → Customize → Plugins → Browse → add
+marketplace `lineadraw/lineadraw` → Sync → Install.) Use the agent skill
+and MCP server setups above instead.
