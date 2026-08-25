@@ -6,7 +6,7 @@ export default defineBlock({
   id: "@lineadraw/frame",
   name: "Drawing frame",
   description: "Draws a drawing frame.",
-  version: "1.0.0",
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["annotation", "drawing"],
   params: [
@@ -21,6 +21,7 @@ export default defineBlock({
         { value: "A3" },
         { value: "A4" },
         { value: "Custom" },
+        { value: "xA4", label: "Multiple of A4" },
       ],
     },
     {
@@ -44,22 +45,44 @@ export default defineBlock({
       default: 297,
       min: 1,
     },
+    {
+      name: "x",
+      label: "N of A4 in width",
+      type: "number",
+      default: 1,
+      min: 1,
+    },
+    {
+      name: "y",
+      label: "N of A4 in height",
+      type: "number",
+      default: 1,
+      min: 1,
+    },
   ],
   paramVisibility: ({ params }) => {
     const { size } = params;
     return {
-      orientation: size !== "Custom",
+      orientation: size !== "Custom" && size !== "xA4",
       width: size === "Custom",
       height: size === "Custom",
+      x: size === "xA4",
+      y: size === "xA4",
     };
   },
   draw: ({ params }) => {
-    const { size, orientation, width, height } = params;
+    const { size, orientation, width, height, x, y } = params;
 
-    let w = size === "Custom" ? width : 1;
-    let h = size === "Custom" ? height : 1;
+    let w = 20;
+    let h = 20;
 
-    if (size !== "Custom" && paperSizes[size]) {
+    if (size === "Custom") {
+      w = width;
+      h = height;
+    } else if (size === "xA4") {
+      w = 210 * x;
+      h = 297 * y;
+    } else if (paperSizes[size]) {
       const paper = paperSizes[size];
       w = orientation === "Portrait" ? paper.w : paper.h;
       h = orientation === "Portrait" ? paper.h : paper.w;
