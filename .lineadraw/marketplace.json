@@ -131,6 +131,22 @@
     },
     {
       "kind": "block",
+      "id": "@lineadraw/frame",
+      "name": "Drawing frame",
+      "version": "1.0.0",
+      "description": "Draws a drawing frame.",
+      "tags": [
+        "annotation",
+        "drawing"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "dependencies": [],
+      "source": "blocks/drawing-frame.block.ts"
+    },
+    {
+      "kind": "block",
       "id": "@lineadraw/grid",
       "name": "Grid",
       "version": "1.0.0",
