@@ -6,7 +6,7 @@ export default defineBlock({
   id: "@lineadraw/frame",
   name: "Drawing frame",
   description: "Draws a drawing frame.",
-  version: "1.1.0",
+  version: "1.1.1",
   authors: ["Linea Team"],
   tags: ["annotation", "drawing"],
   params: [
@@ -47,14 +47,14 @@ export default defineBlock({
     },
     {
       name: "x",
-      label: "N of A4 in width",
+      label: "N in width",
       type: "number",
       default: 1,
       min: 1,
     },
     {
       name: "y",
-      label: "N of A4 in height",
+      label: "N in height",
       type: "number",
       default: 1,
       min: 1,
