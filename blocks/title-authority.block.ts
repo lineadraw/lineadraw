@@ -1,3 +1,4 @@
+// Title authority
 import { defineBlock } from "lineadraw";
 
 const style1: Partial<Text> = {
