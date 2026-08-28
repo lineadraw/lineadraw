@@ -246,7 +246,7 @@
       "kind": "block",
       "id": "@lineadraw/revision-table",
       "name": "Revision table",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Draws a revision table",
       "tags": [
         "sheet",
@@ -390,24 +390,6 @@
       ],
       "dependencies": [],
       "source": "blocks/title-designer.block.ts"
-    },
-    {
-      "kind": "block",
-      "id": "@lineadraw/title",
-      "name": "Title",
-      "version": "1.0.0",
-      "description": "Draws a sheet title block filled from text-field parameters: project, site, designer and drawing information.",
-      "tags": [
-        "sheet",
-        "title-block",
-        "annotation",
-        "layout"
-      ],
-      "authors": [
-        "Linea Team"
-      ],
-      "dependencies": [],
-      "source": "blocks/title.block.ts"
     },
     {
       "kind": "block",

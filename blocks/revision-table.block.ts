@@ -34,7 +34,7 @@ export default defineBlock({
   id: "@lineadraw/revision-table",
   name: "Revision table",
   description: "Draws a revision table",
-  version: "1.0.0",
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["sheet", "title-block", "annotation", "layout"],
   params: () => [
@@ -48,33 +48,57 @@ export default defineBlock({
       ],
       default: "en",
     },
+    {
+      name: "current",
+      label: "Current rev",
+      type: "enum",
+      options: [
+        ...range(MAX_NUM).map((i) => ({
+          value: `${i + 1}`,
+          label: `${i + 1}`,
+        })),
+      ],
+      default: "1",
+    },
     ...range(MAX_NUM).flatMap((i) => [
       {
         name: "rev" + (i + 1),
-        label: i + 1 + ". Revision",
+        label: "Revision",
         type: "string",
         default: "",
       } as ParamDef,
       {
         name: "change" + (i + 1),
-        label: i + 1 + ". Change",
+        label: "Change",
         type: "string",
         default: "",
       } as ParamDef,
       {
         name: "date" + (i + 1),
-        label: i + 1 + ". Date",
+        label: "Date",
         type: "string",
         default: "",
       } as ParamDef,
       {
         name: "changed_by" + (i + 1),
-        label: i + 1 + ". Changed by",
+        label: "Changed by",
         type: "string",
         default: "",
       } as ParamDef,
     ]),
   ],
+  paramVisibility: ({ params }) => {
+    const result: Record<string, boolean> = {};
+    for (let i = 1; i <= MAX_NUM; i++) {
+      if (i !== parseInt(params.current)) {
+        result["rev" + i] = false;
+        result["change" + i] = false;
+        result["date" + i] = false;
+        result["changed_by" + i] = false;
+      }
+    }
+    return result;
+  },
   draw: ({ params }) => {
     const { lang } = params;
     const labels = lang_labels[lang] ?? lang_labels["en"];
