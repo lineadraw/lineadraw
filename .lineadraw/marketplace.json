@@ -136,6 +136,8 @@
       "version": "1.2.0",
       "description": "Draws a drawing frame.",
       "tags": [
+        "sheet",
+        "frame",
         "annotation",
         "drawing"
       ],
@@ -242,6 +244,24 @@
     },
     {
       "kind": "block",
+      "id": "@lineadraw/revision-table",
+      "name": "Revision table",
+      "version": "1.0.0",
+      "description": "Draws a revision table",
+      "tags": [
+        "sheet",
+        "title-block",
+        "annotation",
+        "layout"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "dependencies": [],
+      "source": "blocks/revision-table.block.ts"
+    },
+    {
+      "kind": "block",
       "id": "@lineadraw/section-line",
       "name": "Section line",
       "version": "1.0.0",
@@ -334,6 +354,42 @@
       ],
       "dependencies": [],
       "source": "blocks/surface.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/title-authority",
+      "name": "Title authority",
+      "version": "1.0.0",
+      "description": "Draws a sheet title block filled from text-field authority parameters",
+      "tags": [
+        "sheet",
+        "title-block",
+        "annotation",
+        "layout"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "dependencies": [],
+      "source": "blocks/title-authority.block.ts"
+    },
+    {
+      "kind": "block",
+      "id": "@lineadraw/title-designer",
+      "name": "Title designer",
+      "version": "1.0.0",
+      "description": "Draws a sheet title block filled from text-field parameters: project, site, designer and drawing information.",
+      "tags": [
+        "sheet",
+        "title-block",
+        "annotation",
+        "layout"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "dependencies": [],
+      "source": "blocks/title-designer.block.ts"
     },
     {
       "kind": "block",

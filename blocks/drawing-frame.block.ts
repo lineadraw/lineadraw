@@ -8,7 +8,7 @@ export default defineBlock({
   description: "Draws a drawing frame.",
   version: "1.2.0",
   authors: ["Linea Team"],
-  tags: ["annotation", "drawing"],
+  tags: ["sheet", "frame", "annotation", "drawing"],
   params: [
     {
       name: "size",
