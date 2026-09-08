@@ -41,29 +41,29 @@ One process holds a registry of open documents shared by every session; most
 tools default to the ACTIVE document (the last created/opened), or take an
 explicit `documentId`. Opening the same path twice reuses the entry.
 
-From the linea repo:
+The server is published on npm; Node.js 20+ is the only requirement.
 
-```bash
-npm run build -w @lineadraw/mcp     # bundles server + in-chat editor into dist/
-npm run serve -w @lineadraw/mcp     # streamable HTTP on http://localhost:3001/mcp
-```
-
-Client configuration (stdio — e.g. Claude Code / Desktop config):
+Client configuration (stdio — Claude Desktop, Cursor, and similar):
 
 ```json
 "mcpServers": {
   "lineadraw": {
-    "command": "node",
-    "args": ["<linea-repo>/packages/mcp/dist/server.js", "--stdio"]
+    "command": "npx",
+    "args": ["-y", "@lineadraw/mcp", "--stdio"]
   }
 }
 ```
 
-Claude web/Desktop connectors need **https**: either
-`npx cloudflared tunnel --url http://localhost:3001` (throwaway URL), or
-mkcert local TLS (`TLS_CERT`/`TLS_KEY` env vars) — then add the connector as
-`https://…/mcp`. `node probe.mjs <url>` (in packages/mcp) checks a URL the
-way a host would.
+Claude Code: `claude mcp add linea -- npx -y @lineadraw/mcp --stdio`.
+
+Without `--stdio` it speaks streamable HTTP on `http://localhost:3001/mcp`
+(`PORT` overrides): `npx -y @lineadraw/mcp`. Claude web/Desktop connectors
+need **https**: either `npx cloudflared tunnel --url http://localhost:3001`
+(throwaway URL), or mkcert local TLS (`TLS_CERT`/`TLS_KEY` env vars), then
+add the connector as `https://…/mcp`.
+
+(Working from a linea repo checkout instead: `npm run build -w @lineadraw/mcp`,
+then `node <repo>/packages/mcp/dist/server.js --stdio`.)
 
 ### The in-chat editor (MCP App)
 
@@ -91,10 +91,10 @@ clients spawn as a stdio server. You then edit the document the user is
 looking at: changes appear live in their viewport, every tool call is ONE
 undo step, and read-only mode rejects mutations with a tool error.
 
-Wiring (user side, in Linea): **Settings → General → "Agent access"** on,
-plus the **"Local relay"** sub-toggle (the tab keeps dialing localhost:9333
-while enabled). Hosts embedding the editor can call `installWebMcp()`
-instead.
+Wiring (user side, in Linea): menu → **App Settings…** (Ctrl+,) →
+**"Agent access"** on, plus the **"Local relay"** sub-toggle (the tab keeps
+dialing localhost:9333 while enabled). Hosts embedding the editor can call
+`installWebMcp()` instead.
 
 Client side, the relay process (`@mcp-b/webmcp-local-relay`) is the MCP
 server:
@@ -126,3 +126,8 @@ Editor-path semantics to respect:
   (Ctrl+S). Ask them to save; don't try to reach the disk.
 - No `linea_show_document` either — the editor is already in front of
   the user.
+- Neither MCP path has a tool for block or command MODULES. To give the
+  user a block or command, write the `.block.ts`/`.cmd.ts` file and have
+  them drop it onto the editor (see blocks-and-commands.md). You can still
+  PLACE instances of blocks the document already has via
+  `linea_add_objects` with `{ type: "block", definitionId, inputs }`.

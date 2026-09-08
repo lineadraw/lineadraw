@@ -26,6 +26,7 @@ layer. `id` is assigned by `add`; never invent ids.
 | type | required fields | notes |
 |---|---|---|
 | `line` | `a`, `b` | |
+| `point` | `p` | paints as a round dot whose diameter is the lineWidth |
 | `polyline` | `points: [{x,y,bulge?}\|[x,y,bulge?]...]`, `closed?` | bulge = tan(sweep/4), >0 CCW arc to next vertex; **there is no rectangle type** — use a closed 4-point polyline |
 | `circle` | `center`, `radius` | |
 | `arc` | `center`, `radius`, `startAngle`, `endAngle` | runs CCW from start to end (DXF convention) |
@@ -35,7 +36,7 @@ layer. `id` is assigned by `add`; never invent ids.
 | `dimension` | `points`, `offset` | `kind`: linear (default) / angular / radial / diameter. Points per kind: linear = measured points (>2 = chain); radial = `[center, pointOnCurve]`; **diameter = the two OPPOSITE points on the curve** (`[center, edge]` silently measures a radius — half the value); angular = vertex + legs. `offset` is a VECTOR from the kind's base point to the dimension line and is **required for every kind** (radial/diameter/angular use it to place the text). `textOverride`; `styleOverride` = per-object DimStyle patch (textHeight, arrowSize, …). **Drawing scale is the TOP-LEVEL `scale` field** (`scale: 50` for 1:50) — `scale` inside `styleOverride` is NOT a style key and is rejected |
 | `viewport` | `rect: {x,y,w,h}` | layouts only; `modelCenter`, `scale` (denominator, 1:50 → 50), `locked`, `hiddenLayerIds` |
 | `image` | `assetId`, `origin`, `width`, `height` | `assetId` comes from `doc.addAsset(dataUrl)`; skipped by DXF/DWG export |
-| `block` | `definitionId`, `inputs` | instances of script-defined blocks; advanced — prefer plain geometry unless the document already has definitions |
+| `block` | `definitionId`, `inputs` | an instance of a block module the document holds (`doc.document.blockDefinitions`, set via `setBlockDefinitions`). `inputs`: world points, the first is the pivot (object-reference inputs are id strings); `params`: only values that differ from the block's defaults; `rotation`/`scale` apply about the pivot. Authoring blocks: blocks-and-commands.md |
 
 ## Reads
 
@@ -76,7 +77,10 @@ doc.setDimStyle({ textHeight, arrowSize, arrowType, precision, extensionOffset,
 // is the TOP-LEVEL `scale` field on each dimension object (scale: 50 for
 // 1:50). add/update reject unknown styleOverride keys loudly.
 doc.setTextStyle({ font, widthFactor, textHeight });
-await doc.setBlockDefinitions([...sources]);   // async: block geometry definitive on resolve
+// Both style setters take an optional second arg (styleId) for documents with
+// several named styles; setDimStyles/setTextStyles replace the whole list.
+await doc.setBlockDefinitions([...sources]);   // REPLACES the list of block module sources;
+                                               // async: block geometry definitive on resolve
 await doc.ready();                             // for docs opened WITH blocks via drawingFromJson
 doc.transaction(() => { ... });                // one undo step
 doc.undo(); doc.redo();                        // → boolean
@@ -104,6 +108,7 @@ doc.createLayout("Plan 1:50", {
 });                                            // → layout id
 doc.updateLayoutMeta(nameOrId, { name?, sheet?, printPalette? }); // "color" | "monochrome"
 doc.removeLayout(nameOrId);
+doc.reorderLayouts([...ids]);                  // PDF page order
 ```
 
 New documents are layout-less. `exportPdf` of a layout-less document falls
@@ -116,7 +121,7 @@ deliverables.
 // import (merge into this doc; returns {objects, layers, layouts, objectIds, layoutIds})
 doc.importDxfText(text, { unitOverride? }); await doc.importDxf(path);
 await doc.importDwgData(bytes); await doc.importDwg(path);   // DWG R13–R2018
-await doc.importPdfData(arrayBuffer);                        // vector + text
+await doc.importPdfData(arrayBuffer); await doc.importPdf(path);  // vector + text
 
 // export
 doc.toSvg({ layout?, bbox?, padding?, palette? });  await doc.exportSvg(path, opts);

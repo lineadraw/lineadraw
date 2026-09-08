@@ -74,8 +74,8 @@ every block** and render thumbnails; without it they still fully work.
 
 ### 4. Add it in the editor
 
-**Library → Marketplace tab → +** and enter `owner/repo` (or
-`owner/repo@branch`). For a **private** repository, create a fine-grained
+**Library → Marketplace tab → the gear button (Manage marketplaces…) → Add
+a marketplace** and enter `owner/repo` (or `owner/repo@branch`). For a **private** repository, create a fine-grained
 personal access token with read-only Contents access to just that
 repository and paste it in the add dialog — it is stored only on that
 device, and never enters any document. Note that adding a marketplace is
@@ -85,7 +85,9 @@ a trust decision: previewing and installing runs the repo's module code.
 
 `skills/lineadraw` teaches an agent (Claude Desktop, Claude Code) to
 create and edit Linea projects and produce DXF/PDF deliverables via
-`@lineadraw/sdk`. Install into the current folder with Node.js:
+`@lineadraw/sdk`, to work through both MCP paths, and to write blocks and
+commands (with modules from this collection as worked examples). Install
+into the current folder with Node.js:
 
 ```bash
 npx skills add lineadraw/lineadraw --skill lineadraw
