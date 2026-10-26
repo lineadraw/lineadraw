@@ -433,6 +433,25 @@
     },
     {
       "kind": "command",
+      "id": "@lineadraw/layouts-from-frames",
+      "name": "Layouts from Frames",
+      "version": "1.0.0",
+      "description": "One paper layout per selected sheet frame (Drawing frame block, title-block frame or rectangle), with a full-sheet viewport at the frame's scale.",
+      "tags": [
+        "layout",
+        "print",
+        "sheet",
+        "frame",
+        "pdf"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "dependencies": [],
+      "source": "commands/layouts-from-frames.cmd.ts"
+    },
+    {
+      "kind": "command",
       "id": "@lineadraw/narrow-selection",
       "name": "Narrow Selection",
       "version": "1.0.0",
