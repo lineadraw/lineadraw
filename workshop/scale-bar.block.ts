@@ -57,7 +57,7 @@ export default defineBlock({
         position: { x: p.x + i * segment, y: p.y + h + 0.5 * drawing },
         content: i === n ? `${meters} m` : `${meters}`,
         hAlign: "center",
-        vAlign: "top",
+        vAlign: "bottom",
         scale: drawing,
       });
     }

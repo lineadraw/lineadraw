@@ -47,7 +47,7 @@ export default defineBlock({
         content: `${label}  ${slope}`.trim(),
         rotation: rot,
         hAlign: "center",
-        vAlign: "top",
+        vAlign: "bottom",
         scale,
       },
     ];

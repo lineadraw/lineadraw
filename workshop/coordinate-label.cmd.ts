@@ -23,7 +23,7 @@ export default defineCommand({
             type: "text",
             position: at,
             content: `X=${target.x.toFixed(0)}\nY=${target.y.toFixed(0)}`,
-            hAlign: at.x >= target.x ? "right" : "left",
+            hAlign: at.x >= target.x ? "left" : "right",
             vAlign: "center",
             leaderLines: [[target, at]],
             scale,

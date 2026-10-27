@@ -8,28 +8,30 @@ export default defineBlock({
   name: "Anchor bolt group",
   description:
     "Draws a grid of anchor bolts (circle with cross) centered on a point.",
-  version: "1.0.0",
+  // 1.1.0: positions are numberList params ("-50 100" typed in the panel);
+  // instances saved by 1.0.0 hold strings — Linea parses them on read.
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["structural", "steel", "foundation", "detail"],
   params: [
     {
       name: "xs",
       label: "X positions",
-      type: "string",
-      default: "-50 100",
+      type: "numberList",
+      default: [-50, 100],
     },
     {
       name: "ys",
       label: "Y positions",
-      type: "string",
-      default: "-50 100",
+      type: "numberList",
+      default: [-50, 100],
     },
     { name: "size", label: "Bolt size", type: "number", default: 24, min: 1 },
   ],
   place: ["Group center"],
   draw: ({ params, inputs: [c] }) => {
-    const xs = parsePositions(params.xs);
-    const ys = parsePositions(params.ys);
+    const xs = positions(params.xs);
+    const ys = positions(params.ys);
     if (!xs.length || !ys.length) return [];
     const { size } = params;
     const tick = size * 1.2; // cross half-length
@@ -57,17 +59,8 @@ export default defineBlock({
   },
 });
 
-/** "0 2*7200" → [0, 7200, 14400]: cumulative sum of relative distances,
- * "N*d" meaning N bays of d. Malformed tokens are skipped. */
-const parsePositions = (spec: string): number[] => {
-  const out: number[] = [];
+/** [-50, 100] → [-50, 50]: relative distances summed. */
+const positions = (distances: readonly number[]): number[] => {
   let at = 0;
-  for (const tok of spec.trim().split(/\s+/)) {
-    const m = /^(?:(\d+)\*)?(-?\d*\.?\d+)$/.exec(tok);
-    if (!m) continue;
-    const count = m[1] ? parseInt(m[1], 10) : 1;
-    const dist = parseFloat(m[2]);
-    for (let i = 0; i < count; i++) out.push((at += dist));
-  }
-  return out;
+  return distances.map((d) => (at += d));
 };

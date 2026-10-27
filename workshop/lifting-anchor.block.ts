@@ -30,7 +30,7 @@ export default defineBlock({
         type: "text",
         position: add(c, { x: 0.8 * dia, y: 0.8 * dia }),
         content: label,
-        hAlign: "right",
+        hAlign: "left",
         vAlign: "center",
         scale,
       });

@@ -1,9 +1,8 @@
 // Grid — a rectangular net of Axis block instances. Positions are
-// Tekla-style spacing strings: whitespace-separated relative distances
-// where "N*d" repeats a distance N times ("0 2*7200" → 0, 7200, 14400).
-// Labels are whitespace-separated; when the grid has more axes than
-// labels the last label keeps incrementing ("A B" → A B C…, "1 2" →
-// 1 2 3…). X positions become vertical axes bubbled at the bottom, Y
+// numberList params of RELATIVE distances, typed Tekla-style in the panel
+// ("0 2*7200" = [0, 7200, 7200] → axes at 0, 7200, 14400). Labels are a
+// stringList; when the grid has more axes than labels the last label keeps
+// incrementing (["A", "B"] → A B C…, ["1"] → 1 2 3…). X positions become vertical axes bubbled at the bottom, Y
 // positions horizontal axes bubbled at the left (per labelPos).
 import { defineBlock } from "lineadraw";
 
@@ -11,36 +10,38 @@ export default defineBlock({
   id: "@lineadraw/grid",
   name: "Grid",
   description:
-    'Draws a rectangular grid of axes from Tekla-style spacing strings "0 2*7200" with auto-incrementing labels. Requires the @lineadraw/axis block.',
-  version: "1.0.0",
+    'Draws a rectangular grid of axes from Tekla-style spacings "0 2*7200" with auto-incrementing labels. Requires the @lineadraw/axis block.',
+  // 1.1.0: list params (numberList / stringList). Instances saved by 1.0.0
+  // hold strings — Linea parses them on read.
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["architecture", "structural", "axis", "grid"],
   // Emits Axis instances — install/copy/export bundle the dependency.
   dependencies: ["@lineadraw/axis"],
   params: [
     {
-      type: "string",
+      type: "numberList",
       name: "xs",
       label: "X positions",
-      default: "0 2*1000",
+      default: [0, 1000, 1000],
     },
     {
-      type: "string",
+      type: "numberList",
       name: "ys",
       label: "Y positions",
-      default: "0 2*1000",
+      default: [0, 1000, 1000],
     },
     {
-      type: "string",
+      type: "stringList",
       name: "xLabels",
       label: "X labels",
-      default: "A",
+      default: ["A"],
     },
     {
-      type: "string",
+      type: "stringList",
       name: "yLabels",
       label: "Y labels",
-      default: "1",
+      default: ["1"],
     },
     {
       name: "scale",
@@ -62,8 +63,8 @@ export default defineBlock({
   ],
   draw: ({ params }) => {
     const { scale, labelPos } = params;
-    const xs = parsePositions(params.xs);
-    const ys = parsePositions(params.ys);
+    const xs = positions(params.xs);
+    const ys = positions(params.ys);
     if (!xs.length || !ys.length) return [];
     const xLabels = expandLabels(params.xLabels, xs.length);
     const yLabels = expandLabels(params.yLabels, ys.length);
@@ -88,25 +89,16 @@ export default defineBlock({
   },
 });
 
-/** "0 2*7200" → [0, 7200, 14400]: cumulative sum of relative distances,
- * "N*d" meaning N bays of d. Malformed tokens are skipped. */
-const parsePositions = (spec: string): number[] => {
-  const out: number[] = [];
+/** [0, 7200, 7200] → [0, 7200, 14400]: relative distances summed. */
+const positions = (distances: readonly number[]): number[] => {
   let at = 0;
-  for (const tok of spec.trim().split(/\s+/)) {
-    const m = /^(?:(\d+)\*)?(-?\d*\.?\d+)$/.exec(tok);
-    if (!m) continue;
-    const count = m[1] ? parseInt(m[1], 10) : 1;
-    const dist = parseFloat(m[2]);
-    for (let i = 0; i < count; i++) out.push((at += dist));
-  }
-  return out;
+  return distances.map((d) => (at += d));
 };
 
-/** Whitespace-separated labels padded to n by incrementing the last one;
- * extras beyond n are dropped. */
-const expandLabels = (spec: string, n: number): string[] => {
-  const out = spec.trim().split(/\s+/).filter(Boolean).slice(0, n);
+/** Labels padded to n by incrementing the last one; extras beyond n are
+ * dropped. */
+const expandLabels = (labels: readonly string[], n: number): string[] => {
+  const out = labels.filter(Boolean).slice(0, n);
   while (out.length < n)
     out.push(
       out.length ? nextLabel(out[out.length - 1]) : String(out.length + 1),

@@ -7,7 +7,9 @@ export default defineBlock({
   id: "@lineadraw/detail-mark",
   name: "Detail mark",
   description: "Draws a section mark with a label",
-  version: "1.0.0",
+  // 1.1.0: text alignment is justification (AutoCAD meaning) since Linea
+  // document v20 — values flipped so the text renders where it did.
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["architecture", "structural", "section", "annotation"],
   params: [
@@ -55,8 +57,9 @@ export default defineBlock({
             }),
           ],
         ],
-        hAlign: hor,
-        vAlign: "top",
+        // Justification: text running right of the point is left-justified.
+        hAlign: hor === "right" ? "left" : "right",
+        vAlign: "bottom",
         frame: "bottom",
         styleOverride: {
           arrowType: "none",

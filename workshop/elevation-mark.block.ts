@@ -51,8 +51,8 @@ export default defineBlock({
         type: "text",
         position: { x: at.x, y: top + 0.5 * scale },
         content: level,
-        hAlign: sx > 0 ? "left" : "right",
-        vAlign: "top",
+        hAlign: sx > 0 ? "right" : "left",
+        vAlign: "bottom",
         scale,
       },
     ];

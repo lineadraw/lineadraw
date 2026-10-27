@@ -30,7 +30,7 @@ export default defineBlock({
         position: { x: p.x, y: p.y + r + 0.5 * s },
         content: "N",
         hAlign: "center",
-        vAlign: "top",
+        vAlign: "bottom",
         scale: s,
         styleOverride: { textHeight: 3.5 },
       },

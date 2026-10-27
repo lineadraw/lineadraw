@@ -36,8 +36,8 @@ export default defineCommand({
         type: "text",
         position,
         content: ["BLOCK\tPCS", ...rows].join("\n"),
-        hAlign: "right",
-        vAlign: "bottom",
+        hAlign: "left",
+        vAlign: "top",
         scale,
       },
     ]);

@@ -8,7 +8,9 @@ export default defineBlock({
   id: "@lineadraw/borehole",
   name: "Borehole",
   description: "Draws a borehole symbol (half-filled circle) with its id.",
-  version: "1.0.0",
+  // 1.1.0: text alignment is justification (AutoCAD meaning) since Linea
+  // document v20 — values flipped so the text renders where it did.
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["site", "geotechnical", "annotation"],
   params: [{ name: "label", label: "Label", type: "string", default: "P1" }],
@@ -39,7 +41,7 @@ export default defineBlock({
         type: "text",
         position: add(c, { x: 1.2 * r, y: r }),
         content: label,
-        hAlign: "right",
+        hAlign: "left",
         vAlign: "center",
       });
     return out;

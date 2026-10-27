@@ -95,7 +95,7 @@ export default defineBlock({
       type: "text",
       position: add(m, { x: -2.2 * s * sx, y: 1.5 * s * ySign }),
       content: params.size,
-      hAlign: sx > 0 ? "left" : "right",
+      hAlign: sx > 0 ? "right" : "left",
       vAlign: "center",
       scale: s,
     });

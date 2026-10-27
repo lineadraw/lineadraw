@@ -2,14 +2,14 @@ import { defineBlock, type ParamDef } from "lineadraw";
 import { range } from "lineadraw/helpers";
 
 const style1: Partial<Text> = {
-  hAlign: "right",
-  vAlign: "top",
+  hAlign: "left",
+  vAlign: "bottom",
   styleOverride: { widthFactor: 0.8, textHeight: 1.5 },
 };
 
 const style2: Partial<Text> = {
-  hAlign: "right",
-  vAlign: "top",
+  hAlign: "left",
+  vAlign: "bottom",
   styleOverride: { widthFactor: 0.8, textHeight: 2.5 },
 };
 
@@ -34,7 +34,9 @@ export default defineBlock({
   id: "@lineadraw/revision-table",
   name: "Revision table",
   description: "Draws a revision table",
-  version: "1.1.0",
+  // 1.2.0: text alignment is justification (AutoCAD meaning) since Linea
+  // document v20 — values flipped so the text renders where it did.
+  version: "1.2.0",
   authors: ["Linea Team"],
   tags: ["sheet", "title-block", "annotation", "layout"],
   params: () => [

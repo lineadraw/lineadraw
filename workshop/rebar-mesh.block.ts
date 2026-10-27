@@ -43,7 +43,7 @@ export default defineBlock({
         content: label,
         rotation: rot,
         hAlign: "center",
-        vAlign: "top",
+        vAlign: "bottom",
         scale,
       },
     ];
