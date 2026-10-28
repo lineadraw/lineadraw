@@ -8,7 +8,7 @@
       "kind": "block",
       "id": "@lineadraw/anchor-bolt-group",
       "name": "Anchor bolt group",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Draws a grid of anchor bolts (circle with cross) centered on a point.",
       "tags": [
         "structural",
@@ -66,7 +66,7 @@
       "kind": "block",
       "id": "@lineadraw/borehole",
       "name": "Borehole",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Draws a borehole symbol (half-filled circle) with its id.",
       "tags": [
         "site",
@@ -121,7 +121,7 @@
       "kind": "block",
       "id": "@lineadraw/detail-mark",
       "name": "Detail mark",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Draws a section mark with a label",
       "tags": [
         "architecture",
@@ -159,8 +159,8 @@
       "kind": "block",
       "id": "@lineadraw/grid",
       "name": "Grid",
-      "version": "1.0.0",
-      "description": "Draws a rectangular grid of axes from Tekla-style spacing strings \"0 2*7200\" with auto-incrementing labels. Requires the @lineadraw/axis block.",
+      "version": "1.1.0",
+      "description": "Draws a rectangular grid of axes from Tekla-style spacings \"0 2*7200\" with auto-incrementing labels. Requires the @lineadraw/axis block.",
       "tags": [
         "architecture",
         "structural",
@@ -259,7 +259,7 @@
       "kind": "block",
       "id": "@lineadraw/revision-table",
       "name": "Revision table",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "description": "Draws a revision table",
       "tags": [
         "sheet",
@@ -378,7 +378,7 @@
       "kind": "block",
       "id": "@lineadraw/title-authority",
       "name": "Title authority",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Draws a sheet title block filled from text-field authority parameters",
       "tags": [
         "sheet",
@@ -397,7 +397,7 @@
       "kind": "block",
       "id": "@lineadraw/title-designer",
       "name": "Title designer",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Draws a sheet title block filled from text-field parameters: project, site, designer and drawing information.",
       "tags": [
         "sheet",

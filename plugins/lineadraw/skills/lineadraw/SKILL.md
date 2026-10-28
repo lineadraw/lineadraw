@@ -1,6 +1,6 @@
 ---
 name: lineadraw
-description: Work with Linea, the browser 2D CAD editor, and its .linea documents. Create, edit, and export drawings (.linea, DXF, DWG, PDF, SVG/PNG) with @lineadraw/sdk; drive the headless Linea MCP server (linea_* tools + in-chat editor); connect to a RUNNING Linea editor via its WebMCP local relay; author parametric blocks (defineBlock) and macro commands (defineCommand) and publish them to a marketplace. Use when asked to produce a CAD drawing or drafting deliverable, script edits to a .linea file, convert DXF/DWG, read or edit what the user has open in Linea, or write a Linea block or command.
+description: Work with Linea, the browser 2D CAD editor, and its .linea documents. Create, edit, and export drawings (.linea, DXF, DWG, PDF, SVG/PNG) with lineadraw/sdk; drive the headless Linea MCP server (linea_* tools + in-chat editor); connect to a RUNNING Linea editor via its WebMCP local relay; author parametric blocks (defineBlock) and macro commands (defineCommand) and publish them to a marketplace. Use when asked to produce a CAD drawing or drafting deliverable, script edits to a .linea file, convert DXF/DWG, read or edit what the user has open in Linea, or write a Linea block or command.
 ---
 
 # lineadraw — SDK, MCP, and block/command authoring for Linea
@@ -9,7 +9,7 @@ Linea is a 2D CAD editor (browser app, https://lineadraw.com) whose documents
 (`.linea`) are also fully scriptable headlessly. Four ways in, one document
 model:
 
-- **`@lineadraw/sdk`** (Node, in-process): write a script. Best for anything
+- **`lineadraw/sdk`** (Node, in-process): write a script. Best for anything
   with loops, computed placement, or more than a handful of objects.
 - **Linea MCP server** (`@lineadraw/mcp`, headless): granular `linea_*`
   tool calls over a document registry, plus an **in-chat interactive
@@ -43,17 +43,17 @@ addon pulled in as a dependency):
 
 ```bash
 mkdir scratch && cd scratch && npm init -y
-npm install @lineadraw/sdk
+npm install lineadraw
 ```
 
-(Working inside the linea repo instead? `npm run build -w @lineadraw/sdk`
+(Working inside the linea repo instead? `npm run build -w lineadraw`
 once, then import the workspace package directly.)
 
 Node 20+, ESM (`"type": "module"` or `.mjs`). Everything is in-process, no
 server, no browser:
 
 ```js
-import { newDrawing, openDrawing } from "@lineadraw/sdk";
+import { newDrawing, openDrawing } from "lineadraw/sdk";
 ```
 
 ## Iron rules
@@ -83,7 +83,7 @@ import { newDrawing, openDrawing } from "@lineadraw/sdk";
 ## Standard workflow
 
 ```js
-import { newDrawing } from "@lineadraw/sdk";
+import { newDrawing } from "lineadraw/sdk";
 
 const doc = newDrawing();
 

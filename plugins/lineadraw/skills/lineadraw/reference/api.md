@@ -1,4 +1,4 @@
-# @lineadraw/sdk API reference
+# lineadraw/sdk API reference
 
 Everything goes through `Drawing`. World units mm, Y-up, angles radians CCW.
 Points accept `{x, y}` or `[x, y]` everywhere (`PointInput`).
@@ -6,7 +6,7 @@ Points accept `{x, y}` or `[x, y]` everywhere (`PointInput`).
 ## Open / create
 
 ```js
-import { newDrawing, drawingFromJson, openDrawing, parseScale } from "@lineadraw/sdk";
+import { newDrawing, drawingFromJson, openDrawing, parseScale } from "lineadraw/sdk";
 
 const doc = newDrawing();                    // "Layer 0" only; no layouts yet
 const doc2 = await openDrawing("a.linea");   // parse + migrate; doc2.migration = {from, to} | null

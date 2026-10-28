@@ -178,12 +178,12 @@ ask for the scale with `prompt` (default 50) and set top-level `scale`.
 
 ## Validating headlessly
 
-The `@lineadraw/sdk` package exports the same checks the editor and the
+`lineadraw/sdk` (in the `lineadraw` package) exports the same checks the editor and the
 marketplace CLI run:
 
 ```js
 import { ensureScriptTranspiler, getBlockMetaResult, testBlockDefinition,
-         renderBlockThumbnailSvg, getCommandMetaResult } from "@lineadraw/sdk";
+         renderBlockThumbnailSvg, getCommandMetaResult } from "lineadraw/sdk";
 import { readFileSync } from "node:fs";
 
 await ensureScriptTranspiler();     // the meta calls are sync; without this they
@@ -236,7 +236,7 @@ Three routes. Pick by where the module should live.
    put modules in `blocks/` and `commands/`, then:
 
    ```bash
-   npm run manifest   # validates every module (dry-runs blocks when @lineadraw/sdk is a devDependency) and writes the catalog
+   npm run manifest   # validates every module (dry-runs every block) and writes the catalog
    npm run check      # CI: fails if the committed catalog is stale
    ```
 

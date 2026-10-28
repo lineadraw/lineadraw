@@ -14,10 +14,10 @@ your own collection.
 | `plugins/`                    | Claude Desktop plugin packaging                                                    |
 
 The npm surface lives elsewhere:
-[`lineadraw`](https://www.npmjs.com/package/lineadraw) (authoring types +
-marketplace CLI), [`create-lineadraw`](https://www.npmjs.com/package/create-lineadraw)
-(scaffolder), [`@lineadraw/sdk`](https://www.npmjs.com/package/@lineadraw/sdk)
-(headless Node API), [`@lineadraw/mcp`](https://www.npmjs.com/package/@lineadraw/mcp)
+[`lineadraw`](https://www.npmjs.com/package/lineadraw) (headless Node SDK
+at `lineadraw/sdk`, authoring types, marketplace CLI),
+[`create-lineadraw`](https://www.npmjs.com/package/create-lineadraw)
+(scaffolder), [`@lineadraw/mcp`](https://www.npmjs.com/package/@lineadraw/mcp)
 (MCP server + in-chat editor).
 
 ## Create your own block/command marketplace
@@ -68,9 +68,8 @@ npm run check      # validate blocks/commands without creating .lineadraw/market
 ```
 
 The manifest is deterministic, so `check` is a byte diff and the included
-GitHub workflow fails PRs with a stale catalog. With `@lineadraw/sdk` as a
-devDependency (the scaffold adds it), `manifest`/`check` also **dry-run
-every block** and render thumbnails; without it they still fully work.
+GitHub workflow fails PRs with a stale catalog. `manifest`/`check` also
+**dry-run every block** and render thumbnails.
 
 ### 4. Add it in the editor
 
@@ -85,7 +84,7 @@ a trust decision: previewing and installing runs the repo's module code.
 
 `skills/lineadraw` teaches an agent (Claude Desktop, Claude Code) to
 create and edit Linea projects and produce DXF/PDF deliverables via
-`@lineadraw/sdk`, to work through both MCP paths, and to write blocks and
+`lineadraw/sdk`, to work through both MCP paths, and to write blocks and
 commands (with modules from this collection as worked examples). Install
 into the current folder with Node.js:
 

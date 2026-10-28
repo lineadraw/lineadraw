@@ -12,7 +12,6 @@
     "check": "lineadraw check"
   },
   "devDependencies": {
-    "lineadraw": "^0.5.0",
-    "@lineadraw/sdk": "^0.13.0"
+    "lineadraw": "^0.6.0"
   }
 }
