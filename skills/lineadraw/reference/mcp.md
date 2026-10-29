@@ -1,7 +1,7 @@
 # Linea over MCP — three routes, one tool catalog
 
-The `linea_*` tool catalog (`@lineadraw/mcp-tools`) runs wherever a Linea
-document is:
+The `linea_*` tool catalog (one definition per tool, in Linea's core) runs
+wherever a Linea document is:
 
 | | **Headless server** (`@lineadraw/mcp`) | **Desktop bridge** (the running app) | **WebMCP** (a browser tab) |
 |---|---|---|---|
