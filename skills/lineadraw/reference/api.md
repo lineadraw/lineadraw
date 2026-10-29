@@ -129,7 +129,10 @@ deliverables.
 // import (merge into this doc; returns {objects, layers, layouts, objectIds, layoutIds})
 doc.importDxfText(text, { unitOverride? }); await doc.importDxf(path);
 await doc.importDwgData(bytes); await doc.importDwg(path);   // DWG R13–R2018
-await doc.importPdfData(arrayBuffer); await doc.importPdf(path);  // vector + text
+await doc.importPdfData(bytes); await doc.importPdf(path);  // vector + text
+// importPdfData(bytes, { as: "image" }) places page images instead — in the
+// editor only for now (headless Node has no PDF rasterizer yet).
+doc.listAssets();                                  // [{ id, mimeType, bytes, users }]
 
 // export
 doc.renderSvg({ layout?, bbox?, padding?, palette? });     await doc.exportSvg(path, opts);

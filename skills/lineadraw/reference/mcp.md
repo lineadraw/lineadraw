@@ -43,6 +43,14 @@ remove, `id` in each update entry). Angles are **radians**, counter-clockwise.
   `linea_run_user_command { id, inputs?, params? }` · `linea_run_script
   { source }` (an unsaved `defineCommand` module as ONE undo step — loops
   and computed placement in one call).
+- **Import and images:** `linea_import { format: dxf | dwg | pdf, data }`
+  (DXF as text, DWG/PDF as base64; on the headless server also `path`)
+  merges a file as one undo step — a PDF as lines and text, or with
+  `pdfAs: "image"` as page images at true scale (the editor can; headless
+  Node refuses for now). PNG/JPEG need no import: `linea_add_assets
+  { dataUrls }` returns ids and pixel sizes, then an `image` object
+  `{ assetId, origin, width, height }` (mm) shows one;
+  `linea_list_assets` / `linea_remove_assets`.
 - **Output:** `linea_render` (png/svg to LOOK at; `palette: "monochrome"` +
   `background: "#ffffff"` for a paper-like preview — as-authored colors
   target the dark canvas) · `linea_export` (svg/png/pdf/dxf/dwg — the

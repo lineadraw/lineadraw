@@ -65,6 +65,12 @@ text.
   layer, style or block definition still in use is refused, with a count.
 - `linea_add_block_definitions` / `linea_add_user_commands` take module
   sources and merge by id (a matching id replaces — that's the update).
+- `linea_import { format: dxf | dwg | pdf, data }` merges a file in, as one
+  undo step (DXF as text, DWG/PDF as base64; a PDF as vectors, or with
+  `pdfAs: "image"` as page images where the host can rasterize).
+- Images: `linea_add_assets { dataUrls }` (returns ids and pixel sizes), then
+  `linea_add_objects` with `{ type: "image", assetId, origin, width, height }`
+  in mm; `linea_list_assets` / `linea_remove_assets`.
 - `linea_export { format: svg | png | pdf | dxf | dwg }` returns the file's
   content.
 - In a running app, show the user what you did: `linea_set_selection { ids }`
