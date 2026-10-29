@@ -19,7 +19,7 @@ export default defineCommand({
       return;
     }
     const pool = document
-      .query({ ids, type: "line" })
+      .listObjects({ ids, type: "line" })
       .flatMap((o) => (o.type === "line" ? [o] : []));
     if (pool.length < 2) {
       showToast("Select at least two lines", "error");

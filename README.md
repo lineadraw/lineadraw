@@ -84,7 +84,8 @@ a trust decision: previewing and installing runs the repo's module code.
 
 `skills/lineadraw` teaches an agent (Claude Desktop, Claude Code) to
 create and edit Linea projects and produce DXF/PDF deliverables via
-`lineadraw/sdk`, to work through both MCP paths, and to write blocks and
+`lineadraw/sdk`, to work through the MCP routes (the headless server, the
+desktop app's bridge, WebMCP), and to write blocks and
 commands (with modules from this collection as worked examples). Install
 into the current folder with Node.js:
 

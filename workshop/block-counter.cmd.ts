@@ -12,7 +12,7 @@ export default defineCommand({
   authors: ["Linea Team"],
   tags: ["schedule", "blocks", "utility"],
   run: async ({ document, pickPoint, prompt, showToast }) => {
-    const blocks = document.query({ type: "block" });
+    const blocks = document.listObjects({ type: "block" });
     if (!blocks.length) {
       showToast("No block instances in the model", "info");
       return;

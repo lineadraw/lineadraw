@@ -14,7 +14,7 @@ export default defineCommand({
     const layers = document.listLayers();
     const rows = layers.map((l) => ({
       ...l,
-      count: document.query({ layer: l.id }).length,
+      count: document.listObjects({ layer: l.id }).length,
     }));
     const summary = rows.map((l) => `${l.name}: ${l.count}`).join(", ");
 

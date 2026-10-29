@@ -13,7 +13,7 @@ export default defineCommand({
   tags: ["selection", "filter", "utility"],
   run: async ({ document, pickObject, setSelection, prompt, showToast }) => {
     const id = await pickObject("Reference object");
-    const [ref] = document.query({ ids: [id] });
+    const [ref] = document.listObjects({ ids: [id] });
     if (!ref) {
       showToast("Object not found", "error");
       return;
@@ -25,7 +25,7 @@ export default defineCommand({
       .toLowerCase()
       .startsWith("y");
 
-    const matches = document.query({}).filter((o) => {
+    const matches = document.listObjects({}).filter((o) => {
       if (o.type !== ref.type) return false;
       if (matchLayer && o.layerId !== ref.layerId) return false;
       if (ref.type === "block" && o.type === "block")

@@ -93,7 +93,7 @@ export default defineCommand({
   name: "Layouts from Frames",
   description:
     "One paper layout per selected sheet frame (Drawing frame block, title-block frame or rectangle), with a full-sheet viewport at the frame's scale.",
-  version: "1.0.0",
+  version: "2.0.0",
   authors: ["Linea Team"],
   tags: ["layout", "print", "sheet", "frame", "pdf"],
   run: async ({ document, editor }) => {
@@ -102,9 +102,9 @@ export default defineCommand({
       return;
     }
     const candidates = editor
-      ? document.query({ ids: editor.state().selectedIds })
+      ? document.listObjects({ ids: editor.state().selectedIds })
       : document
-          .query({ type: "block" })
+          .listObjects({ type: "block" })
           .filter(
             (o) => o.type === "block" && o.definitionId === "@lineadraw/frame",
           );
@@ -185,7 +185,7 @@ export default defineCommand({
       do name = `Layout ${++n}`;
       while (taken.has(name));
       taken.add(name);
-      document.createLayout(name, {
+      document.addLayout(name, {
         sheet,
         viewport: {
           rect: { x: 0, y: 0, w: sheet.width, h: sheet.height },

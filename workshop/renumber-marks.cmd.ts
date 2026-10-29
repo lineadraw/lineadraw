@@ -33,7 +33,7 @@ export default defineCommand({
 
     type Mark = { obj: ExistingObject; x: number; y: number };
     const marks: Mark[] = [];
-    for (const obj of document.query({ ids })) {
+    for (const obj of document.listObjects({ ids })) {
       if (obj.type === "text") {
         marks.push({ obj, x: obj.position.x, y: obj.position.y });
       } else if (obj.type === "block" && typeof obj.params.label === "string") {

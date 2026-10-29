@@ -13,7 +13,7 @@ export default defineCommand({
   tags: ["edit", "polyline", "utility"],
   run: async ({ document, pickObject, prompt, showToast }) => {
     const id = await pickObject("Line or polyline to offset");
-    const [obj] = document.query({ ids: [id] });
+    const [obj] = document.listObjects({ ids: [id] });
     let pts: Vec2[];
     let closed = false;
     if (obj?.type === "line") {

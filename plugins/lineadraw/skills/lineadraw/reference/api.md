@@ -36,7 +36,7 @@ layer. `id` is assigned by `add`; never invent ids.
 | `dimension` | `points`, `offset` | `kind`: linear (default) / angular / radial / diameter. Points per kind: linear = measured points (>2 = chain); radial = `[center, pointOnCurve]`; **diameter = the two OPPOSITE points on the curve** (`[center, edge]` silently measures a radius — half the value); angular = vertex + legs. `offset` is a VECTOR from the kind's base point to the dimension line and is **required for every kind** (radial/diameter/angular use it to place the text). `textOverride`; `styleOverride` = per-object DimStyle patch (textHeight, arrowSize, …). **Drawing scale is the TOP-LEVEL `scale` field** (`scale: 50` for 1:50) — `scale` inside `styleOverride` is NOT a style key and is rejected |
 | `viewport` | `rect: {x,y,w,h}` | layouts only; `modelCenter`, `scale` (denominator, 1:50 → 50), `locked`, `hiddenLayerIds` |
 | `image` | `assetId`, `origin`, `width`, `height` | `assetId` comes from `doc.addAsset(dataUrl)`; skipped by DXF/DWG export |
-| `block` | `definitionId`, `inputs` | an instance of a block module the document holds (`doc.document.blockDefinitions`, set via `setBlockDefinitions`). `inputs`: world points, the first is the pivot (object-reference inputs are id strings); `params`: only values that differ from the block's defaults; `rotation`/`scale` apply about the pivot. Authoring blocks: blocks-and-commands.md |
+| `block` | `definitionId`, `inputs` | an instance of a block module the document holds (`doc.listBlockDefinitions()`; add modules with `addBlockDefinitions`). `inputs`: world points, the first is the pivot (object-reference inputs are id strings); `params`: only values that differ from the block's defaults; `rotation`/`scale` apply about the pivot. Authoring blocks: blocks-and-commands.md |
 
 ## Reads
 
@@ -44,7 +44,7 @@ layer. `id` is assigned by `add`; never invent ids.
 doc.summary();          // {name, objectCount, byType, byLayer, bbox, layers, layouts}
 doc.objects;            // model-space objects (compact DTOs)
 doc.getObject(id);      // any space
-doc.query({ type: "polyline", layer: "walls", color: "#ff0000",
+doc.listObjects({ type: "polyline", layer: "walls", color: "#ff0000",
             lineType: "dashed", content: "substring",       // text only
             bbox, inside, near: { point: [0,0], tol: 5 },   // all optional, ANDed
             layout: "Sheet 1" });  // search that layout's SHEET objects
@@ -52,6 +52,8 @@ doc.query({ type: "polyline", layer: "walls", color: "#ff0000",
 doc.bboxOf(ids);        // AABB | null
 doc.length(id);         // lines/polylines/arcs/circles/ellipses; null otherwise
 doc.area(id);           // circles/ellipses/closed polylines/hatches (outer − holes)
+doc.listLayers(); doc.listLayouts(); doc.listTextStyles(); doc.listDimStyles();
+doc.listBlockDefinitions(); doc.listUserCommands();  // the document's modules
 ```
 
 ## Mutations (kernel-validated; throw on invalid input)
@@ -68,19 +70,25 @@ doc.updateLayer(nameOrId, { name?, color?, lineWidth?, opacity?, visible?, locke
 // (AutoCAD plot flag) — use for construction/guide layers.
 doc.removeLayer(nameOrId);                     // refused while current or in use
 doc.setCurrentLayer(nameOrId);                 // default layer for new objects
-doc.setName("Project name");
+doc.name = "Project name";                     // the file name takes over on save(path)
 doc.addAsset(dataUrl);                         // → assetId for image objects (content-keyed)
 doc.removeAsset(id);                           // refused while an image references it
-doc.setDimStyle({ textHeight, arrowSize, arrowType, precision, extensionOffset,
-                  extensionOvershoot, textOffset, font, widthFactor });
+// Styles: by name or id; the first style serves objects without a styleId.
+doc.updateDimStyle("Standard", { textHeight, arrowSize, arrowType, precision,
+  extensionOffset, extensionOvershoot, textOffset, font, widthFactor });
 // NOTE: no `scale` here, and none in styleOverride either — drawing-scale
 // is the TOP-LEVEL `scale` field on each dimension object (scale: 50 for
 // 1:50). add/update reject unknown styleOverride keys loudly.
-doc.setTextStyle({ font, widthFactor, textHeight });
-// Both style setters take an optional second arg (styleId) for documents with
-// several named styles; setDimStyles/setTextStyles replace the whole list.
-await doc.setBlockDefinitions([...sources]);   // REPLACES the list of block module sources;
-                                               // async: block geometry definitive on resolve
+doc.updateTextStyle("Standard", { font, widthFactor, textHeight });
+doc.addTextStyle({ name: "Notes", textHeight: 3.5 });  // → id; also addDimStyle
+doc.removeTextStyle("Notes");                  // refused while objects use it; also removeDimStyle
+// Modules (merged by exported id: a matching id REPLACES — that's the update):
+await doc.addBlockDefinitions([src]);          // → merge report; async: block geometry
+                                               // definitive on resolve
+doc.removeBlockDefinition(id);                 // refused while placed / depended on
+await doc.addUserCommands([src]); doc.removeUserCommand(id);
+await doc.runUserCommand(id, inputs?, params?); // run one of the document's commands
+await doc.runScript(source, inputs?, params?);  // run an unsaved defineCommand module
 await doc.ready();                             // for docs opened WITH blocks via drawingFromJson
 doc.transaction(() => { ... });                // one undo step
 doc.undo(); doc.redo();                        // → boolean
@@ -100,13 +108,13 @@ doc.array(ids, count, [dx, dy]);               // count copies, cumulative delta
 ## Layouts (paper space)
 
 ```js
-doc.createLayout("Plan 1:50", {
+doc.addLayout("Plan 1:50", {
   sheet: "A3" | "A4" | "A2" | "A1" | "A0" | { width, height },  // default A3
   orientation: "portrait" | "landscape",                        // named sheets
   viewport: { rect?, scale?: "1:50", center? } | false,         // default: fitted viewport
   index?,
 });                                            // → layout id
-doc.updateLayoutMeta(nameOrId, { name?, sheet?, printPalette? }); // "color" | "monochrome"
+doc.updateLayout(nameOrId, { name?, sheet?, printPalette? }); // "color" | "grayscale" | "monochrome"
 doc.removeLayout(nameOrId);
 doc.reorderLayouts([...ids]);                  // PDF page order
 ```
@@ -124,20 +132,20 @@ await doc.importDwgData(bytes); await doc.importDwg(path);   // DWG R13–R2018
 await doc.importPdfData(arrayBuffer); await doc.importPdf(path);  // vector + text
 
 // export
-doc.toSvg({ layout?, bbox?, padding?, palette? });  await doc.exportSvg(path, opts);
-await doc.toPng({ width?, background?, palette? }); await doc.exportPng(path, opts);
+doc.renderSvg({ layout?, bbox?, padding?, palette? });     await doc.exportSvg(path, opts);
+await doc.renderPng({ width?, background?, palette? });  await doc.exportPng(path, opts);
 // palette: "color" | "grayscale" | "monochrome" — print-style remap. Use
 // monochrome + background "#ffffff" for a paper-like preview: as-authored
 // layer colors target the DARK canvas and near-vanish on white otherwise.
 // Layout renders default to the layout's own printPalette.
-doc.toDxf();                                await doc.exportDxf(path);
+await doc.toDxf();                          await doc.exportDxf(path);
 await doc.toDwg({ version? });              await doc.exportDwg(path, { version? }); // default "AC1027"
-await doc.toPdf({ layouts?, palette? });    await doc.exportPdf(path, opts);
+await doc.renderPdf({ layouts?, palette? }); await doc.exportPdf(path, opts);
 doc.toJson();                               await doc.save(path?);
 ```
 
 SVG output wraps each object in `<g data-object-id data-layer>` — useful for
-programmatic checks — and `toSvg({bbox})` CULLS objects outside the box. PNG
+programmatic checks — and `renderSvg({bbox})` CULLS objects outside the box. PNG
 defaults to the dark canvas background at 1024 px; pass
 `background: "#ffffff"` for a paper-like preview, `width` for detail.
 

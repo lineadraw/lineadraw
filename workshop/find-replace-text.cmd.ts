@@ -20,7 +20,7 @@ export default defineCommand({
     const replace = await prompt("Replace with", { initial: "" });
 
     const sel = selection();
-    const texts = document.query({
+    const texts = document.listObjects({
       type: "text",
       content: find,
       ...(sel.length ? { ids: sel } : {}),

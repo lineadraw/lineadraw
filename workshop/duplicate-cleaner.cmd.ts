@@ -39,7 +39,7 @@ export default defineCommand({
   tags: ["cleanup", "utility"],
   run: async ({ document, selection, showToast }) => {
     const sel = selection();
-    const objects = sel.length ? document.query({ ids: sel }) : document.query({});
+    const objects = sel.length ? document.listObjects({ ids: sel }) : document.listObjects({});
 
     const seen = new Set<string>();
     const dupes: string[] = [];

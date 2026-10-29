@@ -146,7 +146,7 @@ export default defineCommand({
     if (!ids.length) { showToast("Select some texts first", "error"); return; }
     const start = Number(await prompt("First number", { initial: "1" }));
     const texts = document
-      .query({ ids, type: "text" })
+      .listObjects({ ids, type: "text" })
       .sort((a, b) => a.position.x - b.position.x);
     document.update(texts.map((t, i) => ({ id: t.id, content: String(start + i) })));
     showToast(`Numbered ${texts.length} texts`, "success");
@@ -156,13 +156,15 @@ export default defineCommand({
 
 `run(ctx)` receives:
 
-- `document` — the same `DocumentSession` surface the agent tools use:
+- `document` — the same `Drawing` API the SDK and the agent tools use
+  (method names mirror the tools: `listObjects` ↔ `linea_list_objects`):
   `add(objects, { layout? })`, `update([{ id, ...patch }])`, `remove(ids)`,
-  `move`/`rotate`/`scale`/`mirror`/`copy`/`array`, `query(filter)` (adds an
-  `ids` filter to the SDK's filters; returns STORED objects with defaults
-  applied and `{x, y}` points), `measure(id)` → `{ bbox, length, area }`,
+  `move`/`rotate` (radians)/`scale`/`mirror`/`copy`/`array`,
+  `listObjects(filter)` (returns STORED objects with defaults applied and
+  `{x, y}` points), `measure(id)` → `{ bbox, length, area }`,
   `listLayers`/`addLayer`/`updateLayer`/`removeLayer`/`setCurrentLayer`,
-  `createLayout(name, { sheet, orientation, scale: "1:50" })`, `summary()`.
+  `addLayout(name, { sheet, orientation, scale: "1:50" })`,
+  `list/add/update/removeTextStyle` (and `…DimStyle`), `summary()`.
   Object mutations target the ACTIVE space (model or the current layout).
   Methods throw on invalid input.
 - `pickPoint(label?)` — one snapped world point. `pickObject(label?)` — one
@@ -203,22 +205,24 @@ the run itself needs a user at the editor.
 
 Three routes. Pick by where the module should live.
 
-1. **Into a document, headlessly (blocks only).** The SDK stores block
-   modules as source strings on the document:
+1. **Into a document, by code or tool.** Modules are stored as source
+   strings on the document and merged by exported id (a matching id
+   REPLACES the module in place, so adding is also the update):
 
    ```js
    const doc = await openDrawing("plan.linea");
-   await doc.setBlockDefinitions([...doc.document.blockDefinitions, src]); // keep existing ones
+   await doc.addBlockDefinitions([src]);       // or addUserCommands([src])
    const [id] = doc.add([{ type: "block", definitionId: "@acme/anchor",
                            inputs: [[0, 0], [600, 0]], params: { d: 20 } }]);
    await doc.exportPng("check.png"); await doc.save();
    ```
 
-   `setBlockDefinitions` replaces the whole list; pass the existing sources
-   plus yours. Instance `inputs` are world points (first = pivot); `params`
-   holds only the values that differ from defaults. There is no SDK or MCP
-   call for document COMMANDS, and no `linea_*` tool for block modules on
-   either MCP path: for those, use route 2.
+   Over MCP the same is `linea_add_block_definitions { sources }` /
+   `linea_add_user_commands { sources }`, on every route — including the
+   drawing the user has open. Instance `inputs` are world points (first =
+   pivot); `params` holds only the values that differ from defaults. A
+   document command then runs with `doc.runUserCommand(id)` /
+   `linea_run_user_command { id }`, and appears in the user's palette.
 
 2. **As a file the user drops onto the editor.** Name it `<name>.block.ts`
    or `<name>.cmd.ts` and hand it over. Dropping it on the Linea window (or

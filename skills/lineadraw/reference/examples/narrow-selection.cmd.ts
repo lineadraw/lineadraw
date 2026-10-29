@@ -9,7 +9,7 @@ export default defineCommand({
   name: "Narrow Selection",
   description:
     "Keeps only objects of one type (or block definition) in the current selection.",
-  version: "1.0.0",
+  version: "2.0.0",
   authors: ["Linea Team"],
   tags: ["selection", "filter", "utility"],
   run: async ({ document, selection, setSelection, prompt, showToast }) => {
@@ -22,7 +22,7 @@ export default defineCommand({
     // One group per object type; block instances split per definition so
     // "narrow to Axis" and "narrow to Grid" stay distinct choices.
     const groups = new Map<string, { label: string; ids: string[] }>();
-    for (const o of document.query({ ids })) {
+    for (const o of document.listObjects({ ids })) {
       const key = o.type === "block" ? `block:${o.definitionId}` : o.type;
       const g = groups.get(key) ?? {
         label:

@@ -1,7 +1,7 @@
 {
     "name": "lineadraw",
-    "description": "A skill and mcp server for using Linea - web-based 2D CAD editor",
-    "version": "1.1.0",
+    "description": "A skill and MCP server for Linea, the 2D CAD editor on the desktop and on the web",
+    "version": "1.2.0",
     "author": {
         "name": "Mikhail Koshelev"
     }

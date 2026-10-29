@@ -1,31 +1,55 @@
-# Linea over MCP — two servers, one tool catalog
+# Linea over MCP — three routes, one tool catalog
 
-The `linea_*` tool catalog (`@lineadraw/mcp-tools`) has two backends:
+The `linea_*` tool catalog (`@lineadraw/mcp-tools`) runs wherever a Linea
+document is:
 
-| | **Headless server** (`@lineadraw/mcp`) | **Running editor** (WebMCP relay) |
-|---|---|---|
-| Backs tools with | an SDK `Drawing` in a document registry | the live editor stores |
-| Documents | multi-document; new/open/save/export from disk | the ONE document the user has open |
-| Extra tools | `linea_new/open/save_document`, `linea_export`, `linea_show_document` (in-chat editor app) | `linea_editor_state`, `linea_set_active_space`, `linea_set_selection`, `linea_zoom`, `linea_list_commands`, `linea_run_command` |
-| Use when | producing deliverables headlessly, or showing an editor in chat | the user says "the drawing I have open" |
+| | **Headless server** (`@lineadraw/mcp`) | **Desktop bridge** (the running app) | **WebMCP** (a browser tab) |
+|---|---|---|---|
+| Backs tools with | SDK drawings in a registry | the editors open in the app's windows | the tab's live editor |
+| Documents | multi-document; `documentId` picks one | one per window; `editor` picks one | the one in the tab |
+| Extra tools | `linea_new/open/save_document`, `linea_export {path}`, `linea_show_document` (in-chat editor) | editor + app tools (below), `linea_list_editors` / `linea_open_editor` / `linea_select_editor` | editor + app tools (below) |
+| Use when | producing deliverables headlessly, or showing an editor in chat | "the drawing I have open" in the desktop app (or a paired web tab) | an in-browser agent working on the tab |
 
-Shared tools (both backends): `linea_add_objects` (model space or
-`layout`) · `linea_update_objects` (per-id patches) ·
-`linea_remove_objects` · `linea_transform` (move/rotate/scale/mirror/
-copy/array — **angles in DEGREES here**; the SDK uses radians) ·
-`linea_create_layout` ("1:50" scale strings; custom mm via `sheetSize`) ·
-`linea_update_layout` (rename / sheet size / **printPalette — set
-"monochrome" for print-style output**) · `linea_remove_layout` ·
-`linea_set_dim_style` / `linea_set_text_style` (document styles; annotation
-scale is NOT a style key — top-level `scale` per object) · `linea_query`
-(filters + measures; `layout` searches a layout's SHEET objects — the way
-to find a viewport's id) · `linea_list_layers` / `linea_layer` ·
-`linea_render` (SVG; PNG as image content on Node; `palette: "monochrome"`
-+ `background: "#ffffff"` for a paper-like preview — as-authored colors
-target the dark canvas) · `linea_undo` / `linea_redo` · `linea_summary` ·
-`linea_get_document` · `linea_replace_document` (full-state save used by
-the in-chat editor — not for normal agent edits; use the granular tools so
-changes are validated ops).
+**Read `linea_guide` once** (or [guide.md](guide.md), the same text): units,
+tool naming, model space vs layouts, a worked example.
+
+## The shared tools (every route)
+
+Names are `linea_<verb>_<kind>`. Edit tools take ARRAYS and apply them all or
+nothing; layers, layouts and styles are addressed by name or id (`ids` to
+remove, `id` in each update entry). Angles are **radians**, counter-clockwise.
+
+- **Read:** `linea_guide` · `linea_summary` · `linea_get_document` ·
+  `linea_list_objects` (filters + `measure`; `layout` searches a layout's
+  SHEET objects — the way to find a viewport's id) · `linea_list_layers` ·
+  `linea_list_layouts` · `linea_list_text_styles` · `linea_list_dim_styles`
+  · `linea_list_block_definitions` · `linea_list_user_commands`.
+- **Objects:** `linea_add_objects` (model space, or a sheet via `layout`) ·
+  `linea_update_objects` (per-id patches) · `linea_remove_objects` ·
+  `linea_reorder_objects` (draw order) · `linea_transform_objects`
+  (move/rotate/scale/mirror/copy/array; `angle` in radians).
+- **Layers:** `linea_add/update/remove/reorder_layers` ·
+  `linea_set_current_layer`.
+- **Layouts:** `linea_add/update/remove/reorder_layouts` ("1:50" scale
+  strings; custom mm via `sheetSize`; **`printPalette: "monochrome"`** for
+  print-style output).
+- **Styles:** `linea_add/update/remove_text_styles` ·
+  `linea_add/update/remove_dim_styles` (annotation scale is NOT a style
+  key — top-level `scale` per object). Removing a style objects use is
+  refused, with a count.
+- **Modules:** `linea_add/remove_block_definitions` ·
+  `linea_add/remove_user_commands` (module sources, merged by id — a
+  matching id replaces, so add is also the update) ·
+  `linea_run_user_command { id, inputs?, params? }` · `linea_run_script
+  { source }` (an unsaved `defineCommand` module as ONE undo step — loops
+  and computed placement in one call).
+- **Output:** `linea_render` (png/svg to LOOK at; `palette: "monochrome"` +
+  `background: "#ffffff"` for a paper-like preview — as-authored colors
+  target the dark canvas) · `linea_export` (svg/png/pdf/dxf/dwg — the
+  file's content).
+- **Other:** `linea_undo` / `linea_redo` · `linea_replace_document`
+  (full-state save used by the in-chat editor — not for normal agent edits;
+  use the granular tools so changes are validated ops).
 
 **Tool-arg points are `[x, y]` tuples** (`delta`, `center`, `axisA`,
 `axisB`, `near.point`) — `{x, y}` is accepted only INSIDE object bodies.
@@ -33,9 +57,9 @@ changes are validated ops).
 All SKILL.md rules apply unchanged: mm, Y-up, draw 1:1, byLayer styling,
 annotation `scale` = drawing-scale denominator, verify by rendering and
 looking, layouts for presentation. Prefer `linea_summary` + targeted
-`linea_query` reads; never dump full documents into context.
+`linea_list_objects` reads; never dump full documents into context.
 
-## Path 1 — headless MCP server (`@lineadraw/mcp`)
+## Route 1 — headless MCP server (`@lineadraw/mcp`)
 
 One process holds a registry of open documents shared by every session; most
 tools default to the ACTIVE document (the last created/opened), or take an
@@ -62,6 +86,10 @@ need **https**: either `npx cloudflared tunnel --url http://localhost:3001`
 (throwaway URL), or mkcert local TLS (`TLS_CERT`/`TLS_KEY` env vars), then
 add the connector as `https://…/mcp`.
 
+Files: `linea_open_document { path }`, `linea_save_document { path? }`,
+`linea_export { format, path }` writes to disk (without `path` it returns
+the content).
+
 (Working from a linea repo checkout instead: `npm run build -w @lineadraw/mcp`,
 then `node <repo>/packages/mcp/dist/server.js --stdio`.)
 
@@ -82,52 +110,53 @@ bundle in a sandboxed iframe). How to work with it:
 - Show it when the user should draw/inspect/decide; keep using granular
   tools for your own edits (they stay validated ops and undo steps).
 
-## Path 2 — the running editor (WebMCP local relay)
+## Route 2 — the desktop bridge (the running app)
 
-The user's open Linea tab can register the tool catalog on
-`document.modelContext` (W3C Web Model Context, via `@mcp-b/global`) and
-forward it over `ws://127.0.0.1:9333` to a local relay process that MCP
-clients spawn as a stdio server. You then edit the document the user is
-looking at: changes appear live in their viewport, every tool call is ONE
-undo step, and read-only mode rejects mutations with a tool error.
+The Linea desktop app serves MCP (Streamable HTTP) at
+`http://127.0.0.1:7431/mcp` and the same tools as REST at
+`POST /api/<tool>`; `GET http://127.0.0.1:7431/` is its own agent guide,
+with the live status. It listens on this machine only.
 
-Wiring (user side, in Linea): menu → **App Settings…** (Ctrl+,) →
-**"Agent access"** on, plus the **"Local relay"** sub-toggle (the tab keeps
-dialing localhost:9333 while enabled). Hosts embedding the editor can call
-`installWebMcp()` instead.
+- **Claude Code:** `claude mcp add --transport http linea http://127.0.0.1:7431/mcp`
+  (add `--header "Authorization: Bearer <token>"` when the app requires a
+  token — the user sees it in the app's Agents popover).
+- **Claude Desktop:** a local server bridged with `mcp-remote`:
+  `{ "command": "npx", "args": ["-y", "mcp-remote", "http://127.0.0.1:7431/mcp"] }`.
+- A **web tab** (lineadraw.com) joins the same bridge after the user pairs
+  it with the app (Agents popover).
 
-Client side, the relay process (`@mcp-b/webmcp-local-relay`) is the MCP
-server:
+Which drawing: `linea_list_editors` first. One open: nothing else to do.
+Several: pass `editor` (document id, file path or unique name) on every
+call, or `linea_select_editor { editor }` once per MCP session. The bridge
+never guesses — it answers `ambiguous`.
 
-```json
-"mcpServers": {
-  "lineadraw-editor": {
-    "command": "npx",
-    "args": ["-y", "@mcp-b/webmcp-local-relay"]
-  }
-}
-```
+## Route 3 — WebMCP (an in-browser agent)
 
-Editor-path semantics to respect:
+The tab registers the catalog on `document.modelContext` (W3C Web Model
+Context, via `@mcp-b/global`) for agents that live in the browser — a
+browser extension (MCP-B) or the browser's own agent. The user turns it on
+in the editor's **Agents** popover → **"In-browser agents"**. Every tool call
+is ONE undo step; read-only mode rejects mutations with a tool error.
 
-- **Object tools target the ACTIVE space** — model space or whichever paper
-  layout the user is on. Check `linea_editor_state` first (it reports
-  the active space, selection, camera, read-only flag);
-  `linea_set_active_space` switches.
-- `linea_set_selection` / `linea_zoom` let you point at things
-  ("here's the beam I mean") — use them to communicate, not just to edit.
-- `linea_list_commands` / `linea_run_command` run the editor's own
-  command registry (the palette's commands) by id, like the user pressing
-  the hotkey. Interactive drawing tools START and then wait for the USER's
-  canvas clicks — create geometry yourself with `linea_add_objects`;
-  run_command is for undo/zoomFit/panel-style commands or handing a tool to
-  the user.
-- There is no save/export tool on this path — the user owns the file
-  (Ctrl+S). Ask them to save; don't try to reach the disk.
-- No `linea_show_document` either — the editor is already in front of
-  the user.
-- Neither MCP path has a tool for block or command MODULES. To give the
-  user a block or command, write the `.block.ts`/`.cmd.ts` file and have
-  them drop it onto the editor (see blocks-and-commands.md). You can still
-  PLACE instances of blocks the document already has via
-  `linea_add_objects` with `{ type: "block", definitionId, inputs }`.
+## Editor and app tools (routes 2 and 3)
+
+- **Editor:** `linea_editor_state` (active space, selection, camera,
+  read-only flag) · `linea_set_active_space` · `linea_set_selection { ids }`
+  or a filter (`{ inside: box }` = window, `{ bbox }` = crossing, `layer`,
+  `type`) · `linea_zoom { to: "fit" | "selection" } | { ids } | { bbox }` —
+  point at things ("here's the beam I mean"), not just edit ·
+  `linea_list_commands` / `linea_run_command` run the editor's own command
+  registry by id, like the user pressing the hotkey (interactive drawing
+  tools START and then wait for the USER's clicks — create geometry
+  yourself with `linea_add_objects`).
+- **App:** `linea_list_documents` · `linea_new_document` ·
+  `linea_open_document { id | path }` · `linea_save_document { path? }` ·
+  `linea_close_document { discard? }` · `linea_delete_document` (web only).
+  On the desktop every drawing has its own window: from a window showing a
+  drawing, new/open answer `{ window: "new" }` — list the editors and
+  address it. A drawing never saved to a file needs the user to Save (the
+  desktop also takes a `path`). Never `discard` without the user's say-so.
+- **Object tools act on MODEL space** unless `layout` names a sheet — never
+  on whatever space the user happens to be looking at.
+- No `linea_show_document` here — the editor is already in front of the
+  user.
