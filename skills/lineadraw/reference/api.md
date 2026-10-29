@@ -144,7 +144,7 @@ await doc.renderPng({ width?, background?, palette? });  await doc.exportPng(pat
 await doc.toDxf();                          await doc.exportDxf(path);
 await doc.toDwg({ version? });              await doc.exportDwg(path, { version? }); // default "AC1027"
 await doc.renderPdf({ layouts?, palette? }); await doc.exportPdf(path, opts);
-doc.toJson();                               await doc.save(path?);
+doc.toLinea();                               await doc.save(path?);
 ```
 
 SVG output wraps each object in `<g data-object-id data-layer>` — useful for
