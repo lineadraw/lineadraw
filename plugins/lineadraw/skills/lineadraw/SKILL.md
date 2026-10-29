@@ -122,7 +122,7 @@ doc.add([
 //    layout-less; exportPdf of a layout-less doc falls back to one
 //    auto-fitted A3.)
 doc.addLayout("Plan 1:50", {
-  sheet: "A3", orientation: "landscape",
+  sheet: "A3",                                     // landscape; { name: "A3", orientation: "portrait" } flips it
   viewport: { scale: "1:50" },                     // centers on model extents
 });
 

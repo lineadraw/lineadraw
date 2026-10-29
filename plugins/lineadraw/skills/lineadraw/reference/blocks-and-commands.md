@@ -141,15 +141,16 @@ export default defineCommand({
   id: "@acme/number-texts",
   name: "Number selected texts",
   description: "Renumbers the selected text objects left to right, starting at a typed number.",
-  run: async ({ document, selection, prompt, showToast }) => {
-    const ids = selection();
-    if (!ids.length) { showToast("Select some texts first", "error"); return; }
-    const start = Number(await prompt("First number", { initial: "1" }));
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Needs the editor (selection + prompt)");
+    const ids = editor.state().selectedIds;
+    if (!ids.length) { editor.toast("Select some texts first", "error"); return; }
+    const start = Number(await editor.prompt("First number", { initial: "1" }));
     const texts = document
       .listObjects({ ids, type: "text" })
       .sort((a, b) => a.position.x - b.position.x);
     document.update(texts.map((t, i) => ({ id: t.id, content: String(start + i) })));
-    showToast(`Numbered ${texts.length} texts`, "success");
+    editor.toast(`Numbered ${texts.length} texts`, "success");
   },
 });
 ```
@@ -157,23 +158,38 @@ export default defineCommand({
 `run(ctx)` receives:
 
 - `document` — the same `Drawing` API the SDK and the agent tools use
-  (method names mirror the tools: `listObjects` ↔ `linea_list_objects`):
-  `add(objects, { layout? })`, `update([{ id, ...patch }])`, `remove(ids)`,
+  (method names mirror the tools: `listObjects` ↔ `linea_list_objects`;
+  full surface in [api.md](api.md)): `add(objects, { layout? })`,
+  `update([{ id, ...patch }])`, `remove(ids)` (→ count), `reorder`,
   `move`/`rotate` (radians)/`scale`/`mirror`/`copy`/`array`,
   `listObjects(filter)` (returns STORED objects with defaults applied and
   `{x, y}` points), `measure(id)` → `{ bbox, length, area }`,
   `listLayers`/`addLayer`/`updateLayer`/`removeLayer`/`setCurrentLayer`,
-  `addLayout(name, { sheet, orientation, scale: "1:50" })`,
-  `list/add/update/removeTextStyle` (and `…DimStyle`), `summary()`.
-  Object mutations target the ACTIVE space (model or the current layout).
-  Methods throw on invalid input.
-- `pickPoint(label?)` — one snapped world point. `pickObject(label?)` — one
-  clicked object's id. `prompt(message, { initial?, placeholder? })` — a
-  typed string. All three REJECT on Escape; let it propagate to cancel, or
-  catch it to end an open-ended loop (`chain-dimension.cmd.ts`,
-  `area-label.cmd.ts` show the pattern: collect until Escape, then act).
-- `selection()` (snapshot of selected ids) and `setSelection(ids)`.
-- `showToast(message, "info" | "success" | "error")`.
+  `addLayout(name, { sheet, scale: "1:50" })`, `list/add/update/removeTextStyle`
+  (and `…DimStyle`), `summary()`. Object writes go to MODEL space unless
+  `{ layout }` names a sheet. Methods throw on invalid input; `undo`/`redo`
+  throw inside a run (the run IS the undo step).
+- `editor` — the editor surface, `undefined` in headless hosts (SDK
+  `runScript`, `linea_run_script`), so branch on it when the command can
+  also run headlessly. `pickPoint({ label?, referencePoint? })` — one
+  snapped world point; `pickObject({ label? })` — one clicked object's id;
+  `prompt(message, { initial?, placeholder? })` — a typed string. All three
+  REJECT on Escape; let it propagate to cancel, or catch it to end an
+  open-ended loop (`chain-dimension.cmd.ts`, `area-label.cmd.ts` show the
+  pattern: collect until Escape, then act). `state()` →
+  `{ selectedIds, space, readOnly, … }`, `setSelection(ids)`,
+  `zoom("fit" | "selection" | { ids } | { bbox })`,
+  `toast(message, "info" | "success" | "error")`.
+- `inputs` — the points the spec's declared `inputs: ["Start", "End"]`
+  labels produced: picked in turn in the editor, supplied up front by a
+  headless caller (`runScript(src, inputs)`, `linea_run_script`).
+- `params` — the values of the spec's `params` table (same row types as
+  blocks): asked for in a dialog before an editor run, passed by name
+  headlessly (unknown names / wrong types throw).
+- The flat `pickPoint(label)`, `pickObject`, `selection()`, `setSelection`,
+  `prompt`, `showToast` shorthands on the context still work but are
+  deprecated aliases of the `editor` methods (the bundled examples predate
+  `editor`); write new commands against `editor.*`.
 
 There is no drawing-scale context: when a command creates annotations,
 ask for the scale with `prompt` (default 50) and set top-level `scale`.
