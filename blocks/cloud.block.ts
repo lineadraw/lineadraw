@@ -1,6 +1,7 @@
 // Cloud
 
 import { defineBlock } from "lineadraw";
+import type { PolylineVertexInput, Vec2 } from "lineadraw";
 import { dist, len, norm, sub } from "lineadraw/helpers";
 
 const SIZE = 2;
@@ -38,7 +39,7 @@ export default defineBlock({
   draw: ({ params, inputs }) => {
     const { scale } = params;
 
-    const points: PolylineVertexLike[] = [];
+    const points: PolylineVertexInput[] = [];
 
     for (let i = 0; i < inputs.length; i++) {
       const p0 = inputs[i];

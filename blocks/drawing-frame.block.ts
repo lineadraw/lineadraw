@@ -1,6 +1,7 @@
 // Drawing frame
 
 import { defineBlock } from "lineadraw";
+import type { LineInput, PolylineInput } from "lineadraw";
 
 export default defineBlock({
   id: "@lineadraw/frame",
@@ -104,7 +105,7 @@ export default defineBlock({
 
     let w = 20;
     let h = 20;
-    const separators: Line[] = [];
+    const separators: LineInput[] = [];
 
     if (size === "Custom") {
       w = width;
@@ -145,7 +146,7 @@ export default defineBlock({
                 [0, h],
               ],
               closed: true,
-            } as Polyline,
+            } as PolylineInput,
           ]
         : []),
       {

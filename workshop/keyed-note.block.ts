@@ -1,6 +1,7 @@
 // Keyed note — a numbered bubble (circle or hexagon) with a leader and
 // arrowhead pointing at the noted detail; builds keynote legends.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, dist, norm, polar, rotate, scale as sc, sub, toRad } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -34,7 +35,7 @@ export default defineBlock({
     const { scale, label, shape } = params;
     const r = 3.5 * scale;
     const gap = dist(target, bubble);
-    const out: ModelObject[] = [];
+    const out: BlockChildInput[] = [];
 
     if (shape === "hexagon")
       out.push({

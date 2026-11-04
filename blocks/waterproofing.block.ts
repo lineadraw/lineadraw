@@ -2,7 +2,7 @@
 // closed outline offset ±width/2 (mitered corners, flat end caps — like the
 // Rebar outline but with no bending radius) plus a dashed centerline.
 import { defineBlock } from "lineadraw";
-import type { Polyline, Vec2 } from "lineadraw";
+import type { HatchInput, PolylineInput, PolylineVertexInput, Vec2 } from "lineadraw";
 import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -51,14 +51,14 @@ export default defineBlock({
 
     const left = offsetChain(pts, width);
 
-    const outline: Polyline = {
+    const outline: PolylineInput = {
       type: "polyline",
       points: [...pts, ...left.reverse()],
       closed: true,
     };
 
     const loops: {
-      points: readonly PolylineVertexLike[];
+      points: readonly PolylineVertexInput[];
     }[] = [];
 
     for (let i = 0; i < pts.length - 1; i++) {
@@ -70,7 +70,7 @@ export default defineBlock({
       loops.push(...segmentLoops);
     }
 
-    const hatch: Hatch = {
+    const hatch: HatchInput = {
       type: "hatch",
       loops: loops,
       fill: {
@@ -121,13 +121,13 @@ const getLoops = (
   end: Vec2,
   width: number,
   step: number,
-): PolylineVertexLike[][] => {
+): PolylineVertexInput[][] => {
   const length = len(sub(end, start));
   const dir = norm(sub(end, start));
   const normal = rotate(dir, Math.PI / 2);
   const n = Math.ceil(length / step);
 
-  const loops: PolylineVertexLike[][] = [];
+  const loops: PolylineVertexInput[][] = [];
   for (let i = 0; i < n; i += 2) {
     const t0 = (i / n) * length;
     const t1 = ((i + 1) / n) * length;

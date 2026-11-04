@@ -23,7 +23,9 @@ remove, `id` in each update entry). Angles are **radians**, counter-clockwise.
   `linea_list_objects` (filters + `measure`; `layout` searches a layout's
   SHEET objects — the way to find a viewport's id) · `linea_list_layers` ·
   `linea_list_layouts` · `linea_list_text_styles` · `linea_list_dim_styles`
-  · `linea_list_block_definitions` · `linea_list_user_commands`.
+  · `linea_list_line_types` · `linea_list_hatch_patterns` ·
+  `linea_list_block_definitions` · `linea_list_user_commands` ·
+  `linea_list_assets`.
 - **Objects:** `linea_add_objects` (model space, or a sheet via `layout`) ·
   `linea_update_objects` (per-id patches) · `linea_remove_objects` ·
   `linea_reorder_objects` (draw order) · `linea_transform_objects`
@@ -37,20 +39,36 @@ remove, `id` in each update entry). Angles are **radians**, counter-clockwise.
   `linea_add/update/remove_dim_styles` (annotation scale is NOT a style
   key — top-level `scale` per object). Removing a style objects use is
   refused, with a count.
+- **Line types / hatch patterns:** `linea_add/update/remove_line_types` ·
+  `linea_add/update/remove_hatch_patterns` — the DOCUMENT's own
+  definitions, by name, resolved ahead of the built-in catalogue (which is
+  always available and never listed).
+- **Document settings:** `linea_update_document_settings { units }`.
 - **Modules:** `linea_add/remove_block_definitions` ·
   `linea_add/remove_user_commands` (module sources, merged by id — a
   matching id replaces, so add is also the update) ·
   `linea_run_user_command { id, inputs?, params? }` · `linea_run_script
   { source }` (an unsaved `defineCommand` module as ONE undo step — loops
   and computed placement in one call).
-- **Import and images:** `linea_import { format: dxf | dwg | pdf, data }`
+- **Marketplaces:** `linea_list_marketplaces` · `linea_add_marketplaces`
+  (a GitHub `owner/repo[@branch]` with an optional read-only `token`, or a
+  local `folder` where the host reads disks) · `linea_remove_marketplaces`
+  · `linea_search_marketplaces { query?, kind?, marketplace? }` (entries
+  with install status: absent / installed / update) ·
+  `linea_install_marketplace_entries { ids }` (declared block dependencies
+  come along, one undo step) — then insert with `linea_add_objects
+  { type: "block", definitionId }`.
+- **Import and pictures:** `linea_import { format: dxf | dwg | pdf, data }`
   (DXF as text, DWG/PDF as base64; on the headless server also `path`)
   merges a file as one undo step — a PDF as lines and text, or with
-  `pdfAs: "image"` as page images at true scale (the editor can; headless
-  Node refuses for now). PNG/JPEG need no import: `linea_add_assets
-  { dataUrls }` returns ids and pixel sizes, then an `image` object
-  `{ assetId, origin, width, height }` (mm) shows one;
-  `linea_list_assets` / `linea_remove_assets`.
+  `pdfAs: "image"` embedded once with every page placed as a raster
+  reference at true page scale (the editor can; headless Node refuses for
+  now). PNG/JPEG need no import: they are REFERENCES. `linea_add_assets
+  { dataUrls }` embeds the bytes and returns ids and pixel sizes, then
+  `{ type: "reference", format: "png" | "jpg", name, source: { kind:
+  "asset", assetId }, position, scale }` places one (px × 25.4/96 mm times
+  `scale`, bottom-left at `position`; pictures scale uniformly — there is
+  no width/height and no `image` type) · `linea_remove_assets`.
 - **Output:** `linea_render` (png/svg to LOOK at; `palette: "monochrome"` +
   `background: "#ffffff"` for a paper-like preview — as-authored colors
   target the dark canvas) · `linea_export` (svg/png/pdf/dxf/dwg — the
@@ -153,6 +171,8 @@ is ONE undo step; read-only mode rejects mutations with a tool error.
   or a filter (`{ inside: box }` = window, `{ bbox }` = crossing, `layer`,
   `type`) · `linea_zoom { to: "fit" | "selection" } | { ids } | { bbox }` —
   point at things ("here's the beam I mean"), not just edit ·
+  `linea_get_app_settings` / `linea_update_app_settings` (this device's
+  theme, grid, snap modes… — not the document, not undoable) ·
   `linea_list_commands` / `linea_run_command` run the editor's own command
   registry by id, like the user pressing the hotkey (interactive drawing
   tools START and then wait for the USER's clicks — create geometry

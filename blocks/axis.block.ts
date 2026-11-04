@@ -1,6 +1,7 @@
 // Grid axis
 
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput, Vec2Like } from "lineadraw";
 import { sub, norm, add, scale as sc } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -62,7 +63,7 @@ const getLabel = (
   pos: Vec2Like,
   label: string,
   scale: number,
-): ModelObject[] => {
+): BlockChildInput[] => {
   return [
     {
       type: "circle",

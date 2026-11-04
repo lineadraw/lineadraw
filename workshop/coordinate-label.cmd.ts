@@ -6,18 +6,22 @@ export default defineCommand({
   id: "@lineadraw/coordinate-label",
   name: "Coordinate Label",
   description: "Places X/Y coordinate labels with leaders at picked points.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["annotation", "coordinates", "utility"],
-  run: async ({ document, pickPoint, prompt, showToast }) => {
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Coordinate Label needs the editor");
     const scale =
-      parseFloat(await prompt("Annotation scale", { initial: "50" })) || 50;
+      parseFloat(await editor.prompt("Annotation scale", { initial: "50" })) ||
+      50;
 
     let count = 0;
     try {
       for (;;) {
-        const target = await pickPoint("Point to label (Esc to finish)");
-        const at = await pickPoint("Text position");
+        const target = await editor.pickPoint({
+          label: "Point to label (Esc to finish)",
+        });
+        const at = await editor.pickPoint({ label: "Text position" });
         document.add([
           {
             type: "text",
@@ -34,7 +38,7 @@ export default defineCommand({
     } catch {
       // Escape — done collecting.
     }
-    showToast(
+    editor.toast(
       count ? `Labeled ${count} point(s)` : "Nothing labeled",
       count ? "success" : "info",
     );

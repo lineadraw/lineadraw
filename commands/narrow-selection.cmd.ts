@@ -9,13 +9,14 @@ export default defineCommand({
   name: "Narrow Selection",
   description:
     "Keeps only objects of one type (or block definition) in the current selection.",
-  version: "2.0.0",
+  version: "2.0.1",
   authors: ["Linea Team"],
   tags: ["selection", "filter", "utility"],
-  run: async ({ document, selection, setSelection, prompt, showToast }) => {
-    const ids = selection();
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Narrow Selection needs the editor");
+    const ids = editor.state().selectedIds;
     if (!ids.length) {
-      showToast("Nothing selected", "error");
+      editor.toast("Nothing selected", "error");
       return;
     }
 
@@ -33,7 +34,7 @@ export default defineCommand({
       groups.set(key, g);
     }
     if (groups.size < 2) {
-      showToast("Selection is already a single type", "info");
+      editor.toast("Selection is already a single type", "info");
       return;
     }
 
@@ -42,7 +43,9 @@ export default defineCommand({
       .map((g, i) => `${i + 1}: ${g.label} ×${g.ids.length}`)
       .join("   ");
     const answer = (
-      await prompt(`Keep which? ${menu}`, { placeholder: "number or type" })
+      await editor.prompt(`Keep which? ${menu}`, {
+        placeholder: "number or type",
+      })
     )
       .trim()
       .toLowerCase();
@@ -50,11 +53,11 @@ export default defineCommand({
       entries[parseInt(answer, 10) - 1] ??
       entries.find((g) => g.label.toLowerCase().startsWith(answer));
     if (!chosen) {
-      showToast(`No group matches "${answer}"`, "error");
+      editor.toast(`No group matches "${answer}"`, "error");
       return;
     }
 
-    setSelection(chosen.ids);
-    showToast(`Selected ${chosen.ids.length} × ${chosen.label}`, "success");
+    editor.setSelection(chosen.ids);
+    editor.toast(`Selected ${chosen.ids.length} × ${chosen.label}`, "success");
   },
 });

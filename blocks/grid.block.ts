@@ -5,6 +5,7 @@
 // incrementing (["A", "B"] → A B C…, ["1"] → 1 2 3…). X positions become vertical axes bubbled at the bottom, Y
 // positions horizontal axes bubbled at the left (per labelPos).
 import { defineBlock } from "lineadraw";
+import type { BlockInput, Vec2Like } from "lineadraw";
 
 export default defineBlock({
   id: "@lineadraw/grid",
@@ -75,7 +76,7 @@ export default defineBlock({
     const [x0, x1] = [Math.min(...xs) - ext, Math.max(...xs) + ext];
     const [y0, y1] = [Math.min(...ys) - ext, Math.max(...ys) + ext];
 
-    const axis = (a: Vec2Like, b: Vec2Like, label: string): ModelObject => ({
+    const axis = (a: Vec2Like, b: Vec2Like, label: string): BlockInput => ({
       type: "block",
       definitionId: "@lineadraw/axis",
       inputs: [a, b],

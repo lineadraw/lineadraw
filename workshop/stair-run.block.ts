@@ -2,6 +2,7 @@
 // walking line with a start circle and an arrowhead in the walking
 // direction. Picked along the walking line from the first riser upward.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, dist, norm, rotate, scale as sc, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -32,7 +33,7 @@ export default defineBlock({
     const count = Math.max(1, Math.round(length / going));
     const step = length / count;
 
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       { type: "line", a: at(0, half), b: at(length, half) },
       { type: "line", a: at(0, -half), b: at(length, -half) },
     ];

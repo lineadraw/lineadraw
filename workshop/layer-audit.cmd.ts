@@ -7,10 +7,11 @@ export default defineCommand({
   name: "Layer Audit",
   description:
     "Shows object counts per layer and removes empty layers on confirmation.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["layers", "cleanup", "utility"],
-  run: async ({ document, prompt, showToast }) => {
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Layer Audit needs the editor");
     const layers = document.listLayers();
     const rows = layers.map((l) => ({
       ...l,
@@ -20,12 +21,12 @@ export default defineCommand({
 
     const empties = rows.filter((l) => l.count === 0 && !l.current);
     if (!empties.length) {
-      showToast(`${layers.length} layer(s) — ${summary}`, "info");
+      editor.toast(`${layers.length} layer(s) — ${summary}`, "info");
       return;
     }
 
     const answer = (
-      await prompt(
+      await editor.prompt(
         `${summary}. Remove ${empties.length} empty layer(s): ${empties
           .map((l) => l.name)
           .join(", ")}? (y/N)`,
@@ -35,10 +36,10 @@ export default defineCommand({
       .trim()
       .toLowerCase();
     if (!answer.startsWith("y")) {
-      showToast("Layers left unchanged", "info");
+      editor.toast("Layers left unchanged", "info");
       return;
     }
     for (const l of empties) document.removeLayer(l.id);
-    showToast(`Removed ${empties.length} empty layer(s)`, "success");
+    editor.toast(`Removed ${empties.length} empty layer(s)`, "success");
   },
 });

@@ -1,4 +1,5 @@
 import { defineBlock } from "lineadraw";
+import type { Vec2 } from "lineadraw";
 import { sub, norm, dist, scale, range } from "lineadraw/helpers";
 
 export default defineBlock({

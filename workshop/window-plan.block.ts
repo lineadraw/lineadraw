@@ -2,6 +2,7 @@
 // thickness (on the LEFT of the pick direction), wall-face lines between
 // them, and single or double glazing lines.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, dist, norm, scale as sc, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -37,7 +38,7 @@ export default defineBlock({
     const n = { x: -d.y, y: d.x }; // left of p1→p2
     const at = (t: number, w: number) => add(add(p1, sc(d, t)), sc(n, w));
 
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       { type: "line", a: at(0, 0), b: at(0, thickness) },
       { type: "line", a: at(length, 0), b: at(length, thickness) },
       { type: "line", a: at(0, 0), b: at(length, 0) },

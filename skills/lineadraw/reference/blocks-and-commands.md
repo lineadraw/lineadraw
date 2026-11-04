@@ -10,11 +10,21 @@ Real, tested modules from the public collection are in
 [examples/](examples/) (copied verbatim from the repository's `blocks/`,
 `commands/`, and `workshop/` folders). Read `bolt.block.ts` before your
 first block and `chain-dimension.cmd.ts` before your first command. The
-full collection (22 blocks, more in staging) is at
+full collection (22 blocks and 2 commands, more in staging) is at
 https://github.com/lineadraw/lineadraw.
 
 Units and conventions are the same as everywhere in Linea: millimeters,
-Y-up, radians CCW. The DTOs you return are the same object bodies the SDK
+Y-up, radians CCW.
+
+**Types are imported, not global** (`import type { … } from "lineadraw"`),
+in two families: what a script WRITES — `LineInput`, `PolylineInput`,
+`TextInput`, `HatchInput`, … (union `ModelObjectInput`; `draw` returns
+`BlockChildInput[]`; `[x, y]` tuples, defaulted fields optional) — and what
+it READS — `Line`, `Polyline`, `Text`, … (union `ModelObject`: stored
+objects with ids, layer ids, `{x, y}` points and defaults applied), as
+returned by `listObjects()` and handed to `draw` for object-reference
+inputs. Authors rarely need either: `defineBlock` / `defineCommand` infer
+everything. The DTOs you return are the same object bodies the SDK
 `add()` takes (see [api.md](api.md)), with two differences noted below.
 
 ## Identity
@@ -36,7 +46,7 @@ in block-local coordinates:
 
 ```ts
 import { defineBlock } from "lineadraw";
-import type { Line, Vec2 } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, len, norm, rotate, scale, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -59,7 +69,7 @@ export default defineBlock({
     if (L < 1e-6) return [];         // degenerate picks: draw nothing, never throw
     const n = norm(sub(b, a));
     const p = rotate(n, Math.PI / 2);
-    const out: Line[] = [
+    const out: BlockChildInput[] = [
       { type: "line", a, b },
       { type: "line", a: add(a, scale(p, params.d)), b: add(b, scale(p, params.d)) },
     ];
@@ -75,7 +85,13 @@ Spec members:
 
 - `params` — the Properties-panel table. Row types: `number` (`min`/`max`
   optional), `string`, `boolean`, `enum` (`options`: strings or
-  `{ value, label }`), and `label` (a section heading, carries no value).
+  `{ value, label }`; `display: "buttons"` for a segmented toggle),
+  `numberList` / `stringList` (arrays, typed in the panel as
+  space-separated text — numbers take Tekla `N*d` repeats, so
+  `"0 2*7200"` is `[0, 7200, 7200]`), `color` (`#rrggbb`), the document
+  resource pickers `textStyle` / `dimStyle` / `font` / `lineType` /
+  `hatchPattern` (values are ids/names), `label` (a section heading,
+  carries no value), and `row` (2–3 compact params on one panel line).
   `draw` receives `params` typed from this table; no annotations needed.
   `params` may also be a zero-arg function returning the table, so large
   constant tables can sit at the end of the file.
@@ -107,16 +123,19 @@ Rules inside `draw`:
   and `scale` are applied last, about the pivot. Transforms of the instance
   (move/rotate/mirror) move the input points and re-run `draw`, which is
   why a mirrored block is real mirrored geometry.
-- **Return DTOs, not stored objects**: `line`, `point`, `polyline`,
-  `circle`, `arc`, `ellipse`, `hatch`, `text`, `dimension`, and nested
+- **Return DTOs, not stored objects** (`BlockChildInput`): `line`,
+  `point`, `polyline`, `circle`, `arc`, `ellipse`, `hatch`, `text`,
+  `dimension`, `table`, `reference` (linked or embedded files), and nested
   `block` instances (`{ type: "block", definitionId, inputs, params? }`,
   inputs in the parent's local coords). Points accept `[x, y]` tuples.
 - **Style only when it must differ.** Children inherit the instance's
   layer/color/lineWidth; set `color`/`lineWidth`/`lineType` on a child only
-  for a deliberate override (a hidden line, a thick outline).
+  for a deliberate override (a hidden line, a thick outline). A child may
+  name its own `layer` (name or id) — it then hides with that layer.
 - **Hatches in blocks** take `fill: { kind: "solid" }`,
-  `{ kind: "lines", angle, spacing }`, or `{ kind: "gradient", … }`. The
-  block DTO does not offer named `pattern` fills.
+  `{ kind: "pattern", name, angle, scale, origin? }` (built-in or the
+  document's own patterns), `{ kind: "lines", angle, spacing }`, or
+  `{ kind: "gradient", … }`.
 - **Text and dimensions inside blocks** are sized in mm like everything
   else. Symbol-scale blocks (marks, bubbles, arrows) usually expose a
   `scale` number param and multiply their geometry by it; see
@@ -179,17 +198,19 @@ export default defineCommand({
   pattern: collect until Escape, then act). `state()` →
   `{ selectedIds, space, readOnly, … }`, `setSelection(ids)`,
   `zoom("fit" | "selection" | { ids } | { bbox })`,
-  `toast(message, "info" | "success" | "error")`.
+  `toast(message, "info" | "success" | "error")`,
+  `setActiveSpace("model" | { layout })`, and `listCommands()` /
+  `runCommand(id, inputs?, params?)` for the editor's own commands.
 - `inputs` — the points the spec's declared `inputs: ["Start", "End"]`
   labels produced: picked in turn in the editor, supplied up front by a
   headless caller (`runScript(src, inputs)`, `linea_run_script`).
 - `params` — the values of the spec's `params` table (same row types as
   blocks): asked for in a dialog before an editor run, passed by name
   headlessly (unknown names / wrong types throw).
-- The flat `pickPoint(label)`, `pickObject`, `selection()`, `setSelection`,
-  `prompt`, `showToast` shorthands on the context still work but are
-  deprecated aliases of the `editor` methods (the bundled examples predate
-  `editor`); write new commands against `editor.*`.
+- The old flat `pickPoint`, `pickObject`, `selection()`, `setSelection`,
+  `prompt`, `showToast` shorthands on the context are REMOVED (as are
+  `setTextStyle` / `setDimStyle` — use `updateTextStyle` /
+  `updateDimStyle`): go through `editor.*`.
 
 There is no drawing-scale context: when a command creates annotations,
 ask for the scale with `prompt` (default 50) and set top-level `scale`.
@@ -260,8 +281,9 @@ Three routes. Pick by where the module should live.
    npm run check      # CI: fails if the committed catalog is stale
    ```
 
-   Commit and push. In the editor the user adds the repo under Library →
-   Marketplace → the gear button → "Add a marketplace" as `owner/repo`
+   Commit and push. In the editor the user adds the repo under App
+   settings → Marketplaces (the gear in Library → Marketplace opens it) as
+   `owner/repo`
    (or `owner/repo@branch`; private repos take a fine-grained read-only
    Contents token). Installing embeds the module (and its `dependencies`
    closure) in the document, so drawings never depend on the repo staying

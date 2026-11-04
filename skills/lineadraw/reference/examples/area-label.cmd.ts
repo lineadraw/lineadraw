@@ -6,23 +6,30 @@ export default defineCommand({
   id: "@lineadraw/area-label",
   name: "Area Label",
   description: "Labels picked closed shapes with their area in m².",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["measure", "annotation", "utility"],
-  run: async ({ document, pickObject, pickPoint, prompt, showToast }) => {
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Area Label needs the editor");
     const scale =
-      parseFloat(await prompt("Annotation scale", { initial: "50" })) || 50;
+      parseFloat(await editor.prompt("Annotation scale", { initial: "50" })) ||
+      50;
 
     let count = 0;
     try {
       for (;;) {
-        const id = await pickObject("Closed shape (Esc to finish)");
+        const id = await editor.pickObject({
+          label: "Closed shape (Esc to finish)",
+        });
         const area = document.measure(id).area;
         if (area == null) {
-          showToast("That object has no area — pick a closed shape", "error");
+          editor.toast(
+            "That object has no area — pick a closed shape",
+            "error",
+          );
           continue;
         }
-        const position = await pickPoint("Label position");
+        const position = await editor.pickPoint({ label: "Label position" });
         document.add([
           {
             type: "text",
@@ -38,7 +45,7 @@ export default defineCommand({
     } catch {
       // Escape — done collecting.
     }
-    showToast(
+    editor.toast(
       count ? `Labeled ${count} shape(s)` : "Nothing labeled",
       count ? "success" : "info",
     );

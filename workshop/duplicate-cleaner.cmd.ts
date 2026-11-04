@@ -2,11 +2,12 @@
 // (within 0.01 mm) with an earlier object of the same type on the same
 // layer, and removes them. Scoped to the selection when one is active.
 import { defineCommand } from "lineadraw";
+import type { ModelObject, Vec2 } from "lineadraw";
 
 const r = (v: number) => Math.round(v * 100) / 100;
 const pt = (p: Vec2) => `${r(p.x)},${r(p.y)}`;
 
-const keyOf = (o: ExistingObject): string | null => {
+const keyOf = (o: ModelObject): string | null => {
   switch (o.type) {
     case "line": {
       const ends = [pt(o.a), pt(o.b)].sort();
@@ -34,11 +35,11 @@ export default defineCommand({
   name: "Duplicate Cleaner",
   description:
     "Removes exactly overlapping duplicate lines, circles, arcs, texts, points and polylines.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["cleanup", "utility"],
-  run: async ({ document, selection, showToast }) => {
-    const sel = selection();
+  run: async ({ document, editor }) => {
+    const sel = editor?.state().selectedIds ?? [];
     const objects = sel.length ? document.listObjects({ ids: sel }) : document.listObjects({});
 
     const seen = new Set<string>();
@@ -51,10 +52,10 @@ export default defineCommand({
     }
 
     if (!dupes.length) {
-      showToast("No duplicates found", "info");
+      editor?.toast("No duplicates found", "info");
       return;
     }
     document.remove(dupes);
-    showToast(`Removed ${dupes.length} duplicate(s)`, "success");
+    editor?.toast(`Removed ${dupes.length} duplicate(s)`, "success");
   },
 });

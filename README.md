@@ -67,14 +67,15 @@ npm run manifest   # creates .lineadraw/marketplace.json
 npm run check      # validate blocks/commands without creating .lineadraw/marketplace.json
 ```
 
-The manifest is deterministic, so `check` is a byte diff and the included
+The manifest is deterministic, so `check` compares it with the committed
+catalog (formatting and line endings never make it stale) and the included
 GitHub workflow fails PRs with a stale catalog. `manifest`/`check` also
 **dry-run every block** and render thumbnails.
 
 ### 4. Add it in the editor
 
-**Library → Marketplace tab → the gear button (Manage marketplaces…) → Add
-a marketplace** and enter `owner/repo` (or `owner/repo@branch`). For a **private** repository, create a fine-grained
+**App settings → Marketplaces → Add a marketplace** (the gear in Library →
+Marketplace opens it) and enter `owner/repo` (or `owner/repo@branch`). For a **private** repository, create a fine-grained
 personal access token with read-only Contents access to just that
 repository and paste it in the add dialog — it is stored only on that
 device, and never enters any document. Note that adding a marketplace is

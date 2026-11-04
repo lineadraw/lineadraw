@@ -2,6 +2,7 @@
 // labels at the ticks. `drawing` is the drawing-scale denominator (50 for
 // 1:50); it sizes the bar height and the tick texts so they print right.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 
 export default defineBlock({
   id: "@lineadraw/scale-bar",
@@ -24,7 +25,7 @@ export default defineBlock({
     const h = 1.5 * drawing; // 1.5 mm on paper
     const total = n * segment;
 
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       {
         type: "polyline",
         points: [p, { x: p.x + total, y: p.y }, { x: p.x + total, y: p.y + h }, { x: p.x, y: p.y + h }],

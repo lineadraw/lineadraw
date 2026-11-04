@@ -8,18 +8,19 @@ export default defineCommand({
   name: "Find & Replace Text",
   description:
     "Replaces a substring in all texts (selection if active, else whole model).",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["text", "edit", "utility"],
-  run: async ({ document, selection, prompt, showToast }) => {
-    const find = await prompt("Find");
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Find & Replace Text needs the editor");
+    const find = await editor.prompt("Find");
     if (find === "") {
-      showToast("Nothing to find", "error");
+      editor.toast("Nothing to find", "error");
       return;
     }
-    const replace = await prompt("Replace with", { initial: "" });
+    const replace = await editor.prompt("Replace with", { initial: "" });
 
-    const sel = selection();
+    const sel = editor.state().selectedIds;
     const texts = document.listObjects({
       type: "text",
       content: find,
@@ -32,10 +33,10 @@ export default defineCommand({
         : [],
     );
     if (!patches.length) {
-      showToast(`"${find}" not found`, "info");
+      editor.toast(`"${find}" not found`, "info");
       return;
     }
     document.update(patches);
-    showToast(`Replaced in ${patches.length} text(s)`, "success");
+    editor.toast(`Replaced in ${patches.length} text(s)`, "success");
   },
 });

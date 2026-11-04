@@ -14,7 +14,7 @@
 // follow reading order: rows top to bottom, then left to right.
 // Headless (SDK / agents): every Drawing-frame instance in model space.
 import { defineCommand } from "lineadraw";
-import type { StoredObject } from "lineadraw";
+import type { ModelObject } from "lineadraw";
 
 type Frame = {
   minX: number;
@@ -61,7 +61,7 @@ const frameBlockSize = (p: Record<string, unknown>): [number, number] => {
 };
 
 /** An axis-aligned closed straight-sided rectangle's bounds, else null. */
-const rectangleOf = (o: StoredObject): Omit<Frame, "scale"> | null => {
+const rectangleOf = (o: ModelObject): Omit<Frame, "scale"> | null => {
   if (o.type !== "polyline" || !o.closed) return null;
   const pts = o.points;
   const last = pts[pts.length - 1];

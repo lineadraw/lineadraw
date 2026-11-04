@@ -4,34 +4,36 @@
 // ("A01" continues A02, A03, …). Order follows the dominant direction of
 // the selection (left→right when it is wider than tall, else top→bottom).
 import { defineCommand } from "lineadraw";
+import type { ModelObject } from "lineadraw";
 
 export default defineCommand({
   id: "@lineadraw/renumber-marks",
   name: "Renumber Marks",
   description:
     "Re-sequences selected texts and labeled blocks spatially from a first label.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["annotation", "numbering", "utility"],
-  run: async ({ document, selection, prompt, showToast }) => {
-    const ids = selection();
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Renumber Marks needs the editor");
+    const ids = editor.state().selectedIds;
     if (!ids.length) {
-      showToast("Nothing selected", "error");
+      editor.toast("Nothing selected", "error");
       return;
     }
     const first = (
-      await prompt('First label (e.g. "1" or "A01")', { initial: "1" })
+      await editor.prompt('First label (e.g. "1" or "A01")', { initial: "1" })
     ).trim();
     const m = first.match(/^(.*?)(\d+)$/);
     if (!m) {
-      showToast("Label must end with a number", "error");
+      editor.toast("Label must end with a number", "error");
       return;
     }
     const prefix = m[1];
     const start = parseInt(m[2], 10);
     const pad = m[2].length;
 
-    type Mark = { obj: ExistingObject; x: number; y: number };
+    type Mark = { obj: ModelObject; x: number; y: number };
     const marks: Mark[] = [];
     for (const obj of document.listObjects({ ids })) {
       if (obj.type === "text") {
@@ -43,7 +45,7 @@ export default defineCommand({
       }
     }
     if (!marks.length) {
-      showToast("No texts or labeled blocks in the selection", "error");
+      editor.toast("No texts or labeled blocks in the selection", "error");
       return;
     }
 
@@ -61,6 +63,6 @@ export default defineCommand({
           : { id: obj.id, params: { ...(obj as { params: object }).params, label } };
       }),
     );
-    showToast(`Renumbered ${marks.length} mark(s) from ${first}`, "success");
+    editor.toast(`Renumbered ${marks.length} mark(s) from ${first}`, "success");
   },
 });
