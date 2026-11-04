@@ -33,10 +33,8 @@ References (read the one you need before writing anything):
   cheat sheet. Read it before writing objects with ANY of the paths; the
   MCP tools take the same object bodies.
 - [reference/mcp.md](reference/mcp.md) — the MCP routes (headless server,
-  desktop bridge, WebMCP), setup and semantics.
-- [reference/guide.md](reference/guide.md) — the conventions every tool
-  route shares (the same text the `linea_guide` tool returns): units, tool
-  naming, model space vs layouts, a worked example.
+  desktop bridge, WebMCP) and how to set each up. Once connected, call the
+  `linea_guide` tool: it is the conventions guide every route shares.
 - [reference/blocks-and-commands.md](reference/blocks-and-commands.md) —
   authoring blocks and commands, validating them headlessly, and the three
   ways to deliver them. Real modules from the public collection are in
