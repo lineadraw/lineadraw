@@ -22,7 +22,7 @@ export default defineBlock({
   name: "Floor plan Window",
   description:
     "A window on a @lineadraw/floor-plan: cuts the wall, drags onto any wall, resizes along it.",
-  version: "1.1.0",
+  version: "1.2.0",
   authors: ["Linea Team"],
   tags: ["architecture", "plan", "window"],
   params: [
@@ -69,6 +69,21 @@ export default defineBlock({
       types: ["@lineadraw/floor-plan"],
     },
   ],
+
+  // Previews and thumbnails: a 3 m stretch of wall on a stand-in plan
+  // (what a plan's `expose` would publish), the opening attached at its
+  // middle; `preview: true` makes draw add the wall around the opening.
+  previewHost: {
+    preview: true,
+    lines: {
+      "1": {
+        origin: [0, 0],
+        u: [1, 0],
+        n: [0, 1],
+        segments: [{ from: -1500, to: 1500, t: 200, e: 0 }],
+      },
+    },
+  },
 
   expose: ({ params }) => ({
     cut: { line: params.line, at: params.at, width: params.width },
@@ -121,6 +136,7 @@ export default defineBlock({
       b: at(s1, seg.e + off),
     });
     return [
+      ...(host?.preview ? previewWall(at, seg, s0, s1) : []),
       // Jambs, the two wall faces across the opening, and the glass.
       { type: "line", a: at(s0, seg.e - h), b: at(s0, seg.e + h) },
       { type: "line", a: at(s1, seg.e - h), b: at(s1, seg.e + h) },
@@ -131,6 +147,23 @@ export default defineBlock({
     ];
   },
 });
+
+/** Preview only: the wall either side of the opening (a real plan draws
+ * its own walls). */
+const previewWall = (
+  at: (s: number, off: number) => Pt,
+  seg: { from: number; to: number; t: number; e: number },
+  s0: number,
+  s1: number,
+) => {
+  const [lo, hi] = [seg.e - seg.t / 2, seg.e + seg.t / 2];
+  const piece = (a: number, b: number) => [
+    { type: "line" as const, a: at(a, lo), b: at(b, lo) },
+    { type: "line" as const, a: at(a, hi), b: at(b, hi) },
+    { type: "line" as const, a: at(a, lo), b: at(a, hi) },
+  ];
+  return [...piece(seg.from, s0), ...piece(seg.to, s1)];
+};
 
 /** `at(s, off)`: `s` mm along the gridline, `off` mm to its +side. */
 const frame =
