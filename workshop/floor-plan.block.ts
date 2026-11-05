@@ -9,7 +9,9 @@
 //
 // Rooms are the spaces the walls enclose (a disabled wall merges two):
 // each gets a label with an optional name — from the small handle at the
-// label — and its net area.
+// label — and its net area. All text and dimensions follow the chosen text
+// / dimension style at the drawing scale; optional dimension chains run
+// between the gridlines and along every wall with doors or windows.
 //
 // Doors and windows are their own blocks (@lineadraw/floor-plan-door,
 // @lineadraw/floor-plan-window) LIVING ON the plan. The plan publishes its
@@ -68,7 +70,7 @@ export default defineBlock({
   name: "Floor plan",
   description:
     "Walls on a grid with room labels and areas. Per-wall thickness, eccentricity and on/off from each wall's hover menu; '+' buttons insert gridlines. Hosts @lineadraw/floor-plan-door and @lineadraw/floor-plan-window, which cut its walls.",
-  version: "1.1.0",
+  version: "1.3.0",
   authors: ["Linea Team"],
   tags: ["architecture", "plan", "wall", "floor plan", "room"],
   params: [
@@ -97,14 +99,6 @@ export default defineBlock({
     },
     { type: "stringList", name: "yLabels", label: "Y labels", default: ["1"] },
     { type: "boolean", name: "showGrid", label: "Show grid", default: true },
-    {
-      type: "number",
-      name: "bubble",
-      label: "Bubble size",
-      default: 400,
-      min: 50,
-      suffix: "mm",
-    },
     { type: "label", name: "wallHeading", label: "Walls" },
     {
       type: "number",
@@ -128,19 +122,39 @@ export default defineBlock({
       type: "number",
       name: "hatchScale",
       label: "Hatch scale",
-      default: 20,
+      default: 30,
       min: 0.01,
+    },
+    { type: "label", name: "annotationHeading", label: "Annotation" },
+    {
+      type: "number",
+      name: "scale",
+      // Not "Scale": the instance's own scale field already has that name.
+      label: "Drawing scale",
+      hint: "Sizes all text, bubbles and dimensions: 50 = 1:50",
+      default: 50,
+      min: 1,
+      prefix: "1:",
+      presets: [20, 50, 100, 200],
+    },
+    { type: "textStyle", name: "textStyle", label: "Text style" },
+    { type: "dimStyle", name: "dimStyle", label: "Dimension style" },
+    {
+      type: "boolean",
+      name: "gridDims",
+      label: "Grid dimensions",
+      hint: "A chain between the gridlines, outside the plan",
+      default: true,
+    },
+    {
+      type: "boolean",
+      name: "openingDims",
+      label: "Opening dimensions",
+      hint: "Along each wall with doors or windows: wall ends and jambs",
+      default: true,
     },
     { type: "label", name: "roomHeading", label: "Rooms" },
     { type: "boolean", name: "showRooms", label: "Room labels", default: true },
-    {
-      type: "number",
-      name: "roomText",
-      label: "Text height",
-      default: 250,
-      min: 10,
-      suffix: "mm",
-    },
     {
       type: "number",
       name: "areaDecimals",
@@ -162,8 +176,6 @@ export default defineBlock({
     },
   ],
   paramVisibility: ({ params }) => ({
-    bubble: params.showGrid,
-    roomText: params.showRooms,
     areaDecimals: params.showRooms,
   }),
   inputs: [
@@ -181,12 +193,14 @@ export default defineBlock({
     ...(params.showRooms ? roomHandles(params) : []),
   ],
 
-  draw: ({ params, hosted }) => {
+  draw: ({ params, hosted, styles }) => {
     const cuts = hosted
       .map((h) => (h.exposed as { cut?: Cut } | null)?.cut)
       .filter((c): c is Cut => !!c && typeof c.line === "string");
     const rings = solidOf(params, cuts);
     const rooms = params.showRooms ? roomsOf(params) : [];
+    // Room labels lay out with the real text height: style × scale.
+    const textHeight = styles.text(params.textStyle).textHeight * params.scale;
 
     return [
       ...(rings.length > 0
@@ -208,8 +222,10 @@ export default defineBlock({
         points,
         closed: true,
       })),
-      ...rooms.flatMap((r) => roomLabel(params, r)),
+      ...rooms.flatMap((r) => roomLabel(params, r, textHeight)),
       ...(params.showGrid ? gridLines(params) : []),
+      ...(params.gridDims ? gridDimensions(params) : []),
+      ...(params.openingDims ? openingDimensions(params, cuts) : []),
     ];
   },
 });
@@ -223,7 +239,10 @@ type GridParams = {
   ys: readonly number[];
   xLabels: readonly string[];
   yLabels: readonly string[];
-  bubble: number;
+  /** Annotation scale (1:scale) — text, bubbles, dimensions. */
+  scale: number;
+  textStyle: string;
+  dimStyle: string;
 };
 
 const gridOf = (p: GridParams) => {
@@ -247,16 +266,35 @@ const gridExtent = (p: GridParams) => {
   };
 };
 
-/** Where the label bubbles sit: below the X gridlines, left of the Y ones. */
-const bubbleRow = (p: GridParams) => {
+/**
+ * The annotation rows outside the plan (bottom for X, left for Y), all in
+ * scale: the opening dimensions just past the outermost wall face, the
+ * grid dimensions one row further, then the bubbles. Rows keep their place
+ * whether shown or not, so toggling one doesn't move the others.
+ */
+const bubbleRow = (p: PlanParams) => {
   const { x0, y0 } = gridExtent(p);
-  const r = p.bubble / 2;
-  const over = 1.5 * p.bubble;
-  return { r, over, by: y0 - over - r, bx: x0 - over - r };
+  const s = p.scale;
+  const standing = Object.values(wallTable(p)).filter((w) => !w.off);
+  const face = Math.max(0, ...standing.map((w) => w.t / 2 + Math.abs(w.e)));
+  const r = 4 * s; // bubble radius
+  const gap = 7 * s; // between rows
+  const openingRow = face + 5 * s;
+  const gridRow = openingRow + gap;
+  const over = gridRow + gap; // gridlines run this far past the plan
+  return {
+    r,
+    over,
+    face,
+    openingRow,
+    gridRow,
+    by: y0 - over - r,
+    bx: x0 - over - r,
+  };
 };
 
 /** Gridlines with label bubbles past the walls (bottom / left). */
-const gridLines = (p: GridParams) => {
+const gridLines = (p: PlanParams) => {
   const { xs, ys, xl, yl } = gridOf(p);
   const { x0, x1, y0, y1 } = gridExtent(p);
   const { r, over, by, bx } = bubbleRow(p);
@@ -266,10 +304,9 @@ const gridLines = (p: GridParams) => {
       type: "text" as const,
       position: c,
       content: label,
+      styleId: p.textStyle,
       // Longer labels ("A.1") shrink to stay inside the bubble.
-      styleOverride: {
-        textHeight: r * Math.min(1, 1.8 / Math.max(1, label.length)),
-      },
+      scale: p.scale * Math.min(1, 2 / Math.max(1, label.length)),
     },
   ];
   return [
@@ -322,7 +359,7 @@ const gridHandles = (params: PlanParams & GridParams) => {
               id: `move:${axis}:${i}`,
               label: `Gridline ${labels[i]}`,
               at: at(s, 2.2 * r),
-              shape: "arrow" as const,
+              shape: "double-arrow" as const,
               direction: axis === "x" ? 0 : Math.PI / 2,
               along: {
                 origin: (axis === "x"
@@ -707,7 +744,6 @@ const wallHandles = (params: PlanParams) =>
 
 type RoomParams = PlanParams & {
   rooms: Readonly<Record<string, RoomOverride>>;
-  roomText: number;
   areaDecimals: number;
 };
 
@@ -792,13 +828,15 @@ const computeRooms = (p: RoomParams): Room[] => {
 };
 
 /** A room's label: its name (when it has one) over its area. */
-const roomLabel = (p: RoomParams, r: Room) => {
-  const h = p.roomText;
+/** A room's label in the text style at the plan's scale: its name (when
+ * it has one) over its area (a size smaller). `h` = the name's height. */
+const roomLabel = (p: RoomParams, r: Room, h: number) => {
   const area = {
     type: "text" as const,
     position: (r.name ? [r.at[0], r.at[1] - h * 0.75] : r.at) as Pt,
     content: `${r.area.toFixed(p.areaDecimals)} m²`,
-    styleOverride: { textHeight: h * 0.8 },
+    styleId: p.textStyle,
+    scale: p.scale * 0.8,
   };
   return r.name
     ? [
@@ -806,7 +844,8 @@ const roomLabel = (p: RoomParams, r: Room) => {
           type: "text" as const,
           position: [r.at[0], r.at[1] + h * 0.6] as Pt,
           content: r.name,
-          styleOverride: { textHeight: h },
+          styleId: p.textStyle,
+          scale: p.scale,
         },
         area,
       ]
@@ -818,7 +857,8 @@ const roomHandles = (params: RoomParams) =>
   roomsOf(params).map((r) => ({
     id: `room:${r.key}`,
     label: `Room ${r.key}`,
-    at: [r.at[0], r.at[1] - params.roomText * 1.8] as Pt,
+    // Under the label (handles can't read the text style: ~4 mm × scale).
+    at: [r.at[0], r.at[1] - params.scale * 4] as Pt,
     shape: "circle" as const,
     fixed: true,
     menu: [
@@ -840,3 +880,80 @@ const roomHandles = (params: RoomParams) =>
       },
     ],
   }));
+
+// ---------------------------------------------------------------------------
+// Dimensions
+// ---------------------------------------------------------------------------
+
+/** A linear chain dimension through `points` measured along `angle`, its
+ * line `offset` mm off points[0] (left of the measuring direction +). */
+const chain = (p: PlanParams, points: Pt[], angle: number, offset: number) => ({
+  type: "dimension" as const,
+  points,
+  rotation: angle,
+  offset,
+  styleId: p.dimStyle,
+  scale: p.scale,
+});
+
+/** The grid chains: between the X gridlines below the plan, between the Y
+ * gridlines left of it (one row out from the opening dimensions). */
+const gridDimensions = (p: PlanParams) => {
+  const { xs, ys } = gridOf(p);
+  const { x0, y0 } = gridExtent(p);
+  const { gridRow } = bubbleRow(p);
+  return [
+    ...(xs.length > 1
+      ? [chain(p, xs.map((x) => [x, y0] as Pt), 0, -gridRow)]
+      : []),
+    // Measured along +y: "left" is −x.
+    ...(ys.length > 1
+      ? [chain(p, ys.map((y) => [x0, y] as Pt), Math.PI / 2, gridRow)]
+      : []),
+  ];
+};
+
+/**
+ * Along every gridline with openings: a chain from the ends of its walls
+ * through each jamb, just outside the wall — outward on the plan's edges
+ * (the opening-dimension row), on the +side of interior lines.
+ */
+const openingDimensions = (p: PlanParams, cuts: readonly Cut[]) => {
+  const { xs, ys } = gridOf(p);
+  const lines = linesOf(p);
+  const { openingRow, face } = bubbleRow(p);
+  const out = [];
+  for (const [name, l] of Object.entries(lines)) {
+    const mine = cuts.filter((c) => c.line === name);
+    if (mine.length === 0 || l.segments.length === 0) continue;
+    const lo = Math.min(...l.segments.map((g) => g.from));
+    const hi = Math.max(...l.segments.map((g) => g.to));
+    const stops = [
+      lo,
+      hi,
+      ...mine.flatMap((c) => [c.at, c.at + c.width]),
+    ]
+      .map((v) => Math.max(lo, Math.min(hi, v)))
+      .sort((a, b) => a - b)
+      .filter((v, i, all) => i === 0 || v - all[i - 1] > 0.5);
+    if (stops.length < 2) continue;
+    // Which side: outward on the first / last gridline, else +side.
+    const across = l.n[0] === 1 ? l.origin[0] : l.origin[1];
+    const pos = l.n[0] === 1 ? xs : ys;
+    const side = across === Math.min(...pos) ? -1 : 1;
+    const dist =
+      across === Math.min(...pos) || across === Math.max(...pos)
+        ? openingRow
+        : face + 5 * p.scale;
+    const at = (v: number): Pt => [
+      l.origin[0] + l.u[0] * v,
+      l.origin[1] + l.u[1] * v,
+    ];
+    const angle = Math.atan2(l.u[1], l.u[0]);
+    // The offset is measured to the LEFT of the measuring direction.
+    const left: Pt = [-l.u[1], l.u[0]];
+    const leftIsPlus = left[0] * l.n[0] + left[1] * l.n[1] > 0 ? 1 : -1;
+    out.push(chain(p, stops.map(at), angle, side * dist * leftIsPlus));
+  }
+  return out;
+};
