@@ -2,6 +2,7 @@
 // rectangle spanned by the two picked corners, a diagonal across it, and
 // the mesh designation written along the diagonal.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, dist, norm, scale as sc, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -35,7 +36,7 @@ export default defineBlock({
       up = sc(up, -1);
     }
 
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       { type: "line", a: p1, b: p2 },
       {
         type: "text",

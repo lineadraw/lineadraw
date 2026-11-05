@@ -1,13 +1,13 @@
-import { defineBlock, type ParamDef } from "lineadraw";
+import { defineBlock, type LineInput, type ParamDef, type TextInput } from "lineadraw";
 import { range } from "lineadraw/helpers";
 
-const style1: Partial<Text> = {
+const style1: Partial<TextInput> = {
   hAlign: "left",
   vAlign: "bottom",
   styleOverride: { widthFactor: 0.8, textHeight: 1.5 },
 };
 
-const style2: Partial<Text> = {
+const style2: Partial<TextInput> = {
   hAlign: "left",
   vAlign: "bottom",
   styleOverride: { widthFactor: 0.8, textHeight: 2.5 },
@@ -141,7 +141,7 @@ export default defineBlock({
             type: "line",
             a: [-184, i * 4.5 + 3.5],
             b: [0, i * 4.5 + 3.5],
-          }) as Line,
+          }) as LineInput,
       ),
       {
         type: "text",
@@ -173,25 +173,25 @@ export default defineBlock({
           position: [-183, (i + 1) * 4.5],
           content: params["rev" + (i + 1)] ?? "te",
           ...style2,
-        } as Text,
+        } as TextInput,
         {
           type: "text",
           position: [-173, (i + 1) * 4.5],
           content: params["change" + (i + 1)] ?? "te",
           ...style2,
-        } as Text,
+        } as TextInput,
         {
           type: "text",
           position: [-39, (i + 1) * 4.5],
           content: params["date" + (i + 1)] ?? "te",
           ...style2,
-        } as Text,
+        } as TextInput,
         {
           type: "text",
           position: [-19, (i + 1) * 4.5],
           content: params["changed_by" + (i + 1)] ?? "te",
           ...style2,
-        } as Text,
+        } as TextInput,
       ]),
     ];
   },

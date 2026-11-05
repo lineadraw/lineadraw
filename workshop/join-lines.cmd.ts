@@ -2,6 +2,7 @@
 // polylines (closed when the chain loops back on itself). The joined
 // polyline lands on the first line's layer.
 import { defineCommand } from "lineadraw";
+import type { Vec2 } from "lineadraw";
 
 const TOL = 0.01; // endpoint match tolerance, mm
 
@@ -9,20 +10,21 @@ export default defineCommand({
   id: "@lineadraw/join-lines",
   name: "Join Lines",
   description: "Joins touching selected lines into polylines.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["edit", "polyline", "utility"],
-  run: async ({ document, selection, showToast }) => {
-    const ids = selection();
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Join Lines needs the editor");
+    const ids = editor.state().selectedIds;
     if (!ids.length) {
-      showToast("Nothing selected", "error");
+      editor.toast("Nothing selected", "error");
       return;
     }
     const pool = document
       .listObjects({ ids, type: "line" })
       .flatMap((o) => (o.type === "line" ? [o] : []));
     if (pool.length < 2) {
-      showToast("Select at least two lines", "error");
+      editor.toast("Select at least two lines", "error");
       return;
     }
     const near = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y) <= TOL;
@@ -72,7 +74,7 @@ export default defineCommand({
       joined += members.length;
     }
 
-    showToast(
+    editor.toast(
       joined
         ? `Joined ${joined} lines into ${chains} polyline(s)`
         : "No touching lines found",

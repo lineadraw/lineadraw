@@ -5,7 +5,7 @@
 // back to a sharp corner when its tangent length doesn't fit on the
 // previous segment (minus what the previous bend used) or the next one.
 import { defineBlock } from "lineadraw";
-import type { Line, Polyline, PolylineVertexLike, Vec2 } from "lineadraw";
+import type { LineInput, PolylineInput, PolylineVertexInput, Vec2 } from "lineadraw";
 import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -63,18 +63,18 @@ export default defineBlock({
     const corners = buildCorners(pts, r);
 
     if (!params.showThickness) {
-      const points: PolylineVertexLike[] = [{ ...pts[0], bulge: 0 }];
+      const points: PolylineVertexInput[] = [{ ...pts[0], bulge: 0 }];
       for (const c of corners) {
         if (c.kind === "sharp") points.push({ ...c.p, bulge: 0 });
         else points.push({ ...c.a, bulge: c.bulge }, { ...c.b, bulge: 0 });
       }
       points.push({ ...pts[pts.length - 1], bulge: 0 });
-      const line: Polyline = { type: "polyline", points, closed: false };
+      const line: PolylineInput = { type: "polyline", points, closed: false };
       // End marks: one 30° tick per end (one-sided arrow), both on the same
       // side of the bar. `into` points from the end back along its segment;
       // the mirrored rotation sign keeps the ticks on one visual side.
       const size = Number(params.size);
-      const tick = (end: Vec2, into: Vec2, sign: 1 | -1): Line => ({
+      const tick = (end: Vec2, into: Vec2, sign: 1 | -1): LineInput => ({
         type: "line",
         a: end,
         b: add(end, scale(rotate(norm(into), sign * (Math.PI / 6)), size * 4)),
@@ -94,7 +94,7 @@ export default defineBlock({
     // closing edge is the near end cap.
     const h = Number(params.size) / 2;
     const elems = buildElements(pts, corners);
-    const outline: Polyline = {
+    const outline: PolylineInput = {
       type: "polyline",
       points: [
         ...toPoints(offsetSide(elems, h)),
@@ -266,5 +266,5 @@ const reversed = (verts: PathVertex[]): PathVertex[] => {
   return out;
 };
 
-const toPoints = (verts: PathVertex[]): PolylineVertexLike[] =>
+const toPoints = (verts: PathVertex[]): PolylineVertexInput[] =>
   verts.map((v) => ({ x: v.p.x, y: v.p.y, bulge: v.bulge }));

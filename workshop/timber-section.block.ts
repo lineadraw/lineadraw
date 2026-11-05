@@ -2,6 +2,7 @@
 // material convention inside: crossed diagonals for sawn timber,
 // lamination lines for glulam, alternating-grain bands for CLT.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 
 export default defineBlock({
   id: "@lineadraw/timber-section",
@@ -39,7 +40,7 @@ export default defineBlock({
     const h = y1 - y0;
     if (w < 1e-9 || h < 1e-9) return [];
 
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       {
         type: "polyline",
         points: [

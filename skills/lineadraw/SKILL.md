@@ -19,7 +19,9 @@ scriptable headlessly. Four ways in, one document model:
   tools on `http://127.0.0.1:7431/mcp` (its local bridge; a web tab joins
   by pairing with the app), and a browser tab can expose them to in-browser
   agents over WebMCP. You read and edit the drawings the user has OPEN,
-  live and undoable. Best for "fix/annotate what I have open".
+  live and undoable. From a script, `connectEditors()` in `lineadraw/sdk`
+  reaches the same editors (and runs a whole command module inside one as
+  a single undo step). Best for "fix/annotate what I have open".
 - **Blocks and commands**: parametric symbols (`defineBlock`) and editor
   macros (`defineCommand`) are small TypeScript modules that live inside
   documents or in a marketplace repository. Best when the user wants a
@@ -31,10 +33,8 @@ References (read the one you need before writing anything):
   cheat sheet. Read it before writing objects with ANY of the paths; the
   MCP tools take the same object bodies.
 - [reference/mcp.md](reference/mcp.md) — the MCP routes (headless server,
-  desktop bridge, WebMCP), setup and semantics.
-- [reference/guide.md](reference/guide.md) — the conventions every tool
-  route shares (the same text the `linea_guide` tool returns): units, tool
-  naming, model space vs layouts, a worked example.
+  desktop bridge, WebMCP) and how to set each up. Once connected, call the
+  `linea_guide` tool: it is the conventions guide every route shares.
 - [reference/blocks-and-commands.md](reference/blocks-and-commands.md) —
   authoring blocks and commands, validating them headlessly, and the three
   ways to deliver them. Real modules from the public collection are in
@@ -112,7 +112,7 @@ doc.transaction(() => {
 // 3) Annotations: scale: 50 on each = the 1:50 drawing scale (see below).
 doc.add([
   { type: "dimension", layerId: dims, kind: "linear",
-    points: [[0, 0], [6000, 0]], offset: [0, -500],
+    points: [[0, 0], [6000, 0]], offset: -500,   // signed: below the line
     scale: 50 },                              // TOP-LEVEL scale, not styleOverride
   { type: "text", layer: "dimensions", position: [3000, 3400],
     content: "PLAN 1:50", textHeight: 5, scale: 50, hAlign: "center" },
@@ -155,7 +155,7 @@ the PNG check, this is what's wrong.
 |---|---|
 | `.linea` | **Always deliver.** The editable source of truth (`doc.save`). |
 | `.pdf` | For humans/print. Paginates the paper layouts (`exportPdf`). |
-| `.dxf` / `.dwg` | For other CAD tools (`exportDxf` / `exportDwg`; DWG defaults to AC1027/AutoCAD 2013). Block instances flatten to geometry; images are skipped (no external-file references). |
+| `.dxf` / `.dwg` | For other CAD tools (`exportDxf` / `exportDwg`; DWG defaults to AC1027/AutoCAD 2013). Block instances bake to geometry; tables are native in DXF; embedded references (pictures, embedded files) are skipped — DXF can't embed a file. |
 | `.svg` / `.png` | Previews and self-verification (`exportSvg` / `exportPng`). |
 | `.block.ts` / `.cmd.ts` | A block or command module the user drops onto the editor, or commits to a marketplace repo (see blocks-and-commands.md). |
 
@@ -173,6 +173,10 @@ const rep2 = await doc.importDwgData(bytes);         // or importDwg(path): DWG 
 const rep3 = await doc.importPdf("plan.pdf");        // or importPdfData(arrayBuffer): vector + text
 ```
 
+Pictures (PNG/JPEG) are not imported: embed them with
+`doc.addAsset(dataUrl)` and place a `reference` with
+`source: { kind: "asset", assetId }` (api.md).
+
 Reports return created ids; use them to re-layer or clean up. If DXF
 geometry comes in at a wrong size, re-import with
 `{ unitOverride: mm-per-unit }`.
@@ -182,7 +186,7 @@ geometry comes in at a wrong size, re-import with
 | The user wants… | Use |
 |---|---|
 | A drawing file / PDF / DXF produced from a description or data | SDK script (or MCP headless if they want to watch) |
-| Changes to the drawing they have open in Linea | the desktop bridge or WebMCP (`linea_list_editors` / `linea_editor_state` first) |
+| Changes to the drawing they have open in Linea | the desktop bridge or WebMCP (`linea_list_editors` / `linea_editor_state` first), or `connectEditors()` from a script |
 | To draw together with you in the chat | MCP headless + `linea_show_document` |
 | A reusable symbol with adjustable parameters | A block module (`defineBlock`) |
 | An editing step they repeat (number things, select by rule, label areas) | A command module (`defineCommand`) |

@@ -10,62 +10,24 @@ wherever a Linea document is:
 | Extra tools | `linea_new/open/save_document`, `linea_export {path}`, `linea_show_document` (in-chat editor) | editor + app tools (below), `linea_list_editors` / `linea_open_editor` / `linea_select_editor` | editor + app tools (below) |
 | Use when | producing deliverables headlessly, or showing an editor in chat | "the drawing I have open" in the desktop app (or a paired web tab) | an in-browser agent working on the tab |
 
-**Read `linea_guide` once** (or [guide.md](guide.md), the same text): units,
-tool naming, model space vs layouts, a worked example.
+**Once connected, call `linea_guide` before editing** — it is the shared
+agent guide every route serves (units, tool naming, model space vs
+layouts, pictures, scripts, a worked example), and the tools describe
+their own arguments. This file covers only setup and how the routes
+differ.
 
-## The shared tools (every route)
+A few rules worth knowing up front (the guide has the rest):
 
-Names are `linea_<verb>_<kind>`. Edit tools take ARRAYS and apply them all or
-nothing; layers, layouts and styles are addressed by name or id (`ids` to
-remove, `id` in each update entry). Angles are **radians**, counter-clockwise.
-
-- **Read:** `linea_guide` · `linea_summary` · `linea_get_document` ·
-  `linea_list_objects` (filters + `measure`; `layout` searches a layout's
-  SHEET objects — the way to find a viewport's id) · `linea_list_layers` ·
-  `linea_list_layouts` · `linea_list_text_styles` · `linea_list_dim_styles`
-  · `linea_list_block_definitions` · `linea_list_user_commands`.
-- **Objects:** `linea_add_objects` (model space, or a sheet via `layout`) ·
-  `linea_update_objects` (per-id patches) · `linea_remove_objects` ·
-  `linea_reorder_objects` (draw order) · `linea_transform_objects`
-  (move/rotate/scale/mirror/copy/array; `angle` in radians).
-- **Layers:** `linea_add/update/remove/reorder_layers` ·
-  `linea_set_current_layer`.
-- **Layouts:** `linea_add/update/remove/reorder_layouts` ("1:50" scale
-  strings; custom mm via `sheetSize`; **`printPalette: "monochrome"`** for
-  print-style output).
-- **Styles:** `linea_add/update/remove_text_styles` ·
-  `linea_add/update/remove_dim_styles` (annotation scale is NOT a style
-  key — top-level `scale` per object). Removing a style objects use is
-  refused, with a count.
-- **Modules:** `linea_add/remove_block_definitions` ·
-  `linea_add/remove_user_commands` (module sources, merged by id — a
-  matching id replaces, so add is also the update) ·
-  `linea_run_user_command { id, inputs?, params? }` · `linea_run_script
-  { source }` (an unsaved `defineCommand` module as ONE undo step — loops
-  and computed placement in one call).
-- **Import and images:** `linea_import { format: dxf | dwg | pdf, data }`
-  (DXF as text, DWG/PDF as base64; on the headless server also `path`)
-  merges a file as one undo step — a PDF as lines and text, or with
-  `pdfAs: "image"` as page images at true scale (the editor can; headless
-  Node refuses for now). PNG/JPEG need no import: `linea_add_assets
-  { dataUrls }` returns ids and pixel sizes, then an `image` object
-  `{ assetId, origin, width, height }` (mm) shows one;
-  `linea_list_assets` / `linea_remove_assets`.
-- **Output:** `linea_render` (png/svg to LOOK at; `palette: "monochrome"` +
-  `background: "#ffffff"` for a paper-like preview — as-authored colors
-  target the dark canvas) · `linea_export` (svg/png/pdf/dxf/dwg — the
-  file's content).
-- **Other:** `linea_undo` / `linea_redo` · `linea_replace_document`
-  (full-state save used by the in-chat editor — not for normal agent edits;
-  use the granular tools so changes are validated ops).
-
-**Tool-arg points are `[x, y]` tuples** (`delta`, `center`, `axisA`,
-`axisB`, `near.point`) — `{x, y}` is accepted only INSIDE object bodies.
-
-All SKILL.md rules apply unchanged: mm, Y-up, draw 1:1, byLayer styling,
-annotation `scale` = drawing-scale denominator, verify by rendering and
-looking, layouts for presentation. Prefer `linea_summary` + targeted
-`linea_list_objects` reads; never dump full documents into context.
+- Tool-arg points are `[x, y]` tuples; `{x, y}` is accepted only inside
+  object bodies. Angles are radians.
+- Object tools act on MODEL space unless `layout` names a sheet — never
+  on whatever space the user happens to be looking at.
+- Prefer `linea_run_script` (one `defineCommand` module, one undo step)
+  over many calls for loops and computed placement; verify with
+  `linea_render` and LOOK at it.
+- Prefer `linea_summary` + targeted `linea_list_objects` reads; never dump
+  full documents into context. `linea_replace_document` is the in-chat
+  editor's sync path, not for normal agent edits.
 
 ## Route 1 — headless MCP server (`@lineadraw/mcp`)
 
@@ -146,25 +108,14 @@ browser extension (MCP-B) or the browser's own agent. The user turns it on
 in the editor's **Agents** popover → **"In-browser agents"**. Every tool call
 is ONE undo step; read-only mode rejects mutations with a tool error.
 
-## Editor and app tools (routes 2 and 3)
+## Routes 2 and 3 — extra editor and app tools
 
-- **Editor:** `linea_editor_state` (active space, selection, camera,
-  read-only flag) · `linea_set_active_space` · `linea_set_selection { ids }`
-  or a filter (`{ inside: box }` = window, `{ bbox }` = crossing, `layer`,
-  `type`) · `linea_zoom { to: "fit" | "selection" } | { ids } | { bbox }` —
-  point at things ("here's the beam I mean"), not just edit ·
-  `linea_list_commands` / `linea_run_command` run the editor's own command
-  registry by id, like the user pressing the hotkey (interactive drawing
-  tools START and then wait for the USER's clicks — create geometry
-  yourself with `linea_add_objects`).
-- **App:** `linea_list_documents` · `linea_new_document` ·
-  `linea_open_document { id | path }` · `linea_save_document { path? }` ·
-  `linea_close_document { discard? }` · `linea_delete_document` (web only).
-  On the desktop every drawing has its own window: from a window showing a
-  drawing, new/open answer `{ window: "new" }` — list the editors and
-  address it. A drawing never saved to a file needs the user to Save (the
-  desktop also takes a `path`). Never `discard` without the user's say-so.
-- **Object tools act on MODEL space** unless `layout` names a sheet — never
-  on whatever space the user happens to be looking at.
-- No `linea_show_document` here — the editor is already in front of the
-  user.
+Both add tools for the live editor (`linea_editor_state`, selection,
+active space, zoom, the editor's own command registry, device app
+settings) and the app (list / new / open / save / close documents). Two
+cautions: interactive drawing commands run via `linea_run_command` start
+and then wait for the USER's clicks — create geometry yourself with
+`linea_add_objects`; and never `discard` on close without the user's
+say-so. On the desktop every drawing has its own window: after new/open,
+list the editors and address the new one. There is no
+`linea_show_document` here — the editor is already in front of the user.

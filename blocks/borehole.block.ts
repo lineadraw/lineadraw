@@ -2,6 +2,7 @@
 // half filled, and the borehole id next to it. Sized by the annotation
 // scale (paper-mm × scale).
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -18,7 +19,7 @@ export default defineBlock({
   draw: ({ params, inputs: [c] }) => {
     const { label } = params;
     const r = 3;
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       { type: "circle", center: c, radius: r },
       {
         // Left half-disc: semicircle arc from top to bottom, closed by the

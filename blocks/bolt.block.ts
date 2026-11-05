@@ -2,7 +2,7 @@
 // flats, with facet lines), shank, and a threaded end. The distance between
 // the picks IS the bolt length; pick order sets the direction (head first).
 import { defineBlock } from "lineadraw";
-import type { Line, Polyline, Vec2 } from "lineadraw";
+import type { LineInput, PolylineInput, Vec2 } from "lineadraw";
 import { add, len, norm, rotate, scale, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -42,29 +42,29 @@ export default defineBlock({
     const threadLen = Math.min(2.5 * d, 0.6 * L);
     const t0 = L - threadLen;
 
-    const headRect: Polyline = {
+    const headRect: PolylineInput = {
       type: "polyline",
       closed: true,
       points: [at(-k, -s / 2), at(-k, s / 2), at(0, s / 2), at(0, -s / 2)],
     };
     // Hex facet edges as seen in the across-flats side view.
-    const facets: Line[] = [-s / 6, s / 6].map((y) => ({
+    const facets: LineInput[] = [-s / 6, s / 6].map((y) => ({
       type: "line",
       a: at(-k, y),
       b: at(0, y),
     }));
-    const shank: Polyline = {
+    const shank: PolylineInput = {
       type: "polyline",
       closed: true,
       points: [at(0, -d / 2), at(0, d / 2), at(L, d / 2), at(L, -d / 2)],
     };
     // Thread: minor-diameter lines over the threaded end + a runout mark.
-    const thread: Line[] = [-0.4 * d, 0.4 * d].map((y) => ({
+    const thread: LineInput[] = [-0.4 * d, 0.4 * d].map((y) => ({
       type: "line",
       a: at(t0, y),
       b: at(L, y),
     }));
-    const runout: Line = { type: "line", a: at(t0, -d / 2), b: at(t0, d / 2) };
+    const runout: LineInput = { type: "line", a: at(t0, -d / 2), b: at(t0, d / 2) };
 
     return [headRect, ...facets, shank, ...thread, runout];
   },

@@ -3,7 +3,7 @@
 // caps. Catalogue data from the calculus profile catalogs. The defineBlock
 // call sits at the END of the file, below the data tables it reads.
 import { defineBlock } from "lineadraw";
-import type { Line, Vec2 } from "lineadraw";
+import type { LineInput, Vec2 } from "lineadraw";
 import { sub, add, scale, norm, rotate, len } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -213,7 +213,7 @@ export default defineBlock({
     }
 
     const at = (o: number): Vec2 => scale(n, o);
-    const lines: Line[] = [];
+    const lines: LineInput[] = [];
     // End caps across the full outer extent.
     const hi = Math.max(...solid);
     const lo = Math.min(...solid);

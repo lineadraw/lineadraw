@@ -1,6 +1,7 @@
 // Lifting anchor — plan symbol for a precast element lifting insert: a
 // circle with a diagonal cross, with an optional product label.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, polar, toRad } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -20,7 +21,7 @@ export default defineBlock({
   draw: ({ params, inputs: [c] }) => {
     const { dia, label, scale } = params;
     const r = dia / 2;
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       { type: "circle", center: c, radius: r },
       { type: "line", a: add(c, polar(toRad(45), r)), b: add(c, polar(toRad(225), r)) },
       { type: "line", a: add(c, polar(toRad(135), r)), b: add(c, polar(toRad(315), r)) },

@@ -2,17 +2,19 @@
 // polyline offset by a distance (positive = left of the travel
 // direction), with mitered corners.
 import { defineCommand } from "lineadraw";
+import type { Vec2 } from "lineadraw";
 
 export default defineCommand({
   id: "@lineadraw/offset-polyline",
   name: "Offset Polyline",
   description:
     "Offsets a line or straight polyline by a distance (+ = left of direction).",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["edit", "polyline", "utility"],
-  run: async ({ document, pickObject, prompt, showToast }) => {
-    const id = await pickObject("Line or polyline to offset");
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Offset Polyline needs the editor");
+    const id = await editor.pickObject({ label: "Line or polyline to offset" });
     const [obj] = document.listObjects({ ids: [id] });
     let pts: Vec2[];
     let closed = false;
@@ -20,21 +22,23 @@ export default defineCommand({
       pts = [obj.a, obj.b];
     } else if (obj?.type === "polyline") {
       if (obj.points.some((p) => p.bulge !== 0)) {
-        showToast("Polylines with arc segments are not supported", "error");
+        editor.toast("Polylines with arc segments are not supported", "error");
         return;
       }
       pts = obj.points.map((p) => ({ x: p.x, y: p.y }));
       closed = obj.closed;
     } else {
-      showToast("Pick a line or a polyline", "error");
+      editor.toast("Pick a line or a polyline", "error");
       return;
     }
 
     const d = parseFloat(
-      await prompt("Distance (+ = left of direction)", { initial: "100" }),
+      await editor.prompt("Distance (+ = left of direction)", {
+        initial: "100",
+      }),
     );
     if (!Number.isFinite(d) || d === 0) {
-      showToast("Invalid distance", "error");
+      editor.toast("Invalid distance", "error");
       return;
     }
 
@@ -47,7 +51,7 @@ export default defineCommand({
       const b = pts[(i + 1) % n];
       const l = Math.hypot(b.x - a.x, b.y - a.y);
       if (l < 1e-9) {
-        showToast("Zero-length segment — cannot offset", "error");
+        editor.toast("Zero-length segment — cannot offset", "error");
         return;
       }
       const dir = { x: (b.x - a.x) / l, y: (b.y - a.y) / l };
@@ -85,6 +89,6 @@ export default defineCommand({
     document.add([
       { type: "polyline", points: out, closed, layer: layerName.get(obj.layerId) },
     ]);
-    showToast(`Offset by ${d} mm`, "success");
+    editor.toast(`Offset by ${d} mm`, "success");
   },
 });

@@ -11,7 +11,6 @@ your own collection.
 | `workshop/`                   | Staging area: experimental modules not yet promoted into the collection            |
 | `.lineadraw/marketplace.json` | The generated marketplace manifest                                                 |
 | `skills/`                     | The `lineadraw` agent skill (Claude Desktop / Claude Code)                         |
-| `plugins/`                    | Claude Desktop plugin packaging                                                    |
 
 The npm surface lives elsewhere:
 [`lineadraw`](https://www.npmjs.com/package/lineadraw) (headless Node SDK
@@ -67,14 +66,15 @@ npm run manifest   # creates .lineadraw/marketplace.json
 npm run check      # validate blocks/commands without creating .lineadraw/marketplace.json
 ```
 
-The manifest is deterministic, so `check` is a byte diff and the included
+The manifest is deterministic, so `check` compares it with the committed
+catalog (formatting and line endings never make it stale) and the included
 GitHub workflow fails PRs with a stale catalog. `manifest`/`check` also
 **dry-run every block** and render thumbnails.
 
 ### 4. Add it in the editor
 
-**Library → Marketplace tab → the gear button (Manage marketplaces…) → Add
-a marketplace** and enter `owner/repo` (or `owner/repo@branch`). For a **private** repository, create a fine-grained
+**App settings → Marketplaces → Add a marketplace** (the gear in Library →
+Marketplace opens it) and enter `owner/repo` (or `owner/repo@branch`). For a **private** repository, create a fine-grained
 personal access token with read-only Contents access to just that
 repository and paste it in the add dialog — it is stored only on that
 device, and never enters any document. Note that adding a marketplace is
@@ -112,31 +112,16 @@ agents document tools plus the **full Linea editor rendered in the chat**
 }
 ```
 
-## Editor WebMCP connection (MCP-B relay)
+## The running app (desktop bridge)
 
-The editor itself can expose its tools to agents. In the editor's App
-settings: **Agent access** lets in-browser agents (e.g. the Claude
-extension for Chrome) work with the open document; **Local relay**
-additionally bridges those tools to agents outside the browser (e.g.
-Claude Desktop) over the MCP-B relay:
+The Linea desktop app serves the same tools for the drawings you have
+open, on `http://127.0.0.1:7431/mcp` (this machine only; a web tab joins
+by pairing with the app in its Agents popover). Claude Code:
 
-1. Switch on "Agent access" and "Local relay" in Linea App settings.
-2. Add the relay to your agent's MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "webmcp-local-relay": {
-      "command": "npx",
-      "args": ["-y", "@mcp-b/webmcp-local-relay@latest"]
-    }
-  }
-}
+```bash
+claude mcp add --transport http linea http://127.0.0.1:7431/mcp
 ```
 
-## Claude Desktop plugin
-
-**Don't use yet — the MCP app does not work from within the plugin.**
-(For reference: Claude Desktop → Customize → Plugins → Browse → add
-marketplace `lineadraw/lineadraw` → Sync → Install.) Use the agent skill
-and MCP server setups above instead.
+Other clients can reach it through `mcp-remote`
+(`npx -y mcp-remote http://127.0.0.1:7431/mcp`). From scripts, use
+`connectEditors()` in `lineadraw/sdk` or the `lineadraw` CLI.

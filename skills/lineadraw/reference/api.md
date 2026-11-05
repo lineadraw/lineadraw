@@ -36,14 +36,13 @@ layer. `id` is assigned by `add`; never invent ids.
 | `circle` | `center`, `radius` | |
 | `arc` | `center`, `radius`, `startAngle`, `endAngle` | runs CCW from start to end (DXF convention); start === end renders a full circle |
 | `ellipse` | `center`, `majorAxis`, `ratio` | majorAxis = endpoint vector from center; ratio = minor/major (0..1]; optional `startAngle`/`endAngle` for elliptical arcs |
-| `hatch` | `loops: [{points}]`, `fill` | loops[0] outer, rest holes (even-odd). fill: `{kind:"solid"}` \| `{kind:"pattern", name, angle, scale}` (ANSI31/ANSI32/ANSI37/AR-CONC…) \| `{kind:"lines", angle, spacing}`; top-level `scale` = drawing-scale multiplier for the spacing (50 in a 1:50 drawing) |
-| `text` | `position`, `content` | `textHeight` (mm, default 2.5), `scale` multiplier (set to drawing-scale denominator), `hAlign`/`vAlign` (**default center/center**), `width` (word-wrap box), `rotation`, `frame` ("rectangle"/"bottom"), `font`, `widthFactor`, `leaderLines: [[pt,...]]` (arrowhead at index 0). `\t` in content aligns columns at tab stops every 4×textHeight (author tables as ONE multi-line text; tabbed lines don't word-wrap) |
-| `dimension` | `points`, `offset` | `kind`: linear (default) / angular / radial / diameter. Points per kind: linear = measured points (>2 = chain); radial = `[center, pointOnCurve]`; **diameter = the two OPPOSITE points on the curve** (`[center, edge]` silently measures a radius — half the value); angular = vertex + legs. `offset` is a VECTOR from the kind's base point to the dimension line and is **required for every kind** (radial/diameter/angular use it to place the text). `textOverride`; `styleOverride` = per-object DimStyle patch (textHeight, arrowSize, …). **Drawing scale is the TOP-LEVEL `scale` field** (`scale: 50` for 1:50) — `scale` inside `styleOverride` is NOT a style key and is rejected |
-| `table` | `position`, `columns`, `rows`, `cells` | a real grid of text cells hanging right/down from `position` (top-left). `columns: [w, …]` mm; `rows`: a COUNT or `[{ minHeight? }, …]` (rows grow to fit wrapped text); `cells[row][col]` exactly rows × columns — a string or `{ text, span?: {cols, rows} (on the anchor cell), hAlign?, vAlign?, color?, styleId?, styleOverride? }`. Optional `headerRows` (heavier rule under them), `cellMargin` (1), `borders` ("all"/"outer"/"rows"/"none"), `rotation`, `styleId`/`styleOverride`, and top-level `scale` (drawing-scale multiplier — sizes are paper mm before it, like text). Exports to DXF/PDF/SVG as its rules + texts |
+| `hatch` | `loops: [{points}]`, `fill` | loops[0] outer, rest holes (even-odd). fill: `{kind:"solid"}` \| `{kind:"pattern", name, angle, scale, origin?}` (ANSI31/ANSI32/ANSI37/AR-CONC… or one of the document's own patterns; `origin` = world anchor of the pattern, default the drawing origin — it moves with the hatch) \| `{kind:"lines", angle, spacing}`; top-level `scale` = drawing-scale multiplier for the spacing (50 in a 1:50 drawing) |
+| `text` | `position`, `content` | `textHeight` (mm, default 2.5), `scale` multiplier (set to drawing-scale denominator), `hAlign`/`vAlign` (**default center/center**), `width` (word-wrap box), `rotation`, `frame` ("rectangle"/"bottom"), `font`, `widthFactor`, `leaderLines: [[pt,...]]` (arrowhead at index 0), `spans` (character formatting — bold/italic/underline/sub/sup/font/height/colour — over ranges of `content`; setting `content` without `spans` drops them). `\t` in content aligns columns at tab stops every 4×textHeight (author tables as ONE multi-line text; tabbed lines don't word-wrap) |
+| `dimension` | `points`, `offset` (linear/angular) | `kind`: linear (default) / angular / radial / diameter. Points per kind: linear = measured points (>2 = chain); radial = `[center, pointOnCurve]`; **diameter = the two OPPOSITE points on the curve** (`[center, edge]` silently measures a radius — half the value); angular = `[vertex, a, b]`. **`offset` is a signed NUMBER**: linear = distance of the dimension line from points[0] along the LEFT perpendicular of the measuring direction (points left→right: negative = below); angular = the arc radius (negative = the complementary arc); radial/diameter take NO offset (rejected) — place their text with `labels[0].along`. Linear `rotation` locks the measuring direction (radians; unset = aligned). `labels[i]` per segment: `{ along?, across?, content? }` — `content` with `{value}` for the measurement (`"Ø{value} H7"`). `styleOverride` = per-object DimStyle patch (textHeight, arrowSize, …). **Drawing scale is the TOP-LEVEL `scale` field** (`scale: 50` for 1:50) — `scale` inside `styleOverride` is NOT a style key and is rejected |
+| `table` | `position`, `columns`, `rows`, `cells` | a real grid of text cells hanging right/down from `position` (top-left). `columns: [w, …]` mm; `rows`: a COUNT or `[{ minHeight? }, …]` (rows grow to fit wrapped text); `cells[row][col]` exactly rows × columns — a string or `{ text, span?: {cols, rows} (on the anchor cell), hAlign?, vAlign?, color?, styleId?, styleOverride? }`. Optional `headerRows` (heavier rule under them), `cellMargin` (1), `borders` ("all"/"outer"/"rows"/"none"), `rotation`, `styleId`/`styleOverride`, and top-level `scale` (drawing-scale multiplier — sizes are paper mm before it, like text). DXF export writes a real AutoCAD table; DWG, PDF and SVG get its rules + texts |
 | `viewport` | `rect: {x,y,w,h}` | layouts only; `modelCenter`, `scale` (denominator, 1:50 → 50), `locked`, `hiddenLayerIds` |
-| `image` | `assetId`, `origin`, `width`, `height` | `assetId` comes from `doc.addAsset(dataUrl)`; skipped by DXF/DWG export |
 | `block` | `definitionId`, `inputs` | an instance of a block module the document holds (`doc.listBlockDefinitions()`; add modules with `addBlockDefinitions`). `inputs`: world points, the first is the pivot (object-reference inputs are id strings); `params`: only values that differ from the block's defaults; `rotation`/`scale` apply about the pivot. Authoring blocks: blocks-and-commands.md |
-| `reference` | `format`, `name`, `source`, `position` | a LINKED file drawn in place (xref) — the document holds the record, never the bytes. `format`: linea/dxf/dwg/pdf/png/jpg; `source`: `{ kind: "path", path }` (relative to the drawing's file) or `{ kind: "url", url }`. Optional `rotation`, `scale`, `mirrored`, `pdfPage`/`pdfMode` ("vector"/"raster"), `hiddenLayers` (the FILE's layer names), `clip` (AABB in file coords). The SDK reads the file in `ready()` (`openDrawing` does; call `await doc.ready()` after adding one) — unreadable → drawn as a frame |
+| `reference` | `format`, `name`, `source`, `position` | a file drawn in place — LINKED (xref) or EMBEDDED. `format`: linea/dxf/dwg/pdf/png/jpg; `source`: `{ kind: "path", path }` (relative to the drawing's file), `{ kind: "url", url }`, or `{ kind: "asset", assetId }` (the bytes embedded in the document via `doc.addAsset(dataUrl)`). **Pictures are references** — there is no `image` type: a PNG/JPEG draws at px × 25.4/96 mm times `scale` (uniform; no width/height), bottom-left at `position`. Optional `rotation`, `scale`, `mirrored`, `pdfPage`/`pdfMode` ("vector"/"raster"), `hiddenLayers` (the FILE's layer names), `clip` (AABB in file coords). The SDK reads the file in `ready()` (`openDrawing` does; call `await doc.ready()` after adding one) — unreadable → drawn as a frame |
 | `comment` | `position` | a review note (`text`, `tags`) pinned to a point. Editor chrome only: never reaches PDF/SVG/PNG, skipped by DXF/DWG |
 
 ## Reads
@@ -64,6 +63,8 @@ doc.length(id);         // lines/polylines/arcs/circles; null otherwise
 doc.area(id);           // circles/closed polylines/hatches (outer − holes); null otherwise
 doc.listLayers();       // [{id, name, color, …, current}]
 doc.listLayouts(); doc.listTextStyles(); doc.listDimStyles();
+doc.listLineTypes(); doc.listHatchPatterns();   // the DOCUMENT's own definitions (built-ins are always available, never listed)
+doc.listMarketplaces();  // configured block/command marketplaces (process config, not in the file)
 doc.listBlockDefinitions(); doc.listUserCommands();  // the document's modules (compilable ones)
 doc.listAssets();       // [{ id, mimeType, bytes, users }]
 ```
@@ -86,8 +87,9 @@ doc.removeLayer(nameOrId);                     // must be empty and not current
 doc.reorderLayers([...namesOrIds]);            // every layer exactly once
 doc.setCurrentLayer(nameOrId);                 // default layer for new objects (not an undo step)
 doc.name = "Project name";                     // the file name takes over on save(path)
-doc.addAsset(dataUrl);                         // → assetId for image objects (content-keyed)
-doc.removeAsset(id);                           // refused while an image references it
+doc.updateSettings({ units: "mm" });           // document settings (units are declarative for now)
+doc.addAsset(dataUrl);                         // → assetId for an embedded reference (content-keyed)
+doc.removeAsset(id);                           // refused while a reference uses it
 // Styles: by name or id; the first style serves objects without a styleId.
 doc.updateDimStyle("Standard", { textHeight, arrowSize, arrowType, precision,
   extensionOffset, extensionOvershoot, textOffset, font, widthFactor });
@@ -97,12 +99,21 @@ doc.updateDimStyle("Standard", { textHeight, arrowSize, arrowType, precision,
 doc.updateTextStyle("Standard", { font, widthFactor, textHeight });
 doc.addTextStyle({ name: "Notes", textHeight: 3.5 });  // → id; also addDimStyle
 doc.removeTextStyle("Notes");                  // refused while objects use it; also removeDimStyle
-// (setTextStyle / setDimStyle still exist as deprecated aliases of update.)
+// Line types / hatch patterns, by name (resolved ahead of the built-in catalogue):
+doc.addLineTypes([{ name: "FENCE", dashesMm: [12, -3, 0, -3] }]); // >0 dash, <0 gap, 0 dot (× lineWidth)
+doc.addHatchPatterns([{ name: "TILES", lines: [
+  { angle: 0, origin: { x: 0, y: 0 }, deltaX: 0, deltaY: 300 },
+  { angle: Math.PI / 2, origin: { x: 0, y: 0 }, deltaX: 0, deltaY: 300 } ] }]);
+doc.updateLineType(name, patch); doc.removeLineType(name);   // same for …HatchPattern
 // Modules (merged by exported id: a matching id REPLACES — that's the update):
 await doc.addBlockDefinitions([src]);          // → merge report; async: block geometry
                                                // definitive on resolve
 doc.removeBlockDefinition(id);                 // refused while placed / depended on
 await doc.addUserCommands([src]); doc.removeUserCommand(id);
+// Marketplaces (newDrawing/openDrawing `options.marketplaces`, or at runtime):
+await doc.addMarketplaces([{ kind: "github", spec: "owner/repo" }]);  // verifies the catalog
+await doc.searchMarketplaces({ query: "bolt" });  // entries + install status (absent/installed/update)
+await doc.installMarketplaceEntries(["@lineadraw/bolt"]); // dependencies first, one undo step
 await doc.runUserCommand(id, inputs?, params?); // run one of the document's commands
 await doc.runScript(source, inputs?, params?);  // run an unsaved defineCommand module as ONE
                                                 // undo step; inputs = its declared pick points,
@@ -155,8 +166,8 @@ deliverables.
 doc.importDxfText(text, { unitOverride? }); await doc.importDxf(path, opts?);  // unitOverride = mm per unit
 await doc.importDwgData(bytes); await doc.importDwg(path);   // DWG R13–R2018
 await doc.importPdfData(bytes); await doc.importPdf(path);  // vector lines + text, onto the current layer
-// importPdfData(bytes, { as: "image", origin? }) places page images instead —
-// in the editor only for now: headless Node THROWS (no PDF rasterizer yet).
+// importPdfData(bytes, { as: "image", origin? }) embeds the PDF and places each page
+// as a raster reference — in the editor only for now: headless Node THROWS.
 
 // export (render* returns the content, export* writes the file)
 doc.renderSvg({ layout?, bbox?, padding?, palette? });       await doc.exportSvg(path, opts);
@@ -172,6 +183,29 @@ await doc.renderPdf({ layouts?, palette? }); await doc.exportPdf(path, opts); //
 doc.toLinea();                               await doc.save(path?);   // → the path written; sets filePath + name
 // save() without a path works only for a drawing opened from a file (else it throws).
 ```
+
+## Running editors (the desktop bridge)
+
+`Drawing` is a document in YOUR process. To edit a drawing OPEN in the
+Linea desktop app (or a web tab paired with it):
+
+```js
+import { connectEditors } from "lineadraw/sdk";
+
+const linea = await connectEditors();         // port + agent token from the app's bridge.json
+const [first] = await linea.editors();        // [{ id, name, path, kind, readOnly, dirty }]
+const plan = linea.editor(first.id);          // by document id, file path or unique name
+await plan.call("linea_add_objects", { objects: [{ type: "circle", center: [0, 0], radius: 500 }] });
+await plan.runScript(source, inputs?, params?); // a defineCommand module INSIDE the editor: one undo step
+const other = await linea.open("details.linea"); // opens a window
+await linea.editor(other.id).close({ discard: true });
+await linea.tools();                          // the linea_* catalog the bridge offers
+```
+
+Each `call` is one undo step. Failures throw a `BridgeError` with a
+`code`: `unreachable` (app not running), `ambiguous` (several editors,
+none named), `noSuchEditor`, `readOnly`, `validation`… The `lineadraw`
+CLI (`status` / `open` / `close` / `call` / `tools`) uses the same client.
 
 SVG output wraps each object in `<g data-object-id data-layer>` — useful for
 programmatic checks — and `renderSvg({bbox})` CULLS objects outside the box. PNG
@@ -201,10 +235,13 @@ blocks-and-commands.md.
   `vAlign: "top"` puts it ABOVE the point. If a label runs off the sheet
   the wrong way, flip the alignment — this is deliberate CAD semantics,
   identical in model and paper space, not a rendering bug.
-- Dimension `offset` is a vector (direction is preserved by later edits) —
-  e.g. `[0, -500]` puts a horizontal measurement 500 mm below points[0].
+- Dimension `offset` is a signed distance, not a vector: `-500` puts a
+  dimension measured left→right 500 mm BELOW its points. Radial/diameter
+  dimensions reject `offset`.
 - `hatch` boundaries are copied geometry (non-associative): if you move the
   outline, re-create or move the hatch too.
-- DXF/DWG export skips `image` objects (they'd need external files) and
-  `comment`s, and flattens block instances to geometry; skipped items are
-  reported in the export's `skipped` map — mention that when relevant.
+- DXF/DWG export bakes block instances (nested ones too) to their
+  evaluated geometry, writes linked DXF/DWG references as real XREFs, and
+  skips embedded references (DXF can't embed a file), other reference
+  formats and `comment`s; skipped items are reported in the export's
+  `skipped` map — mention that when relevant.

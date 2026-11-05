@@ -7,23 +7,26 @@ export default defineCommand({
   name: "Polar Array",
   description:
     "Copies the selection around a center point, evenly over 360°.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["edit", "array", "utility"],
-  run: async ({ document, selection, pickPoint, prompt, showToast }) => {
-    const ids = selection();
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Polar Array needs the editor");
+    const ids = editor.state().selectedIds;
     if (!ids.length) {
-      showToast("Nothing selected", "error");
+      editor.toast("Nothing selected", "error");
       return;
     }
-    const center = await pickPoint("Center point");
+    const center = await editor.pickPoint({ label: "Center point" });
     const total = Math.round(
       parseFloat(
-        await prompt("Total items (including original)", { initial: "6" }),
+        await editor.prompt("Total items (including original)", {
+          initial: "6",
+        }),
       ),
     );
     if (!Number.isFinite(total) || total < 2) {
-      showToast("Need at least 2 items", "error");
+      editor.toast("Need at least 2 items", "error");
       return;
     }
 
@@ -34,6 +37,9 @@ export default defineCommand({
       document.rotate(copies, i * step, center);
       created += copies.length;
     }
-    showToast(`Created ${created} object(s) in ${total - 1} copies`, "success");
+    editor.toast(
+      `Created ${created} object(s) in ${total - 1} copies`,
+      "success",
+    );
   },
 });

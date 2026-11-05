@@ -8,13 +8,14 @@ export default defineCommand({
   name: "Block Counter",
   description:
     "Counts block instances per definition and places a table of the tally.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["schedule", "blocks", "utility"],
-  run: async ({ document, pickPoint, prompt, showToast }) => {
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Block Counter needs the editor");
     const blocks = document.listObjects({ type: "block" });
     if (!blocks.length) {
-      showToast("No block instances in the model", "info");
+      editor.toast("No block instances in the model", "info");
       return;
     }
 
@@ -27,9 +28,12 @@ export default defineCommand({
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([def, count]) => `${def}\t${count}`);
 
-    const position = await pickPoint("Table position (top-left)");
+    const position = await editor.pickPoint({
+      label: "Table position (top-left)",
+    });
     const scale =
-      parseFloat(await prompt("Annotation scale", { initial: "50" })) || 50;
+      parseFloat(await editor.prompt("Annotation scale", { initial: "50" })) ||
+      50;
 
     document.add([
       {
@@ -41,7 +45,7 @@ export default defineCommand({
         scale,
       },
     ]);
-    showToast(
+    editor.toast(
       `${blocks.length} instance(s) of ${counts.size} definition(s)`,
       "success",
     );

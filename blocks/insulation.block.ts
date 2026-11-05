@@ -5,7 +5,7 @@
 // two edges and fillets only cut inward, so the rendering never exceeds
 // `width`.
 import { defineBlock } from "lineadraw";
-import type { Polyline, PolylineVertexLike } from "lineadraw";
+import type { PolylineInput, PolylineVertexInput, Vec2 } from "lineadraw";
 import { sub, add, scale, len } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -51,10 +51,10 @@ export default defineBlock({
       const span = width / Math.tan(Math.PI / 3);
       const nSeg = Math.max(2, 2 * Math.round(length / (2 * span)));
       const s = length / nSeg;
-      const points: PolylineVertexLike[] = [];
+      const points: PolylineVertexInput[] = [];
       for (let i = 0; i <= nSeg; i++)
         points.push({ ...at(i * s, i % 2 ? width : 0), bulge: 0 });
-      const zigzag: Polyline = { type: "polyline", points, closed: false };
+      const zigzag: PolylineInput = { type: "polyline", points, closed: false };
       return [zigzag];
     }
 
@@ -74,7 +74,7 @@ export default defineBlock({
     // Corner radius width/4, capped so short runs stay fully rounded instead
     // of snapping back to sharp when the fillet wouldn't fit.
     const rc = Math.min(width / 4, 0.499 * a);
-    const wave: Polyline = {
+    const wave: PolylineInput = {
       type: "polyline",
       points: filletChain(base, rc),
       closed: false,
@@ -88,8 +88,8 @@ export default defineBlock({
  * A corner stays sharp when its tangent length doesn't fit half of either
  * leg — the fillet only ever cuts INTO the corner, never past it.
  */
-const filletChain = (pts: Vec2[], rc: number): PolylineVertexLike[] => {
-  const out: PolylineVertexLike[] = [{ ...pts[0], bulge: 0 }];
+const filletChain = (pts: Vec2[], rc: number): PolylineVertexInput[] => {
+  const out: PolylineVertexInput[] = [{ ...pts[0], bulge: 0 }];
   for (let i = 1; i < pts.length - 1; i++) {
     const p = pts[i];
     const vIn = sub(p, pts[i - 1]);

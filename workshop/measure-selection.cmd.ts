@@ -6,13 +6,14 @@ export default defineCommand({
   id: "@lineadraw/measure-selection",
   name: "Measure Selection",
   description: "Shows the total length and area of the selected objects.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["measure", "utility"],
-  run: async ({ document, selection, showToast }) => {
-    const ids = selection();
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Measure Selection needs the editor");
+    const ids = editor.state().selectedIds;
     if (!ids.length) {
-      showToast("Nothing selected", "error");
+      editor.toast("Nothing selected", "error");
       return;
     }
 
@@ -41,6 +42,6 @@ export default defineCommand({
       );
     if (withArea) parts.push(`area ${(area / 1e6).toFixed(3)} m²`);
     if (!withLength && !withArea) parts.push("nothing measurable");
-    showToast(parts.join(" — "), "info");
+    editor.toast(parts.join(" — "), "info");
   },
 });

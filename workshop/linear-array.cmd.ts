@@ -6,22 +6,25 @@ export default defineCommand({
   id: "@lineadraw/linear-array",
   name: "Linear Array",
   description: "Copies the selection N times along a picked vector.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["edit", "array", "utility"],
-  run: async ({ document, selection, pickPoint, prompt, showToast }) => {
-    const ids = selection();
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Linear Array needs the editor");
+    const ids = editor.state().selectedIds;
     if (!ids.length) {
-      showToast("Nothing selected", "error");
+      editor.toast("Nothing selected", "error");
       return;
     }
-    const base = await pickPoint("Base point");
-    const target = await pickPoint("Displacement to first copy");
+    const base = await editor.pickPoint({ label: "Base point" });
+    const target = await editor.pickPoint({
+      label: "Displacement to first copy",
+    });
     const count = Math.round(
-      parseFloat(await prompt("Number of copies", { initial: "3" })),
+      parseFloat(await editor.prompt("Number of copies", { initial: "3" })),
     );
     if (!Number.isFinite(count) || count < 1) {
-      showToast("Invalid copy count", "error");
+      editor.toast("Invalid copy count", "error");
       return;
     }
 
@@ -29,6 +32,9 @@ export default defineCommand({
       x: target.x - base.x,
       y: target.y - base.y,
     });
-    showToast(`Created ${made.length} object(s) in ${count} copies`, "success");
+    editor.toast(
+      `Created ${made.length} object(s) in ${count} copies`,
+      "success",
+    );
   },
 });

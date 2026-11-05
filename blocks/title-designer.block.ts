@@ -1,19 +1,20 @@
 // Title designer
 import { defineBlock } from "lineadraw";
+import type { TextInput } from "lineadraw";
 
-const style1: Partial<Text> = {
+const style1: Partial<TextInput> = {
   hAlign: "left",
   vAlign: "bottom",
   styleOverride: { widthFactor: 0.8, textHeight: 1.5 },
 };
 
-const style2: Partial<Text> = {
+const style2: Partial<TextInput> = {
   hAlign: "left",
   vAlign: "bottom",
   styleOverride: { widthFactor: 0.8, textHeight: 3.5 },
 };
 
-const style3: Partial<Text> = {
+const style3: Partial<TextInput> = {
   hAlign: "left",
   vAlign: "bottom",
   styleOverride: { widthFactor: 0.8, textHeight: 2.5 },

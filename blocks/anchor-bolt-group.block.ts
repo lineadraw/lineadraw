@@ -1,6 +1,7 @@
 // Anchor bolt group — a rows × cols grid of bolts (circle + diagonal
 // cross) centered on the picked point; for base plates and column shoes.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, polar, toRad } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -36,7 +37,7 @@ export default defineBlock({
     const { size } = params;
     const tick = size * 1.2; // cross half-length
 
-    const out: ModelObject[] = [];
+    const out: BlockChildInput[] = [];
     for (let i = 0; i < xs.length; i++)
       for (let j = 0; j < ys.length; j++) {
         const p = add(c, {

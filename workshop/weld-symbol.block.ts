@@ -3,6 +3,7 @@
 // "Arrow side" draws the glyph above the reference line, "other side"
 // below it with a dashed identification line.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, norm, rotate, scale as sc, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -55,7 +56,7 @@ export default defineBlock({
     const h = 3 * s * ySign;
 
     const leaderDir = norm(sub(elbow, tip));
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       { type: "line", a: tip, b: elbow },
       { type: "line", a: tip, b: add(tip, rotate(sc(leaderDir, 2.5 * s), 0.35)) },
       { type: "line", a: tip, b: add(tip, rotate(sc(leaderDir, 2.5 * s), -0.35)) },

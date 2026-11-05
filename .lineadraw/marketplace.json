@@ -454,7 +454,7 @@
       "kind": "command",
       "id": "@lineadraw/narrow-selection",
       "name": "Narrow Selection",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Keeps only objects of one type (or block definition) in the current selection.",
       "tags": [
         "selection",

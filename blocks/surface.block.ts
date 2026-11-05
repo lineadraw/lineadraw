@@ -1,4 +1,5 @@
 import { defineBlock } from "lineadraw";
+import type { LineInput, Vec2 } from "lineadraw";
 import { add, dist, norm, range, sub, scale as sc } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -78,7 +79,7 @@ const transformGlyph = (
   glyph: Glyph,
   transform: (p: Vec2) => Vec2,
   p: Vec2,
-): Line[] => {
+): LineInput[] => {
   return glyph.map(([x1, y1, x2, y2]) => ({
     type: "line",
     a: add(transform({ x: x1, y: y1 }), p),

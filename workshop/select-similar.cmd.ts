@@ -8,18 +8,19 @@ export default defineCommand({
   name: "Select Similar",
   description:
     "Selects all objects of the same type (and block definition) as a picked one.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["selection", "filter", "utility"],
-  run: async ({ document, pickObject, setSelection, prompt, showToast }) => {
-    const id = await pickObject("Reference object");
+  run: async ({ document, editor }) => {
+    if (!editor) throw new Error("Select Similar needs the editor");
+    const id = await editor.pickObject({ label: "Reference object" });
     const [ref] = document.listObjects({ ids: [id] });
     if (!ref) {
-      showToast("Object not found", "error");
+      editor.toast("Object not found", "error");
       return;
     }
     const matchLayer = (
-      await prompt("Match layer too? (y/N)", { initial: "n" })
+      await editor.prompt("Match layer too? (y/N)", { initial: "n" })
     )
       .trim()
       .toLowerCase()
@@ -33,9 +34,9 @@ export default defineCommand({
       return true;
     });
 
-    setSelection(matches.map((o) => o.id));
+    editor.setSelection(matches.map((o) => o.id));
     const what =
       ref.type === "block" ? `block ${ref.definitionId}` : ref.type;
-    showToast(`Selected ${matches.length} × ${what}`, "success");
+    editor.toast(`Selected ${matches.length} × ${what}`, "success");
   },
 });

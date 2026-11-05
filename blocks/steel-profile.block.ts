@@ -8,7 +8,7 @@
 // FUNCTION form — its body runs after the whole module evaluated, so it
 // may reference tables declared below it.
 import { defineBlock } from "lineadraw";
-import type { Polyline, Circle } from "lineadraw";
+import type { PolylineInput, CircleInput } from "lineadraw";
 
 export default defineBlock({
   id: "@lineadraw/steel-profile",
@@ -189,7 +189,7 @@ const iSection = (
   tw: number,
   tf: number,
   r: number,
-): Polyline => ({
+): PolylineInput => ({
   type: "polyline",
   points: [
     [-w / 2, -h / 2],
@@ -219,7 +219,7 @@ const uSection = (
   tw: number,
   tf: number,
   r: number,
-): Polyline => {
+): PolylineInput => {
   const xw = -w / 2 + tw; // web inner face
   return {
     type: "polyline",
@@ -240,7 +240,7 @@ const uSection = (
 };
 
 /** Angle (L), vertical leg left + horizontal leg bottom, bbox-centered. */
-const lSection = (h: number, w: number, t: number, r: number): Polyline => ({
+const lSection = (h: number, w: number, t: number, r: number): PolylineInput => ({
   type: "polyline",
   points: [
     [-w / 2, -h / 2],
@@ -255,7 +255,7 @@ const lSection = (h: number, w: number, t: number, r: number): Polyline => ({
 });
 
 /** Centered w×h rectangle with corner radius r (sharp when r ≈ 0). */
-const roundedRect = (h: number, w: number, r: number): Polyline => ({
+const roundedRect = (h: number, w: number, r: number): PolylineInput => ({
   type: "polyline",
   points:
     r > 0.01
@@ -279,14 +279,14 @@ const roundedRect = (h: number, w: number, r: number): Polyline => ({
 });
 
 /** Hollow box (CFSHS/CFRHS): outer + inner rounded rectangles. */
-const rhs = (h: number, w: number, t: number): Polyline[] => {
+const rhs = (h: number, w: number, t: number): PolylineInput[] => {
   /** EN 10219 cold-formed outer corner radius by wall thickness. */
   const ro = t <= 6 ? 2 * t : t <= 10 ? 2.5 * t : 3 * t;
   return [roundedRect(h, w, ro), roundedRect(h - 2 * t, w - 2 * t, ro - t)];
 };
 
 /** Tube (CFCHS): outer + inner circles. */
-const chs = (d: number, t: number): Circle[] => [
+const chs = (d: number, t: number): CircleInput[] => [
   { type: "circle", center: [0, 0], radius: d / 2 },
   { type: "circle", center: [0, 0], radius: d / 2 - t },
 ];

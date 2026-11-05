@@ -3,6 +3,7 @@
 // picked line is the exterior face, like the insulation block). Shells get
 // a 45° line hatch, the insulation zone the hard-insulation zigzag.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput, PolylineVertexInput } from "lineadraw";
 import { add, dist, norm, scale as sc, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -35,7 +36,7 @@ export default defineBlock({
     const w3 = outer + insulation + inner;
     const lineAngle = Math.atan2(d.y, d.x);
 
-    const shellHatch = (a: number, b: number): ModelObject => ({
+    const shellHatch = (a: number, b: number): BlockChildInput => ({
       type: "hatch",
       loops: [{ points: [at(0, a), at(length, a), at(length, b), at(0, b)] }],
       fill: { kind: "lines", angle: lineAngle + Math.PI / 4, spacing: 25 },
@@ -46,7 +47,7 @@ export default defineBlock({
     const span = insulation / Math.tan(Math.PI / 3);
     const nSeg = Math.max(2, 2 * Math.round(length / (2 * span)));
     const step = length / nSeg;
-    const zig: PolylineVertexLike[] = [];
+    const zig: PolylineVertexInput[] = [];
     for (let i = 0; i <= nSeg; i++)
       zig.push({ ...at(i * step, i % 2 ? w2 : w1), bulge: 0 });
 

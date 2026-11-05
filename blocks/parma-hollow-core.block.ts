@@ -8,7 +8,7 @@
 // FUNCTION form — its body runs after the whole module evaluated, so it
 // may reference tables declared below it.
 import { defineBlock } from "lineadraw";
-import type { Polyline } from "lineadraw";
+import type { PolylineInput } from "lineadraw";
 
 export default defineBlock({
   id: "@lineadraw/parma-hollow-core",
@@ -44,7 +44,7 @@ export default defineBlock({
 
 /** Closed polyline from vertices with optional corner fillets/chamfers.
  * Round chamfers become bulge arcs tangent to both edges. */
-const hcPolyline = (verts: readonly HcVertex[]): Polyline => {
+const hcPolyline = (verts: readonly HcVertex[]): PolylineInput => {
   const raw: [number, number, number][] = [];
   const n = verts.length;
   for (let i = 0; i < n; i++) {

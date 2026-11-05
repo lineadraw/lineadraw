@@ -3,6 +3,7 @@
 // line running toward the label position. "Finished" fills half of the
 // triangle, "structural" leaves it open.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 
 export default defineBlock({
   id: "@lineadraw/elevation-mark",
@@ -39,7 +40,7 @@ export default defineBlock({
     const left = { x: p.x - h, y: top };
     const right = { x: p.x + h, y: top };
 
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       { type: "polyline", points: [left, p, right] },
       // Horizontal line at the triangle top, running out to the label end.
       {

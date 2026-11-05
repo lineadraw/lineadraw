@@ -2,6 +2,7 @@
 // dashed match line where a plan splits across sheets, or a center-style
 // line with a CL label.
 import { defineBlock } from "lineadraw";
+import type { BlockChildInput } from "lineadraw";
 import { add, dist, norm, scale as sc, sub } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -44,7 +45,7 @@ export default defineBlock({
       up = sc(up, -1);
     }
 
-    const out: ModelObject[] = [
+    const out: BlockChildInput[] = [
       type === "match"
         ? { type: "line", a: p1, b: p2, lineType: "dashed", lineWidth: 0.5 }
         : { type: "line", a: p1, b: p2, lineType: "center" },
