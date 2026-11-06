@@ -1,34 +1,33 @@
-import { defineBlock, type LineInput, type ParamDef, type TextInput } from "lineadraw";
+// Revision table — 184 mm wide, inserted at its bottom-right corner: a
+// caption row, then one 4.5 mm row per filled revision (up to the last
+// one with a "Revision" value). The panel shows one revision's fields at a
+// time, picked with "Current rev".
+import { defineBlock, type ParamDef, type TextInput } from "lineadraw";
 import { range } from "lineadraw/helpers";
 
-const style1: Partial<TextInput> = {
-  hAlign: "left",
-  vAlign: "bottom",
-  styleOverride: { widthFactor: 0.8, textHeight: 1.5 },
-};
-
-const style2: Partial<TextInput> = {
-  hAlign: "left",
-  vAlign: "bottom",
-  styleOverride: { widthFactor: 0.8, textHeight: 2.5 },
-};
-
-const lang_labels = {
-  en: {
-    rev: "REV.",
-    change: "CHANGE",
-    date: "DATE",
-    changed_by: "CHANGED BY",
-  },
-  fi: {
-    rev: "REV.",
-    change: "MUUTOS",
-    date: "PVM",
-    changed_by: "MUUTTANUT",
-  },
-};
-
 const MAX_NUM = 9;
+
+/** Columns: [param prefix, label, left edge x, English, Finnish]. */
+const columns: [string, string, number, string, string][] = [
+  ["rev", "Revision", -184, "REV.", "REV."],
+  ["change", "Change", -174, "CHANGE", "MUUTOS"],
+  ["date", "Date", -40, "DATE", "PVM"],
+  ["changed_by", "Changed by", -20, "CHANGED BY", "MUUTTANUT"],
+];
+
+const text = (
+  x: number,
+  y: number,
+  content: string,
+  textHeight: number,
+): TextInput => ({
+  type: "text",
+  position: [x, y],
+  content,
+  hAlign: "left",
+  vAlign: "bottom",
+  styleOverride: { widthFactor: 0.8, textHeight },
+});
 
 export default defineBlock({
   id: "@lineadraw/revision-table",
@@ -36,7 +35,7 @@ export default defineBlock({
   description: "Draws a revision table",
   // 1.2.0: text alignment is justification (AutoCAD meaning) since Linea
   // document v20 — values flipped so the text renders where it did.
-  version: "1.2.0",
+  version: "1.2.1",
   authors: ["Linea Team"],
   tags: ["sheet", "title-block", "annotation", "layout"],
   params: () => [
@@ -54,60 +53,31 @@ export default defineBlock({
       name: "current",
       label: "Current rev",
       type: "enum",
-      options: [
-        ...range(MAX_NUM).map((i) => ({
-          value: `${i + 1}`,
-          label: `${i + 1}`,
-        })),
-      ],
+      options: range(MAX_NUM).map((i) => ({
+        value: `${i + 1}`,
+        label: `${i + 1}`,
+      })),
       default: "1",
     },
-    ...range(MAX_NUM).flatMap((i) => [
-      {
-        name: "rev" + (i + 1),
-        label: "Revision",
+    ...range(MAX_NUM).flatMap((i) =>
+      columns.map(([prefix, label]): ParamDef => ({
+        name: prefix + (i + 1),
+        label,
         type: "string",
         default: "",
-      } as ParamDef,
-      {
-        name: "change" + (i + 1),
-        label: "Change",
-        type: "string",
-        default: "",
-      } as ParamDef,
-      {
-        name: "date" + (i + 1),
-        label: "Date",
-        type: "string",
-        default: "",
-      } as ParamDef,
-      {
-        name: "changed_by" + (i + 1),
-        label: "Changed by",
-        type: "string",
-        default: "",
-      } as ParamDef,
-    ]),
+      })),
+    ),
   ],
-  paramVisibility: ({ params }) => {
-    const result: Record<string, boolean> = {};
-    for (let i = 1; i <= MAX_NUM; i++) {
-      if (i !== parseInt(params.current)) {
-        result["rev" + i] = false;
-        result["change" + i] = false;
-        result["date" + i] = false;
-        result["changed_by" + i] = false;
-      }
-    }
-    return result;
-  },
+  paramVisibility: ({ params }) =>
+    Object.fromEntries(
+      range(MAX_NUM)
+        .filter((i) => i + 1 !== parseInt(params.current))
+        .flatMap((i) => columns.map(([prefix]) => [prefix + (i + 1), false])),
+    ),
   draw: ({ params }) => {
-    const { lang } = params;
-    const labels = lang_labels[lang] ?? lang_labels["en"];
+    const lang = params.lang === "fi" ? 4 : 3;
     let num = 0;
-    for (let i = 1; i <= MAX_NUM; i++) {
-      if (params["rev" + i]) num = Math.max(num, i);
-    }
+    for (let i = 1; i <= MAX_NUM; i++) if (params["rev" + i]) num = i;
     const h = num * 4.5 + 3.5;
     return [
       {
@@ -120,79 +90,22 @@ export default defineBlock({
         ],
         closed: true,
       },
-      {
-        type: "line",
-        a: [-174, 0],
-        b: [-174, h],
-      },
-      {
-        type: "line",
-        a: [-40, 0],
-        b: [-40, h],
-      },
-      {
-        type: "line",
-        a: [-20, 0],
-        b: [-20, h],
-      },
-      ...range(num).map(
-        (i) =>
-          ({
-            type: "line",
-            a: [-184, i * 4.5 + 3.5],
-            b: [0, i * 4.5 + 3.5],
-          }) as LineInput,
+      ...columns.slice(1).map(([, , x]) => ({
+        type: "line" as const,
+        a: [x, 0] as [number, number],
+        b: [x, h] as [number, number],
+      })),
+      ...range(num).map((i) => ({
+        type: "line" as const,
+        a: [-184, i * 4.5 + 3.5] as [number, number],
+        b: [0, i * 4.5 + 3.5] as [number, number],
+      })),
+      ...columns.map((c) => text(c[2] + 1, 1, c[lang], 1.5)),
+      ...range(num).flatMap((i) =>
+        columns.map(([prefix, , x]) =>
+          text(x + 1, (i + 1) * 4.5, String(params[prefix + (i + 1)]), 2.5),
+        ),
       ),
-      {
-        type: "text",
-        position: [-183, 1],
-        content: labels.rev,
-        ...style1,
-      },
-      {
-        type: "text",
-        position: [-173, 1],
-        content: labels.change,
-        ...style1,
-      },
-      {
-        type: "text",
-        position: [-39, 1],
-        content: labels.date,
-        ...style1,
-      },
-      {
-        type: "text",
-        position: [-19, 1],
-        content: labels.changed_by,
-        ...style1,
-      },
-      ...range(num).flatMap((i) => [
-        {
-          type: "text",
-          position: [-183, (i + 1) * 4.5],
-          content: params["rev" + (i + 1)] ?? "te",
-          ...style2,
-        } as TextInput,
-        {
-          type: "text",
-          position: [-173, (i + 1) * 4.5],
-          content: params["change" + (i + 1)] ?? "te",
-          ...style2,
-        } as TextInput,
-        {
-          type: "text",
-          position: [-39, (i + 1) * 4.5],
-          content: params["date" + (i + 1)] ?? "te",
-          ...style2,
-        } as TextInput,
-        {
-          type: "text",
-          position: [-19, (i + 1) * 4.5],
-          content: params["changed_by" + (i + 1)] ?? "te",
-          ...style2,
-        } as TextInput,
-      ]),
     ];
   },
 });

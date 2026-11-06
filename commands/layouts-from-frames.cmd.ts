@@ -113,7 +113,7 @@ export default defineCommand({
     let skipped = 0;
     for (const o of candidates) {
       if (o.type === "block") {
-        const pivot = o.inputs[0];
+        const pivot = Array.isArray(o.inputs) ? o.inputs[0] : undefined;
         if (o.rotation !== 0 || !pivot || typeof pivot === "string") {
           skipped++; // a rotated sheet can't print straight
           continue;

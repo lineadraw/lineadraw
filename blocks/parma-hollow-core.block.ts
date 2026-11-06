@@ -15,7 +15,7 @@ export default defineBlock({
   name: "Parma Hollow Core Profile",
   description:
     "Draws the cross-section of a Parma precast hollow-core slab: catalog outline with grout keys and the void pattern, centered on the pick.",
-  version: "1.0.0",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: [
     "structural",
@@ -147,102 +147,54 @@ const hcChamfered = (
   [x, y2, r],
 ];
 
+/** The standard 1200 mm slab outline, h high: bottom bevels, a grout key
+ * `key` below the top. Built as its right half (bottom → top) plus the
+ * mirror, starting at the bottom-left bevel like the catalog. */
+const slab = (h: number, bevel = 583.38, key = 55): HcVertex[] => {
+  const b = -h / 2;
+  const t = h / 2;
+  const right: [number, number][] = [
+    [bevel, b],
+    [600, b + 10],
+    [600, b + 20],
+    [585, b + 30],
+    [577.5, t - key],
+    [570, t - key + 15],
+    [577.5, t - key + 30],
+    [577.5, t],
+  ];
+  const left = right.map(([x, y]): [number, number] => [-x, y]).reverse();
+  return [...left.slice(-2), ...right, ...left.slice(0, -2)];
+};
+
 // Parma hollow core slabs (1200 mm wide), bbox-centered like the steel
-// sections. Outlines carry the grout key/bevel profile verbatim from the
-// catalog; voids are generated from their corner coordinates.
+// sections. Outlines follow the catalog's grout key/bevel profile; voids are
+// generated from their corner coordinates.
 const hollowCores: readonly HcSection[] = [
   {
     name: "P18",
-    outline: [
-      [-600, -77.5],
-      [-585, -87.5],
-      [585, -87.5],
-      [600, -77.5],
-      [600, -67.5],
-      [585, -57.5],
-      [577.5, 7.5],
-      [570, 22.5],
-      [577.5, 37.5],
-      [577.5, 87.5],
-      [-577.5, 87.5],
-      [-577.5, 37.5],
-      [-570, 22.5],
-      [-577.5, 7.5],
-      [-585, -57.5],
-      [-600, -67.5],
-    ],
+    outline: slab(175, 585, 80),
     holes: [-545, -405, -265, -125, 15, 155, 295, 435].map((x) =>
       hcRound(x, 110, -42.5, 67.5, 55),
     ),
   },
   {
     name: "P20",
-    outline: [
-      [-600, -90],
-      [-583.38, -100],
-      [583.38, -100],
-      [600, -90],
-      [600, -80],
-      [585, -70],
-      [577.5, 45],
-      [570, 60],
-      [577.5, 75],
-      [577.5, 100],
-      [-577.5, 100],
-      [-577.5, 75],
-      [-570, 60],
-      [-577.5, 45],
-      [-585, -70],
-      [-600, -80],
-    ],
+    outline: slab(200),
     holes: [-547.5, -359.5, -171.5, 16.5, 204.5, 392.5].map((x) =>
       hcRound(x, 155, -77.5, 77.5, 77.5),
     ),
   },
   {
     name: "P27",
-    outline: [
-      [-600, -122.5],
-      [-583.38, -132.5],
-      [583.38, -132.5],
-      [600, -122.5],
-      [600, -112.5],
-      [585, -102.5],
-      [577.5, 77.5],
-      [570, 92.5],
-      [577.5, 107.5],
-      [577.5, 132.5],
-      [-577.5, 132.5],
-      [-577.5, 107.5],
-      [-570, 92.5],
-      [-577.5, 77.5],
-      [-585, -102.5],
-      [-600, -112.5],
-    ],
+    outline: slab(265),
     holes: [-540.5, -316.5, -92.5, 131.5, 355.5].map((x) =>
       hcRound(x, 185, -92.5, 92.5, 92.5),
     ),
   },
   {
     name: "P32",
-    outline: [
-      [-600, -150],
-      [-583.38, -160],
-      [583.38, -160],
-      [600, -150],
-      [600, -140],
-      [585, -130],
-      [577.5, 105],
-      [570, 120],
-      [577.5, 135],
-      [577.5, 160],
-      [-577.5, 160],
-      [-577.5, 135],
-      [-570, 120],
-      [-577.5, 105],
-      [-585, -130],
-      [-600, -140],
-    ],
+    outline: slab(320),
     holes: [-532.5, -252.5, 27.5, 307.5].map((x) =>
       hcChamfered(x, 225, -120, 120, 55, 112.5),
     ),
@@ -300,48 +252,14 @@ const hollowCores: readonly HcSection[] = [
   },
   {
     name: "P40",
-    outline: [
-      [-600, -190],
-      [-583.38, -200],
-      [583.38, -200],
-      [600, -190],
-      [600, -180],
-      [585, -170],
-      [577.5, 145],
-      [570, 160],
-      [577.5, 175],
-      [577.5, 200],
-      [-577.5, 200],
-      [-577.5, 175],
-      [-570, 160],
-      [-577.5, 145],
-      [-585, -170],
-      [-600, -180],
-    ],
+    outline: slab(400),
     holes: [-532.5, -252.5, 27.5, 307.5].map((x) =>
       hcChamfered(x, 225, -160, 160, 55, 112.5),
     ),
   },
   {
     name: "P50",
-    outline: [
-      [-600, -240],
-      [-583.38, -250],
-      [583.38, -250],
-      [600, -240],
-      [600, -230],
-      [585, -220],
-      [577.5, 195],
-      [570, 210],
-      [577.5, 225],
-      [577.5, 250],
-      [-577.5, 250],
-      [-577.5, 225],
-      [-570, 210],
-      [-577.5, 195],
-      [-585, -220],
-      [-600, -230],
-    ],
+    outline: slab(500),
     holes: [-515, -240, 35, 310].map((x) => hcRound(x, 205, -210, 210, 102.5)),
   },
 ];

@@ -1,16 +1,21 @@
 // Waterproofing Block — a membrane band along the picked point chain: a
-// closed outline offset ±width/2 (mitered corners, flat end caps — like the
-// Rebar outline but with no bending radius) plus a dashed centerline.
+// closed outline offset `width` to the left (mitered corners, flat end
+// caps) with every other `segLength` stretch of each segment filled solid.
 import { defineBlock } from "lineadraw";
-import type { HatchInput, PolylineInput, PolylineVertexInput, Vec2 } from "lineadraw";
+import type {
+  HatchInput,
+  PolylineInput,
+  PolylineVertexInput,
+  Vec2,
+} from "lineadraw";
 import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/waterproofing",
   name: "Waterproofing",
   description:
-    "Draws a waterproofing membrane band along picked points: a closed outline of the given width with a dashed centerline.",
-  version: "1.0.0",
+    "Draws a waterproofing membrane band along picked points: a closed outline of the given width, filled in alternating solid segments.",
+  version: "1.0.1",
   authors: ["Linea Team"],
   tags: ["structural", "waterproofing", "membrane", "detail"],
   params: [
@@ -49,33 +54,18 @@ export default defineBlock({
     }
     if (pts.length < 2) return [];
 
-    const left = offsetChain(pts, width);
-
     const outline: PolylineInput = {
       type: "polyline",
-      points: [...pts, ...left.reverse()],
+      points: [...pts, ...offsetChain(pts, width).reverse()],
       closed: true,
     };
-
-    const loops: {
-      points: readonly PolylineVertexInput[];
-    }[] = [];
-
-    for (let i = 0; i < pts.length - 1; i++) {
-      const segmentLoops = getLoops(pts[i], pts[i + 1], width, segLength).map(
-        (loop) => ({
-          points: loop,
-        }),
-      );
-      loops.push(...segmentLoops);
-    }
-
     const hatch: HatchInput = {
       type: "hatch",
-      loops: loops,
-      fill: {
-        kind: "solid",
-      },
+      loops: pts
+        .slice(1)
+        .flatMap((b, i) => getLoops(pts[i], b, width, segLength))
+        .map((points) => ({ points })),
+      fill: { kind: "solid" },
     };
     return [outline, hatch];
   },
@@ -116,6 +106,8 @@ const offsetChain = (pts: Vec2[], h: number): Vec2[] => {
   });
 };
 
+/** The filled stretches of one segment: every other one of
+ * ceil(length / step) equal pieces, each a quad `width` to the left. */
 const getLoops = (
   start: Vec2,
   end: Vec2,
