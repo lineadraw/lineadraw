@@ -107,7 +107,10 @@ doc.addHatchPatterns([{ name: "TILES", lines: [
 doc.updateLineType(name, patch); doc.removeLineType(name);   // same for …HatchPattern
 // Modules (merged by exported id: a matching id REPLACES — that's the update):
 await doc.addBlockDefinitions([src]);          // → merge report; async: block geometry
-                                               // definitive on resolve
+                                               // definitive on resolve. ALL OR NOTHING: one
+                                               // source that doesn't compile throws (code
+                                               // "moduleRejected", each failure listed) and
+                                               // none are added
 doc.removeBlockDefinition(id);                 // refused while placed / depended on
 await doc.addUserCommands([src]); doc.removeUserCommand(id);
 // Marketplaces (newDrawing/openDrawing `options.marketplaces`, or at runtime):
@@ -118,7 +121,9 @@ await doc.runUserCommand(id, inputs?, params?); // run one of the document's com
 await doc.runScript(source, inputs?, params?);  // run an unsaved defineCommand module as ONE
                                                 // undo step; inputs = its declared pick points,
                                                 // params by name (unknown/wrong type throws);
-                                                // resolves with the script's return value
+                                                // resolves with the script's return value.
+                                                // Sandboxed: a run that computes for > 5 s is
+                                                // stopped and rolled back
 await doc.ready();                             // blocks compiled + referenced files loaded
                                                // (openDrawing does this; drawingFromJson/newDrawing don't)
 doc.transaction(() => { ... });                // one undo step; sync or async fn; a throw ROLLS BACK
@@ -136,6 +141,7 @@ doc.scale(ids, factor, center?);
 doc.mirror(ids, a, b);                         // across line a-b
 doc.copy(ids, [dx, dy]);                       // → new ids
 doc.array(ids, count, [dx, dy]);               // count TOTAL copies incl. the originals, cumulative delta → the new ids
+// copy/array create at most 10 000 objects per call (more throws)
 ```
 
 ## Layouts (paper space)
@@ -175,7 +181,8 @@ await doc.renderPng({ layout?, width?, background?, palette? }); await doc.expor
 // palette: "color" | "grayscale" | "monochrome" — print-style remap. Use
 // monochrome + background "#ffffff" for a paper-like preview: as-authored
 // layer colors target the DARK canvas and near-vanish on white otherwise.
-// Layout renders default to the layout's own printPalette.
+// Layout renders default to the layout's own printPalette. Model renders
+// keep strokes ≥ ~1.5 px at the output width and pad 2% of the extents.
 await doc.toDxf();                          await doc.exportDxf(path);
 await doc.toDwg({ version? });              await doc.exportDwg(path, { version? });
 // version: "AC1015" (2000) | "AC1018" | "AC1021" | "AC1024" | "AC1027" (2013, default) | "AC1032" (2018)
@@ -229,12 +236,11 @@ blocks-and-commands.md.
   lossily.
 - Text defaults to **center/center** alignment — pass `hAlign`/`vAlign`
   explicitly when placing by a corner.
-- **Alignment names which side of the point the text OCCUPIES, not the
-  anchor edge**: `hAlign: "left"` puts the text to the LEFT of `position`
-  (anchor on its right edge — the opposite of CSS `text-align`);
-  `vAlign: "top"` puts it ABOVE the point. If a label runs off the sheet
-  the wrong way, flip the alignment — this is deliberate CAD semantics,
-  identical in model and paper space, not a rendering bug.
+- **Alignment is CAD justification — which edge of the text sits on
+  `position`** (as in AutoCAD/DXF, and like CSS `text-align`):
+  `hAlign: "left"` starts the text AT the point and runs it to the RIGHT;
+  `"right"` ends it at the point. `vAlign: "top"` hangs the text BELOW the
+  point; `"bottom"` sits it ABOVE. Same in model and paper space.
 - Dimension `offset` is a signed distance, not a vector: `-500` puts a
   dimension measured left→right 500 mm BELOW its points. Radial/diameter
   dimensions reject `offset`.

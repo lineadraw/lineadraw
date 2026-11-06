@@ -78,10 +78,11 @@ import { newDrawing, openDrawing } from "lineadraw/sdk";
 5. **Verify by rendering, not by re-reading data.** After building, export a
    PNG and *look at it* (`await doc.exportPng("check.png", { width: 1600 })`).
    Fix what looks wrong. This is the single biggest quality lever. Judge
-   geometry, annotation size, and placement, but expect strokes to be faint
-   hairlines: `lineWidth` is a physical print weight (0.5 mm is subpixel when
-   6 m of model fits in 1600 px). Don't inflate lineweights to look good in
-   the preview; check print fidelity via the layout PDF instead.
+   geometry, annotation size, and placement. Model renders keep every
+   stroke at least ~1.5 px wide (a 0.5 mm print weight would otherwise be
+   sub-pixel when 6 m of model fits in 1600 px), so lines always show;
+   don't inflate lineweights to look good in the preview — check exact
+   print weights in the layout PDF.
 6. **Batch related edits in `doc.transaction(() => { ... })`**: one undo
    step, and errors roll up cleanly.
 

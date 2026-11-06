@@ -299,5 +299,10 @@ Three routes. Pick by where the module should live.
 - Dry run passes (`testBlockDefinition` / `npm run check`) and the
   thumbnail looks right.
 - Degenerate inputs return `[]` instead of throwing.
-- No imports besides `"lineadraw"` and `"lineadraw/helpers"`; no DOM, no
-  `fetch`, no randomness (draw must be deterministic).
+- No imports besides `"lineadraw"` and `"lineadraw/helpers"`; no
+  randomness (draw must be deterministic). Modules run in a sandbox
+  (QuickJS): there is no `window`, DOM, `fetch`, storage or timers, and
+  each call has a CPU budget — a block's `draw` (and its handles) 200 ms
+  per evaluation, after which the block is switched off until its source
+  changes; a command 5 s of computing, after which the run is rolled
+  back. Waiting on the user's picks doesn't count.

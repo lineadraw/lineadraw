@@ -20,6 +20,11 @@ A few rules worth knowing up front (the guide has the rest):
 
 - Tool-arg points are `[x, y]` tuples; `{x, y}` is accepted only inside
   object bodies. Angles are radians.
+- `update_*` tools take `entries: [{ id, ...fieldsToChange }]` — `id` is
+  the object id, or the current name for layers, styles, line types and
+  hatch patterns; `name` in the entry renames.
+- Edit tools are all or nothing: a batch with one bad item (an object, a
+  module source that doesn't compile) is an error and changes nothing.
 - Object tools act on MODEL space unless `layout` names a sheet — never
   on whatever space the user happens to be looking at.
 - Prefer `linea_run_script` (one `defineCommand` module, one undo step)
@@ -99,6 +104,19 @@ Which drawing: `linea_list_editors` first. One open: nothing else to do.
 Several: pass `editor` (document id, file path or unique name) on every
 call, or `linea_select_editor { editor }` once per MCP session. The bridge
 never guesses — it answers `ambiguous`.
+
+- `linea_save_document { path }` (Save As) takes an ABSOLUTE path ending
+  in `.linea` (`relativePath` / `unsupportedFile` otherwise — other formats
+  go through `linea_export`). Writing to a new file gives the drawing a new
+  id, returned as `documentId`; a session that selected the old id
+  follows it.
+- A call that runs past 30 s answers `timeout`. If the editor could stop
+  it, nothing changed; if it was busy, the message says the change may
+  still land — check `linea_summary`'s `revision` before retrying, never
+  blindly repeat an edit.
+- Nothing answering on 7431 while the app runs: its Agents popover says
+  why (another program holds the port); the `lineadraw` CLI says "not
+  serving agents".
 
 ## Route 3 — WebMCP (an in-browser agent)
 
