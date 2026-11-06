@@ -36,8 +36,8 @@ layer. `id` is assigned by `add`; never invent ids.
 | `circle` | `center`, `radius` | |
 | `arc` | `center`, `radius`, `startAngle`, `endAngle` | runs CCW from start to end (DXF convention); start === end renders a full circle |
 | `ellipse` | `center`, `majorAxis`, `ratio` | majorAxis = endpoint vector from center; ratio = minor/major (0..1]; optional `startAngle`/`endAngle` for elliptical arcs |
-| `hatch` | `loops: [{points}]`, `fill` | loops[0] outer, rest holes (even-odd). fill: `{kind:"solid"}` \| `{kind:"pattern", name, angle, scale, origin?}` (ANSI31/ANSI32/ANSI37/AR-CONC… or one of the document's own patterns; `origin` = world anchor of the pattern, default the drawing origin — it moves with the hatch) \| `{kind:"lines", angle, spacing}`; top-level `scale` = drawing-scale multiplier for the spacing (50 in a 1:50 drawing) |
-| `text` | `position`, `content` | `textHeight` (mm, default 2.5), `scale` multiplier (set to drawing-scale denominator), `hAlign`/`vAlign` (**default center/center**), `width` (word-wrap box), `rotation`, `frame` ("rectangle"/"bottom"), `font`, `widthFactor`, `leaderLines: [[pt,...]]` (arrowhead at index 0), `spans` (character formatting — bold/italic/underline/sub/sup/font/height/colour — over ranges of `content`; setting `content` without `spans` drops them). `\t` in content aligns columns at tab stops every 4×textHeight (author tables as ONE multi-line text; tabbed lines don't word-wrap) |
+| `hatch` | `loops: [{points}]`, `fill` | loops[0] outer, rest holes (even-odd). A vertex's edge to the next is straight, an arc (`bulge`), or a spline (`curve: { degree, controlPoints, knots, weights? }`, from this vertex to the next — back to itself when it is the loop's only vertex: a closed spline boundary). fill: `{kind:"solid"}` \| `{kind:"pattern", name, angle, scale, origin?}` (ANSI31/ANSI32/ANSI37/AR-CONC… or one of the document's own patterns; `origin` = world anchor of the pattern, default the drawing origin — it moves with the hatch) \| `{kind:"lines", angle, spacing}`; top-level `scale` = drawing-scale multiplier for the spacing (50 in a 1:50 drawing) |
+| `text` | `position`, `content` | `styleOverride: { textHeight (mm; the style's, 2.5 by default), font, bold, italic, widthFactor, arrowType, arrowSize }` (only the keys that differ from the style — these are NOT top-level fields), `styleId` (a text style by name or id), `scale` multiplier (set to drawing-scale denominator), `hAlign`/`vAlign` (**default center/center**), `width` (word-wrap box), `rotation`, `frame` ("rectangle"/"bottom"), `leaderLines: [[pt,...]]` (arrowhead at index 0), `spans` (character formatting — bold/italic/underline/sub/sup/font/height/colour — over ranges of `content`; setting `content` without `spans` drops them). `\t` in content aligns columns at tab stops every 4×textHeight (author tables as ONE multi-line text; tabbed lines don't word-wrap) |
 | `dimension` | `points`, `offset` (linear/angular) | `kind`: linear (default) / angular / radial / diameter. Points per kind: linear = measured points (>2 = chain); radial = `[center, pointOnCurve]`; **diameter = the two OPPOSITE points on the curve** (`[center, edge]` silently measures a radius — half the value); angular = `[vertex, a, b]`. **`offset` is a signed NUMBER**: linear = distance of the dimension line from points[0] along the LEFT perpendicular of the measuring direction (points left→right: negative = below); angular = the arc radius (negative = the complementary arc); radial/diameter take NO offset (rejected) — place their text with `labels[0].along`. Linear `rotation` locks the measuring direction (radians; unset = aligned). `labels[i]` per segment: `{ along?, across?, content? }` — `content` with `{value}` for the measurement (`"Ø{value} H7"`). `styleOverride` = per-object DimStyle patch (textHeight, arrowSize, …). **Drawing scale is the TOP-LEVEL `scale` field** (`scale: 50` for 1:50) — `scale` inside `styleOverride` is NOT a style key and is rejected |
 | `table` | `position`, `columns`, `rows`, `cells` | a real grid of text cells hanging right/down from `position` (top-left). `columns: [w, …]` mm; `rows`: a COUNT or `[{ minHeight? }, …]` (rows grow to fit wrapped text); `cells[row][col]` exactly rows × columns — a string or `{ text, span?: {cols, rows} (on the anchor cell), hAlign?, vAlign?, color?, styleId?, styleOverride? }`. Optional `headerRows` (heavier rule under them), `cellMargin` (1), `borders` ("all"/"outer"/"rows"/"none"), `rotation`, `styleId`/`styleOverride`, and top-level `scale` (drawing-scale multiplier — sizes are paper mm before it, like text). DXF export writes a real AutoCAD table; DWG, PDF and SVG get its rules + texts |
 | `viewport` | `rect: {x,y,w,h}` | layouts only; `modelCenter`, `scale` (denominator, 1:50 → 50), `locked`, `hiddenLayerIds` |
@@ -78,7 +78,7 @@ doc.update(ids, { layerId: walls });           // shared patch (layer: "name" wo
 doc.update([{ id, radius: 20 }, { id: id2, content: "B" }]); // per-id batch
 doc.remove(ids);                               // → how many went; UNKNOWN ids are skipped, not an error
 doc.reorder(ids, "front" | "back" | { above: id } | { below: id }); // draw order (ids bottom → top)
-doc.addLayer({ name, color?, lineWidth?, opacity?, visible?, locked?, print? }); // → layer id; names unique (throws on a clash)
+doc.addLayer({ name, color?, lineWidth?, lineType?, opacity?, visible?, locked?, print? }); // → layer id; names unique (throws on a clash)
 doc.updateLayer(nameOrId, { name?, color?, lineWidth?, opacity?, visible?, locked?, print? });
 // print: false = shown on screen/SVG/PNG but EXCLUDED from PDF output
 // (AutoCAD plot flag) — use for construction/guide layers. `locked` is an
@@ -227,6 +227,11 @@ The same package exports the checks the editor and the marketplace CLI run
 blocks-and-commands.md.
 
 ## Gotchas
+
+- **Unknown fields are errors, not ignored**: every field has one place.
+  The error names where a misplaced key belongs (style keys →
+  `styleOverride`). Errors carry a stable `code` (`unknownField`,
+  `unknownLayer`, `validation`, …).
 
 - `add` throws on an unknown layer and on invalid fields; `update` and every
   transform throw on an unknown id. `remove` does NOT: unknown ids are

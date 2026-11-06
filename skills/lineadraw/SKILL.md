@@ -85,6 +85,11 @@ import { newDrawing, openDrawing } from "lineadraw/sdk";
    print weights in the layout PDF.
 6. **Batch related edits in `doc.transaction(() => { ... })`**: one undo
    step, and errors roll up cleanly.
+7. **One shape per thing.** Every field has exactly one place; anything
+   else is refused with an error that says where it goes. Style keys of a
+   text, table or dimension (`textHeight`, `font`, `bold`, `arrowSize`, …)
+   go in `styleOverride` (or in a named style via `styleId`) — never at the
+   top level. A hidden layer is `visible: false`.
 
 ## Standard workflow
 
@@ -116,7 +121,8 @@ doc.add([
     points: [[0, 0], [6000, 0]], offset: -500,   // signed: below the line
     scale: 50 },                              // TOP-LEVEL scale, not styleOverride
   { type: "text", layer: "dimensions", position: [3000, 3400],
-    content: "PLAN 1:50", textHeight: 5, scale: 50, hAlign: "center" },
+    content: "PLAN 1:50", styleOverride: { textHeight: 5 }, scale: 50,
+    hAlign: "center" },                       // style keys live in styleOverride
 ]);
 
 // 4) Paper layout: sheet + viewport at a stated scale. (New documents are
@@ -142,8 +148,8 @@ document-level knob (dimension styles have no `scale`), and `scale` is NOT a
 `styleOverride` key either (unknown style keys are rejected loudly). Set it
 to the drawing-scale denominator (50 for 1:50) on every annotation:
 
-- text → `scale: 50` (keep `textHeight` at paper size: 2.5 body, 3.5
-  subtitles, 5 titles)
+- text → `scale: 50` (keep `styleOverride.textHeight` — or the text
+  style's — at paper size: 2.5 body, 3.5 subtitles, 5 titles)
 - dimension → top-level `scale: 50`
 - hatch → top-level `scale: 50` (multiplies the pattern spacing)
 
