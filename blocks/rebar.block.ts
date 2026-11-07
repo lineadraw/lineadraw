@@ -5,7 +5,12 @@
 // back to a sharp corner when its tangent length doesn't fit on the
 // previous segment (minus what the previous bend used) or the next one.
 import { defineBlock } from "lineadraw";
-import type { LineInput, PolylineInput, PolylineVertexInput, Vec2 } from "lineadraw";
+import type {
+  LineInput,
+  PolylineInput,
+  PolylineVertexInput,
+  Vec2,
+} from "lineadraw";
 import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
 
 export default defineBlock({
@@ -13,7 +18,8 @@ export default defineBlock({
   name: "Rebar",
   description:
     "Draws a bent rebar through picked points: the centerline with bending-radius fillets and end ticks, or the true-thickness outline for the selected bar size.",
-  version: "1.0.0",
+  // 1.1.0: the bar is an editable point list (add / remove points).
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["structural", "concrete", "reinforcement", "rebar"],
   params: [
@@ -31,28 +37,20 @@ export default defineBlock({
       default: true,
     },
   ],
-  // A classic U-bar; the stand-in picks would zigzag through 16 grid points.
-  previewInputs: [
-    [0, 60],
-    [0, 0],
-    [100, 0],
-    [100, 60],
-  ],
-  place: async ({ pickPoint }) => {
-    const points: Vec2[] = [];
-    try {
-      for (;;) points.push(await pickPoint(`Point ${points.length + 1}`));
-    } catch (e) {
-      // Escape finishes the collection; rethrowing the cancel rejection when
-      // there's no bar yet lets the insert tool exit instead of placing.
-      if (points.length < 2) throw e;
-    }
-    return points;
+  inputs: [{ name: "path", label: "Bar points", type: "points", min: 2 }],
+  // A classic U-bar.
+  previewInputs: {
+    path: [
+      [0, 60],
+      [0, 0],
+      [100, 0],
+      [100, 60],
+    ],
   },
   draw: ({ params, inputs }) => {
     // Drop consecutive duplicate picks — zero-length segments carry no bend.
     const pts: Vec2[] = [];
-    for (const v of inputs) {
+    for (const v of inputs.path) {
       if (pts.length === 0 || len(sub(v, pts[pts.length - 1])) > EPS)
         pts.push(v);
     }

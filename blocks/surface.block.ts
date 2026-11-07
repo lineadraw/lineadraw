@@ -1,13 +1,14 @@
 import { defineBlock } from "lineadraw";
-import type { LineInput, Vec2 } from "lineadraw";
+import type { LineInput, PolylineInput, Vec2 } from "lineadraw";
 import { add, dist, norm, range, sub, scale as sc } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/surface",
   name: "Surface",
   description:
-    "Draws a ground-surface symbol along the line between two picked points, with rock, earth, excavated-rock and removed-earth variants.",
-  version: "1.0.0",
+    "Draws a ground-surface symbol along picked points, with rock, earth, excavated-rock and removed-earth variants.",
+  // 1.1.0: an editable point chain (add / remove points) instead of a line.
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["civil", "site", "ground", "surface", "annotation"],
   params: [
@@ -30,24 +31,16 @@ export default defineBlock({
       default: 1,
     },
   ],
-  place: ["Start point", "End point"],
-  previewInputs: [
-    [0, 0],
-    [30, 0],
-  ],
-  draw: ({ params, inputs: [start, end] }) => {
+  inputs: [{ name: "path", label: "Surface points", type: "points", min: 2 }],
+  previewInputs: {
+    path: [
+      [0, 0],
+      [30, 0],
+    ],
+  },
+  draw: ({ params, inputs: { path } }) => {
     const { type, scale } = params;
-    const dir = norm(sub(end, start));
-    const length = dist(start, end);
-    const cos = dir.x;
-    const sin = dir.y;
-
-    const transform = (p: Vec2) => ({
-      x: (p.x * cos - p.y * sin) * scale,
-      y: (p.x * sin + p.y * cos) * scale,
-    });
-
-    const { offset, spacing, width, glyph } =
+    const { offset, spacing, glyph } =
       type === "rock"
         ? rock
         : type === "earth"
@@ -56,18 +49,27 @@ export default defineBlock({
             ? rock_exc
             : earth_rem;
 
-    const numRepeats = Math.floor(length / spacing / scale);
+    // Glyphs repeat along each segment on their own, rotated to it.
+    const glyphs = path.slice(1).flatMap((end, k) => {
+      const start = path[k];
+      const dir = norm(sub(end, start));
+      const length = dist(start, end);
+      const transform = (p: Vec2) => ({
+        x: (p.x * dir.x - p.y * dir.y) * scale,
+        y: (p.x * dir.y + p.y * dir.x) * scale,
+      });
+      return range(Math.floor(length / spacing / scale)).flatMap((i) =>
+        transformGlyph(
+          glyph,
+          transform,
+          add(start, sc(dir, (i * spacing + offset) * scale)),
+        ),
+      );
+    });
 
     return [
-      {
-        type: "line",
-        a: start,
-        b: end,
-      },
-      ...range(numRepeats).flatMap((i) => {
-        const p = sc(add(start, sc(dir, i * spacing + offset)), scale);
-        return transformGlyph(glyph, transform, p);
-      }),
+      { type: "polyline", points: path, closed: false } as PolylineInput,
+      ...glyphs,
     ];
   },
 });

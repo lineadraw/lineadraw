@@ -8,14 +8,23 @@ import type {
   PolylineVertexInput,
   Vec2,
 } from "lineadraw";
-import { sub, add, scale, norm, len, rotate } from "lineadraw/helpers";
+import {
+  sub,
+  add,
+  scale,
+  norm,
+  len,
+  rotate,
+  hatchLoop,
+} from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/waterproofing",
   name: "Waterproofing",
   description:
     "Draws a waterproofing membrane band along picked points: a closed outline of the given width, filled in alternating solid segments.",
-  version: "1.0.1",
+  // 1.1.0: the band is an editable point list (add / remove points).
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["structural", "waterproofing", "membrane", "detail"],
   params: [
@@ -28,27 +37,19 @@ export default defineBlock({
       min: 0.1,
     },
   ],
-  previewInputs: [
-    [0, 80],
-    [0, 0],
-    [80, 0],
-  ],
-  place: async ({ pickPoint }) => {
-    const points: Vec2[] = [];
-    try {
-      for (;;) points.push(await pickPoint(`Point ${points.length + 1}`));
-    } catch (e) {
-      // Escape finishes the collection; rethrowing the cancel rejection when
-      // there's no band yet lets the insert tool exit instead of placing.
-      if (points.length < 2) throw e;
-    }
-    return points;
+  inputs: [{ name: "path", label: "Band points", type: "points", min: 2 }],
+  previewInputs: {
+    path: [
+      [0, 80],
+      [0, 0],
+      [80, 0],
+    ],
   },
   draw: ({ params, inputs }) => {
     const { width, segLength } = params;
     // Drop consecutive duplicate picks — zero-length segments break offsets.
     const pts: Vec2[] = [];
-    for (const v of inputs) {
+    for (const v of inputs.path) {
       if (pts.length === 0 || len(sub(v, pts[pts.length - 1])) > EPS)
         pts.push(v);
     }
@@ -64,7 +65,7 @@ export default defineBlock({
       loops: pts
         .slice(1)
         .flatMap((b, i) => getLoops(pts[i], b, width, segLength))
-        .map((points) => ({ points })),
+        .map((points) => hatchLoop(points)),
       fill: { kind: "solid" },
     };
     return [outline, hatch];

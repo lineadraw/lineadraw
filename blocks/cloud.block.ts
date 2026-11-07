@@ -1,8 +1,8 @@
 // Cloud
 
 import { defineBlock } from "lineadraw";
-import type { PolylineVertexInput, Vec2 } from "lineadraw";
-import { dist, len, norm, sub } from "lineadraw/helpers";
+import type { PolylineVertexInput } from "lineadraw";
+import { dist } from "lineadraw/helpers";
 
 const SIZE = 2;
 
@@ -10,7 +10,8 @@ export default defineBlock({
   id: "@lineadraw/cloud",
   name: "Cloud",
   description: "Draws a cloud shape to represent a structure on hold.",
-  version: "1.0.2",
+  // 1.1.0: the outline is an editable point list (add / remove points).
+  version: "1.1.0",
   authors: ["Linea Team"],
   tags: ["structure", "cloud", "hold"],
   params: [
@@ -21,22 +22,18 @@ export default defineBlock({
       default: 1,
     },
   ],
-  place: async ({ pickPoint }) => {
-    const points: Vec2[] = [];
-    try {
-      for (;;) points.push(await pickPoint(`Point ${points.length + 1}`));
-    } catch (e) {
-      if (points.length < 3) throw e;
-    }
-    return points;
-  },
-  previewInputs: [
-    [0, 0],
-    [7, 0],
-    [7, 7],
-    [0, 7],
+  inputs: [
+    { name: "outline", label: "Outline", type: "points", min: 3, closed: true },
   ],
-  draw: ({ params, inputs }) => {
+  previewInputs: {
+    outline: [
+      [0, 0],
+      [7, 0],
+      [7, 7],
+      [0, 7],
+    ],
+  },
+  draw: ({ params, inputs: { outline: inputs } }) => {
     const { scale } = params;
 
     const points: PolylineVertexInput[] = [];
@@ -44,7 +41,6 @@ export default defineBlock({
     for (let i = 0; i < inputs.length; i++) {
       const p0 = inputs[i];
       const p1 = inputs[(i + 1) % inputs.length];
-      const dir = norm(sub(p1, p0));
       const length = dist(p0, p1);
       const segments = Math.max(1, Math.floor(length / scale / SIZE));
 

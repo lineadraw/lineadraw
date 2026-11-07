@@ -16,44 +16,37 @@ const lines = [
   [-14, 0, -14, 8.5],
 ];
 
-/** Captions at 1.5 mm: [x, y, English, Finnish]. */
+/** Captions at 1.5 mm: [x, y (top), English, Finnish]. */
 const captions: [number, number, string, string][] = [
-  [-183, 57, "PROJECT NAME", "KOHDE"],
-  [-93, 57, "DRAWING CONTENT", "PIIRUSTUKSEN SISÄLTÖ"],
-  [-20, 57, "SCALES", "MITTAKAAVAT"],
-  [-183, 31.5, "DRAWER", "PIIRT."],
-  [-138, 31.5, "DESIGNER", "SUUN."],
-  [-183, 23, "CHECKER", "TARK."],
-  [-138, 23, "DATE", "PVM"],
-  [-93, 14.5, "PROJECT NUMBER", "TYÖNUMERO"],
-  [-36, 14.5, "DESIGN GROUP", "S. ALA"],
-  [-93, 6, "DWG. NO.", "PIIR. NRO."],
-  [-36, 6, "PAGE", "SIVU"],
-  [-13, 6, "REVISION", "MUUTOS"],
+  [-183, 58.5, "PROJECT NAME", "KOHDE"],
+  [-93, 58.5, "DRAWING CONTENT", "PIIRUSTUKSEN SISÄLTÖ"],
+  [-20, 58.5, "SCALES", "MITTAKAAVAT"],
+  [-183, 33, "DRAWER", "PIIRT."],
+  [-138, 33, "DESIGNER", "SUUN."],
+  [-183, 24.5, "CHECKER", "TARK."],
+  [-138, 24.5, "DATE", "PVM"],
+  [-93, 16, "PROJECT NUMBER", "TYÖNUMERO"],
+  [-36, 16, "DESIGN GROUP", "S. ALA"],
+  [-93, 7.5, "DWG. NO.", "PIIR. NRO."],
+  [-36, 7.5, "PAGE", "SIVU"],
+  [-13, 7.5, "REVISION", "MUUTOS"],
 ];
 
-/** Fields: [param, label, x, y, text height, default]. */
-const fields: [string, string, number, number, number, string][] = [
-  ["project_name_1", "Name 1", -183, 52, 3.5, ""],
-  ["project_name_2", "Name 2", -183, 46.5, 3.5, ""],
-  ["project_name_3", "Name 3", -183, 41, 3.5, ""],
-  ["project_name_4", "Name 4", -183, 35.5, 3.5, ""],
-  ["drawing_content_1", "Content 1", -93, 52, 3.5, ""],
-  ["drawing_content_2", "Content 2", -93, 46.5, 3.5, ""],
-  ["drawing_content_3", "Content 3", -93, 41, 3.5, ""],
-  ["drawing_content_4", "Content 4", -93, 35.5, 3.5, ""],
-  ["drawing_content_5", "Content 5", -93, 30, 3.5, ""],
-  ["scales_1", "Scales 1", -20, 52, 3.5, ""],
-  ["scales_2", "Scales 2", -20, 46.5, 3.5, ""],
-  ["drawer_name", "Drawer", -183, 27, 2.5, ""],
-  ["designer_name", "Designer", -138, 27, 2.5, ""],
-  ["checker_name", "Checker", -183, 18.5, 2.5, ""],
-  ["date", "Date", -138, 18.5, 2.5, ""],
-  ["project_number", "Project Num", -93, 10, 3.5, ""],
-  ["design_group", "Design Group", -36, 10, 3.5, "STR"],
-  ["drawing_number", "Dwg. Number", -93, 1.5, 3.5, ""],
-  ["page", "Page", -36, 1.5, 3.5, ""],
-  ["revision", "Revision", -13, 1.5, 3.5, ""],
+/** Fields: [param, label, x, y (top of the text), text height, default,
+ *  multiline]. */
+const fields: [string, string, number, number, number, string, boolean?][] = [
+  ["project_name", "Project name", -183, 56, 3.5, "", true],
+  ["drawing_content", "Drawing content", -93, 56, 3.5, "", true],
+  ["scales", "Scales", -20, 56, 3.5, "", true],
+  ["drawer_name", "Drawer", -183, 29.5, 2.5, ""],
+  ["designer_name", "Designer", -138, 29.5, 2.5, ""],
+  ["checker_name", "Checker", -183, 21, 2.5, ""],
+  ["date", "Date", -138, 21, 2.5, ""],
+  ["project_number", "Project Num", -93, 13.5, 3.5, ""],
+  ["design_group", "Design Group", -36, 13.5, 3.5, "STR"],
+  ["drawing_number", "Dwg. Number", -93, 5, 3.5, ""],
+  ["page", "Page", -36, 5, 3.5, ""],
+  ["revision", "Revision", -13, 5, 3.5, ""],
 ];
 
 const text = (
@@ -66,18 +59,19 @@ const text = (
   position: [x, y],
   content,
   hAlign: "left",
-  vAlign: "bottom",
+  vAlign: "top",
   styleOverride: { widthFactor: 0.8, textHeight },
 });
 
 export default defineBlock({
-  id: "@lineadraw/title-designer",
-  name: "Title designer",
+  id: "@lineadraw/title",
+  name: "Title",
   description:
     "Draws a sheet title block filled from text-field parameters: project, site, designer and drawing information.",
-  // 1.1.0: text alignment is justification (AutoCAD meaning) since Linea
-  // document v20 — values flipped so the text renders where it did.
-  version: "1.1.1",
+  // 2.0.0: project name, drawing content and scales are one multiline
+  // field each (were numbered single-line fields); all text hangs from its
+  // top edge.
+  version: "2.0.0",
   authors: ["Linea Team"],
   tags: ["sheet", "title-block", "annotation", "layout"],
   params: [
@@ -91,11 +85,12 @@ export default defineBlock({
       ],
       default: "en",
     },
-    ...fields.map(([name, label, , , , value]) => ({
+    ...fields.map(([name, label, , , , value, multiline]) => ({
       name,
       label,
       type: "string" as const,
       default: value,
+      ...(multiline && { multiline }),
     })),
   ],
   draw: ({ params }) => {
