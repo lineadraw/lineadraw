@@ -4,7 +4,7 @@
 // below it with a dashed identification line.
 import { defineBlock } from "lineadraw";
 import type { BlockChildInput } from "lineadraw";
-import { add, norm, rotate, scale as sc, sub } from "lineadraw/helpers";
+import { add, norm, rotate, scale as sc, sub, hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/weld-symbol",
@@ -107,7 +107,7 @@ export default defineBlock({
       out.push({ type: "line", a: elbow, b: top });
       out.push({
         type: "hatch",
-        loops: [{ points: [top, add(elbow, { x: 0, y: 2.6 * s }), add(elbow, { x: 2.2 * s * sx, y: 3.3 * s })] }],
+        loops: [hatchLoop([top, add(elbow, { x: 0, y: 2.6 * s }), add(elbow, { x: 2.2 * s * sx, y: 3.3 * s })])],
         fill: { kind: "solid" },
       });
     }

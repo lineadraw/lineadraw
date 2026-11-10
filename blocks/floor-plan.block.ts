@@ -24,7 +24,7 @@
 // Needs Linea with hosted blocks (document version 24): input tables,
 // handles, `data` params, `expose` / `hosted`, union / difference.
 import { defineBlock } from "lineadraw";
-import { difference, union } from "lineadraw/helpers";
+import { difference, union, hatchLoop } from "lineadraw/helpers";
 
 /** A wall's override in the `walls` data param (absent = the defaults). */
 type WallOverride = { t?: number; e?: number; off?: boolean };
@@ -70,7 +70,7 @@ export default defineBlock({
   name: "Floor plan",
   description:
     "Walls on a grid with room labels and areas. Per-wall thickness, eccentricity and on/off from each wall's hover menu; '+' buttons insert gridlines. Hosts @lineadraw/floor-plan-door and @lineadraw/floor-plan-window, which cut its walls.",
-  version: "1.3.0",
+  version: "1.3.1",
   authors: ["Linea Team"],
   tags: ["architecture", "plan", "wall", "floor plan", "room"],
   params: [
@@ -207,7 +207,7 @@ export default defineBlock({
         ? [
             {
               type: "hatch" as const,
-              loops: rings.map((points) => ({ points })),
+              loops: rings.map((points) => hatchLoop(points)),
               fill: {
                 kind: "pattern" as const,
                 name: params.hatch,

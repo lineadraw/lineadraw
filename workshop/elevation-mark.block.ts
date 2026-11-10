@@ -4,6 +4,7 @@
 // triangle, "structural" leaves it open.
 import { defineBlock } from "lineadraw";
 import type { BlockChildInput } from "lineadraw";
+import { hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/elevation-mark",
@@ -60,7 +61,7 @@ export default defineBlock({
     if (style === "finished")
       out.push({
         type: "hatch",
-        loops: [{ points: [p, { x: p.x, y: top }, sx > 0 ? right : left] }],
+        loops: [hatchLoop([p, { x: p.x, y: top }, sx > 0 ? right : left])],
         fill: { kind: "solid" },
       });
     return out;

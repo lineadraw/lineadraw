@@ -3,6 +3,7 @@
 // lamination lines for glulam, alternating-grain bands for CLT.
 import { defineBlock } from "lineadraw";
 import type { BlockChildInput } from "lineadraw";
+import { hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/timber-section",
@@ -75,14 +76,12 @@ export default defineBlock({
       out.push({
         type: "hatch",
         loops: [
-          {
-            points: [
+          hatchLoop([
               { x: x0, y: by0 },
               { x: x1, y: by0 },
               { x: x1, y: by1 },
               { x: x0, y: by1 },
-            ],
-          },
+            ]),
         ],
         fill: { kind: "lines", angle: i % 2 ? Math.PI / 2 : 0, spacing: i % 2 ? 30 : bh / 3 },
       });

@@ -12,6 +12,6 @@
     "check": "lineadraw check"
   },
   "devDependencies": {
-    "lineadraw": "^0.11.0"
+    "lineadraw": "^0.12.0"
   }
 }

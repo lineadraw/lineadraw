@@ -4,7 +4,7 @@
 // a 45° line hatch, the insulation zone the hard-insulation zigzag.
 import { defineBlock } from "lineadraw";
 import type { BlockChildInput, PolylineVertexInput } from "lineadraw";
-import { add, dist, norm, scale as sc, sub } from "lineadraw/helpers";
+import { add, dist, norm, scale as sc, sub, hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/sandwich-wall",
@@ -38,7 +38,7 @@ export default defineBlock({
 
     const shellHatch = (a: number, b: number): BlockChildInput => ({
       type: "hatch",
-      loops: [{ points: [at(0, a), at(length, a), at(length, b), at(0, b)] }],
+      loops: [hatchLoop([at(0, a), at(length, a), at(length, b), at(0, b)])],
       fill: { kind: "lines", angle: lineAngle + Math.PI / 4, spacing: 25 },
     });
 

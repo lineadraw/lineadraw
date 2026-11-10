@@ -2,6 +2,7 @@
 // "N" above. Points up as drawn; rotate the instance to match the project
 // north.
 import { defineBlock } from "lineadraw";
+import { hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/north-arrow",
@@ -24,7 +25,7 @@ export default defineBlock({
     return [
       { type: "circle", center: p, radius: r },
       { type: "polyline", points: [tip, wingL, tail, wingR], closed: true },
-      { type: "hatch", loops: [{ points: [tip, tail, wingR] }], fill: { kind: "solid" } },
+      { type: "hatch", loops: [hatchLoop([tip, tail, wingR])], fill: { kind: "solid" } },
       {
         type: "text",
         position: { x: p.x, y: p.y + r + 0.5 * s },

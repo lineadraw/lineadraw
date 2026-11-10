@@ -22,7 +22,7 @@ export default defineBlock({
   name: "Floor plan Window",
   description:
     "A window on a @lineadraw/floor-plan: cuts the wall, drags onto any wall, resizes along it.",
-  version: "1.2.0",
+  version: "1.2.1",
   authors: ["Linea Team"],
   tags: ["architecture", "plan", "window"],
   params: [
@@ -122,9 +122,19 @@ export default defineBlock({
   },
 
   draw: ({ params, host }) => {
-    const line: Line | undefined = host?.lines?.[params.line];
-    const seg = line && seat(line, params.at, params.width);
-    if (!line || !seg) return [];
+    // Not seated on a wall: say so (the instance shows the error, and an
+    // agent gets it as a warning) instead of silently drawing nothing.
+    const lines: Record<string, Line> = host?.lines ?? {};
+    const line: Line | undefined = lines[params.line];
+    if (!line)
+      throw new Error(
+        `No gridline "${params.line}" on the plan: set \`line\` to one of ${Object.keys(lines).join(", ")}`,
+      );
+    const seg = seat(line, params.at, params.width);
+    if (!seg)
+      throw new Error(
+        `No wall on gridline "${params.line}" at ${params.at} mm for a ${params.width} mm window`,
+      );
     const at = frame(line);
     const s0 = params.at;
     const s1 = params.at + params.width;

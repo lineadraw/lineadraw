@@ -9,9 +9,11 @@ export default defineCommand({
   name: "Narrow Selection",
   description:
     "Keeps only objects of one type (or block definition) in the current selection.",
-  version: "2.0.1",
+  version: "2.0.2",
   authors: ["Linea Team"],
   tags: ["selection", "filter", "utility"],
+  // Always asks which group to keep: agents and headless runs are told so.
+  requiresEditor: true,
   run: async ({ document, editor }) => {
     if (!editor) throw new Error("Narrow Selection needs the editor");
     const ids = editor.state().selectedIds;

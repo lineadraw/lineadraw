@@ -3,6 +3,7 @@
 // 1:50); it sizes the bar height and the tick texts so they print right.
 import { defineBlock } from "lineadraw";
 import type { BlockChildInput } from "lineadraw";
+import { hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/scale-bar",
@@ -39,14 +40,12 @@ export default defineBlock({
         out.push({
           type: "hatch",
           loops: [
-            {
-              points: [
+            hatchLoop([
                 { x: x0, y: p.y },
                 { x: x0 + segment, y: p.y },
                 { x: x0 + segment, y: p.y + h },
                 { x: x0, y: p.y + h },
-              ],
-            },
+              ]),
           ],
           fill: { kind: "solid" },
         });

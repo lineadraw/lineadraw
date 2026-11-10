@@ -66,7 +66,7 @@
       "kind": "block",
       "id": "@lineadraw/borehole",
       "name": "Borehole",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "description": "Draws a borehole symbol (half-filled circle) with its id.",
       "tags": [
         "site",
@@ -159,7 +159,7 @@
       "kind": "block",
       "id": "@lineadraw/floor-plan-door",
       "name": "Floor plan Door",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "A hinged door on a @lineadraw/floor-plan: cuts the wall, drags onto any wall, flips hinge and side.",
       "tags": [
         "architecture",
@@ -177,7 +177,7 @@
       "kind": "block",
       "id": "@lineadraw/floor-plan-window",
       "name": "Floor plan Window",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "A window on a @lineadraw/floor-plan: cuts the wall, drags onto any wall, resizes along it.",
       "tags": [
         "architecture",
@@ -195,7 +195,7 @@
       "kind": "block",
       "id": "@lineadraw/floor-plan",
       "name": "Floor plan",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "description": "Walls on a grid with room labels and areas. Per-wall thickness, eccentricity and on/off from each wall's hover menu; '+' buttons insert gridlines. Hosts @lineadraw/floor-plan-door and @lineadraw/floor-plan-window, which cut its walls.",
       "tags": [
         "architecture",
@@ -276,7 +276,7 @@
       "kind": "block",
       "id": "@lineadraw/rebar-section",
       "name": "Rebar Section",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Draws a row of rebars in section view (filled dots) between two picked points, distributed by count or by spacing.",
       "tags": [
         "structural",
@@ -510,7 +510,7 @@
       "kind": "command",
       "id": "@lineadraw/narrow-selection",
       "name": "Narrow Selection",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "description": "Keeps only objects of one type (or block definition) in the current selection.",
       "tags": [
         "selection",

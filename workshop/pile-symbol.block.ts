@@ -3,7 +3,7 @@
 // optional pile number.
 import { defineBlock } from "lineadraw";
 import type { BlockChildInput } from "lineadraw";
-import { add, polar, toRad } from "lineadraw/helpers";
+import { add, polar, toRad, hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/pile-symbol",
@@ -44,12 +44,10 @@ export default defineBlock({
       out.push({
         type: "hatch",
         loops: [
-          {
-            points: [
+          hatchLoop([
               { x: c.x - r, y: c.y, bulge: 1 },
               { x: c.x + r, y: c.y, bulge: 1 },
-            ],
-          },
+            ]),
         ],
         fill: { kind: "solid" },
       });

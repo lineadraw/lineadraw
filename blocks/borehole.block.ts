@@ -3,7 +3,7 @@
 // scale (paper-mm × scale).
 import { defineBlock } from "lineadraw";
 import type { BlockChildInput } from "lineadraw";
-import { add } from "lineadraw/helpers";
+import { add, hatchLoop } from "lineadraw/helpers";
 
 export default defineBlock({
   id: "@lineadraw/borehole",
@@ -11,7 +11,7 @@ export default defineBlock({
   description: "Draws a borehole symbol (half-filled circle) with its id.",
   // 1.1.0: text alignment is justification (AutoCAD meaning) since Linea
   // document v20 — values flipped so the text renders where it did.
-  version: "1.1.0",
+  version: "1.1.1",
   authors: ["Linea Team"],
   tags: ["site", "geotechnical", "annotation"],
   params: [{ name: "label", label: "Label", type: "string", default: "P1" }],
@@ -26,13 +26,11 @@ export default defineBlock({
         // vertical diameter.
         type: "hatch",
         loops: [
-          {
-            points: [
+          hatchLoop([
               [c.x, c.y + r, 1],
               [c.x, c.y - r],
               [c.x, c.y + r],
-            ],
-          },
+            ]),
         ],
         fill: { kind: "solid" },
       },
