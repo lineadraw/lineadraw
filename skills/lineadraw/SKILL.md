@@ -94,7 +94,7 @@ import { newDrawing, openDrawing } from "lineadraw/sdk";
 ## Standard workflow
 
 ```js
-import { newDrawing } from "lineadraw/sdk";
+import { hatchLoop, newDrawing } from "lineadraw/sdk";
 
 const doc = newDrawing();
 
@@ -109,7 +109,7 @@ doc.transaction(() => {
     { type: "polyline", layerId: walls, closed: true,
       points: [[0, 0], [6000, 0], [6000, 3000], [0, 3000]] },
     { type: "hatch", layer: "hatching",           // layer-by-name works too
-      loops: [{ points: [[0, 0], [6000, 0], [6000, 3000], [0, 3000]] }],
+      loops: [hatchLoop([[0, 0], [6000, 0], [6000, 3000], [0, 3000]])],
       fill: { kind: "pattern", name: "ANSI31", angle: 0, scale: 1 },
       scale: 50 },                                 // pattern spacing × drawing scale
   ]);
