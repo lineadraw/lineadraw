@@ -470,6 +470,26 @@
     },
     {
       "kind": "block",
+      "id": "@lineadraw/truss",
+      "name": "Truss",
+      "version": "1.0.0",
+      "description": "A parametric truss in elevation: pitched, mono or parallel chords with Pratt, Howe or Warren webbing, merged member outlines, dimensions and a member list.",
+      "tags": [
+        "structural",
+        "truss",
+        "roof",
+        "timber",
+        "steel",
+        "parametric"
+      ],
+      "authors": [
+        "Linea Team"
+      ],
+      "dependencies": [],
+      "source": "blocks/truss.block.ts"
+    },
+    {
+      "kind": "block",
       "id": "@lineadraw/waterproofing",
       "name": "Waterproofing",
       "version": "1.1.0",
