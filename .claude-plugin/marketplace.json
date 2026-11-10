@@ -14,7 +14,7 @@
                 "./skills/lineadraw"
             ],
             "mcpServers": {
-                "lineadraw": {
+                "linea": {
                     "command": "npx",
                     "args": [
                         "-y",
