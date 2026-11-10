@@ -12,7 +12,17 @@
             "version": "1.0.0",
             "skills": [
                 "./skills/lineadraw"
-            ]
+            ],
+            "mcpServers": {
+                "lineadraw": {
+                    "command": "npx",
+                    "args": [
+                        "-y",
+                        "@lineadraw/mcp",
+                        "--stdio"
+                    ]
+                }
+            }
         }
     ]
 }
