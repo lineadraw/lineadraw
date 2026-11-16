@@ -9,7 +9,8 @@
   },
   "scripts": {
     "manifest": "lineadraw manifest",
-    "check": "lineadraw check"
+    "check": "lineadraw check",
+    "check:skill": "node scripts/check-skill.mjs"
   },
   "devDependencies": {
     "lineadraw": "^0.12.0"
